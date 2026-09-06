@@ -3459,3 +3459,50 @@ window.addEventListener('load',startPrestoV33);
   setInterval(()=>{if(latestSelectedId47&&document.querySelector('.gc47'))rail47(latestSelectedId47)},20000);
 })();
 </script>
+
+<script>
+/* V49 — hard isolate live snapshots by matchup to prevent cross-game feed flashes. */
+(function(){
+  function normId49(v){ return String(v||'').trim().toUpperCase(); }
+  function expectedIds49(id){
+    const g=(GAMES||[]).find(x=>x.id===id);
+    if(!g) return null;
+    return {
+      away:normId49(TEAM?.[g.away]?.abbr),
+      home:normId49(TEAM?.[g.home]?.abbr)
+    };
+  }
+  function payloadMatches49(payload){
+    if(!payload?.ok || !payload?.game || !payload?.data) return true;
+    const exp=expectedIds49(payload.game);
+    if(!exp) return true;
+    const gm=payload.data.game||{};
+    const a=normId49(gm.awayId), h=normId49(gm.homeId);
+    // If the source supplied team ids, they MUST belong to the game being updated.
+    if(a && exp.away && a!==exp.away) return false;
+    if(h && exp.home && h!==exp.home) return false;
+    return true;
+  }
+
+  const prevApply49=applyPrestoSnapshotV33;
+  applyPrestoSnapshotV33=function(payload){
+    if(!payloadMatches49(payload)){
+      console.warn('V49 rejected cross-game Presto snapshot', payload?.game, payload?.data?.game);
+      return false;
+    }
+    return prevApply49(payload);
+  };
+
+  // Discovered games use their page-specific dynamic poller. Never let the legacy
+  // generic Presto loop poll those ids, because its fallback source is McMaster-Guelph.
+  function quarantineDiscovered49(){
+    try{
+      if(typeof DISCOVERED_V46!=='undefined' && DISCOVERED_V46?.byInternal){
+        Object.keys(DISCOVERED_V46.byInternal).forEach(id=>PRESTO_V33_GAMES.delete(id));
+      }
+    }catch(e){}
+  }
+  setInterval(quarantineDiscovered49,1000);
+  setTimeout(quarantineDiscovered49,50);
+})();
+</script>

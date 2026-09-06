@@ -140,7 +140,9 @@ async function fetchJson(url, referer) {
     redirect: 'follow',
     headers: {
       'Accept': 'application/json,text/plain,*/*',
-      'User-Agent': 'Mozilla/5.0 (compatible; USportsGameCentre/1.0)',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36',
+      'Accept-Language': 'en-CA,en;q=0.9',
+      'X-Requested-With': 'XMLHttpRequest',
       'Referer': referer,
       'Cache-Control': 'no-cache',
       'Pragma': 'no-cache'

@@ -3249,4 +3249,70 @@ window.addEventListener('load',startPrestoV33);
 })();
 </script>
 
+<style>
+/* V45 — verified field position + event ribbons + national live discovery */
+.fieldBallV9,.losLineV9,.firstLineV9{display:block!important}
+.fieldBallV9{width:28px!important;height:17px!important;box-shadow:0 0 0 3px rgba(255,255,255,.2),0 6px 12px rgba(0,0,0,.35)!important;z-index:8!important}
+.losLineV9{z-index:6!important}.firstLineV9{z-index:5!important;opacity:.9}
+.heroRibbonV42{top:22%!important}
+.otherGameV45{padding:13px 14px;border-bottom:1px solid rgba(255,255,255,.08);cursor:default}
+.otherGameV45 .top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}.otherGameV45 .live{font-size:10px;font-weight:1000;letter-spacing:.12em;color:#ff6075}.otherGameV45 .state{font-size:12px;color:var(--muted)}
+.otherGameV45 .team{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:9px;padding:5px 0}.otherGameV45 .team img{width:30px;height:30px;object-fit:contain}.otherGameV45 .team b{font-size:14px}.otherGameV45 .score{font-size:20px;font-weight:1000}
+</style>
+<script>
+/* V45 — use verified Presto field position, show newly-arrived notable events, and find other live U SPORTS games. */
+(function(){
+  let lastPlayKeysV45=new Set(), lastScoreKeyV45='';
+  const LIVE_DISCOVERY_V45={timer:null,games:[]};
+  function cleanSpotV45(spot){return String(spot||'').toUpperCase().replace(/\s+/g,'').replace(/-/g,'');}
+  function spotCoordV45(spot,gm){
+    const s=cleanSpotV45(spot),m=s.match(/^([A-Z]{2,5})(\d{1,3})$/);if(!m)return null;
+    const team=m[1],yd=Math.max(0,Math.min(55,Number(m[2])));if(!Number.isFinite(yd))return null;
+    // away end zone is left, home end zone is right; 110-yard field between goal lines.
+    if(team===String(gm.awayId||'').toUpperCase()) return yd;
+    if(team===String(gm.homeId||'').toUpperCase()) return 110-yd;
+    return null;
+  }
+  function fieldPctV45(coord){return 13.333 + (coord/110)*73.334;}
+  function moveFieldV45(d){
+    const gm=d.game||{},s=d.situation||{},plays=d.plays||[];
+    const spot=s.spot || plays[0]?.spot || '';
+    const c=spotCoordV45(spot,gm);if(c==null)return;
+    const ball=document.getElementById('fieldBallV9'),los=document.getElementById('losLineV9'),first=document.getElementById('firstLineV9');
+    const x=fieldPctV45(c);if(ball){ball.style.display='block';ball.style.left=x+'%';}if(los){los.style.display='block';los.style.left=x+'%';}
+    let firstCoord=null;const dist=Number(s.distance);if(Number.isFinite(dist)&&dist>0){
+      // Infer offensive direction from possession/territory and latest play progression.
+      const poss=String(s.possession||d.drives?.[0]?.team||'').toUpperCase();const towardRight=poss===String(gm.awayId||'').toUpperCase();firstCoord=Math.max(0,Math.min(110,c+(towardRight?dist:-dist)));
+    }
+    if(first){if(firstCoord!=null){first.style.display='block';first.style.left=fieldPctV45(firstCoord)+'%';}else first.style.display='none';}
+    const hud=document.getElementById('fieldHudV9');if(hud)hud.textContent=[s.possession?String(s.possession).toUpperCase()+' BALL':'',s.down?`${s.down}${s.down===1?'st':s.down===2?'nd':s.down===3?'rd':'th'} & ${s.distance}`:'',spot].filter(Boolean).join(' • ');
+  }
+  function notableTypeV45(p){const t=String(p?.type||'').toUpperCase(),d=String(p?.description||'').toUpperCase();for(const k of ['PICK SIX','TOUCHDOWN','INTERCEPTION','FUMBLE','SAFETY','BLOCKED KICK','FIELD GOAL','MISSED FG','EXPLOSIVE'])if(t.includes(k)||d.includes(k))return k;return '';}
+  function ribbonV45(type,p){
+    if(!type||!p)return;const r=document.getElementById('heroRibbonV42')||ensureRibbonV42?.();if(!r)return;
+    const color=/INTERCEPTION|FUMBLE|BLOCKED/.test(type)?'#ff5268':/SAFETY/.test(type)?'#6bd7ff':'#f5c542';r.style.setProperty('--eventColor',color);r.innerHTML=`<div class="k">${esc(type)}</div><div class="t">${esc(p.description||type)}</div><div class="s">${esc([p.clock,p.spot].filter(Boolean).join(' • '))}</div>`;requestAnimationFrame(()=>r.classList.add('show'));clearTimeout(r._hide);r._hide=setTimeout(()=>r.classList.remove('show'),4500);
+  }
+  function detectNewRibbonV45(d){
+    const plays=d.plays||[];const now=new Set(plays.map(p=>`${p.clock}|${p.description}`));
+    if(!lastPlayKeysV45.size){lastPlayKeysV45=now;return;}
+    const newly=plays.filter(p=>!lastPlayKeysV45.has(`${p.clock}|${p.description}`));lastPlayKeysV45=now;
+    const notable=newly.find(p=>notableTypeV45(p));if(notable)ribbonV45(notableTypeV45(notable),notable);
+    const scoreKey=`${d.game?.awayScore}|${d.game?.homeScore}`;if(lastScoreKeyV45&&scoreKey!==lastScoreKeyV45&&!notable){const p=newly[0]||plays[0];if(p)ribbonV45(notableTypeV45(p)||'SCORE UPDATE',p);}lastScoreKeyV45=scoreKey;
+  }
+  function patchSnapshotV45(payload){if(!payload?.ok||!payload.data)return;moveFieldV45(payload.data);detectNewRibbonV45(payload.data);}
+  const pa=applyPrestoSnapshotV33;applyPrestoSnapshotV33=function(payload){const ok=pa(payload);if(ok)setTimeout(()=>patchSnapshotV45(payload),0);return ok;};
+  const pu=updateSelectedUI;updateSelectedUI=function(){pu();if(PRESTO_V33.lastSnapshot?.ok)patchSnapshotV45(PRESTO_V33.lastSnapshot);};
+
+  function renderDiscoveredV45(){
+    const rail=document.getElementById('otherGames');if(!rail)return;const selectedBox='20260906_zejw';const gs=(LIVE_DISCOVERY_V45.games||[]).filter(g=>g.boxId!==selectedBox);
+    if(!gs.length){rail.innerHTML='<div class="otherGame noOtherLiveV41"><b>No other verified live football games found.</b><div>National live scan refreshes automatically.</div></div>';return;}
+    rail.innerHTML=gs.map(g=>`<div class="otherGameV45"><div class="top"><span class="live">● LIVE</span><span class="state">${esc([g.period,g.clock].filter(Boolean).join(' • '))}</span></div><div class="team"><span>${g.visitorLogo?`<img src="${g.visitorLogo}" onerror="this.style.display='none'">`:''}</span><b>${esc(g.visitor)}</b><span class="score">${g.awayScore}</span></div><div class="team"><span>${g.homeLogo?`<img src="${g.homeLogo}" onerror="this.style.display='none'">`:''}</span><b>${esc(g.home)}</b><span class="score">${g.homeScore}</span></div></div>`).join('');
+  }
+  async function discoverLiveV45(){try{const r=await fetch(`/api/live-games?date=20260906&_=${Date.now()}`,{cache:'no-store'});const j=await r.json();if(j?.ok){LIVE_DISCOVERY_V45.games=j.games||[];renderDiscoveredV45();}}catch(e){console.warn('U SPORTS live discovery',e);}}
+  function startDiscoveryV45(){discoverLiveV45();if(!LIVE_DISCOVERY_V45.timer)LIVE_DISCOVERY_V45.timer=setInterval(discoverLiveV45,20000);}
+  window.addEventListener('load',startDiscoveryV45);setTimeout(startDiscoveryV45,250);
+  const ro=renderOtherGames;renderOtherGames=function(){ro();setTimeout(renderDiscoveredV45,0);};
+})();
+</script>
+
 </body></html>

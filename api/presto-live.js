@@ -1,13 +1,15 @@
-const SOURCES = {
-  '2026-09-06-mcmaster-guelph': {
-    page: 'https://oua.ca/sports/fball/2026-27/boxscores/20260906_zejw.xml',
-    fallbackEvent: 'zejwko398jziv641',
-    fallbackHash: 'jaZCLnq6vCM3X/A8apbO3cnD8QKyJYUz',
-    awayId: 'MAC',
-    homeId: 'GUE'
-  }
+const SOURCE_DEF = {
+  page: 'https://oua.ca/sports/fball/2026-27/boxscores/20260906_zejw.xml',
+  fallbackEvent: 'zejwko398jziv641',
+  fallbackHash: 'jaZCLnq6vCM3X/A8apbO3cnD8QKyJYUz',
+  awayId: 'MAC',
+  homeId: 'GUE'
 };
-
+const SOURCES = {
+  '2026-09-06-mcmaster-guelph': SOURCE_DEF,
+  '20260906_zejw': SOURCE_DEF,
+  'zejw': SOURCE_DEF
+};
 function send(res, status, body) {
   res.statusCode = status;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -66,8 +68,10 @@ async function fetchLive(source,creds,cookie=''){
 module.exports=async function handler(req,res){
   if(req.method==='OPTIONS') return send(res,200,{ok:true});
   if(req.method!=='GET') return send(res,405,{ok:false,error:'GET only'});
-  const game=String(req.query.game||''),source=SOURCES[game];
-  if(!source) return send(res,404,{ok:false,error:'No verified Presto source registered for this game',game});
+  const requestedGame=String(req.query.game||'');
+  const source=SOURCES[requestedGame];
+  const game = source ? '2026-09-06-mcmaster-guelph' : requestedGame;
+  if(!source) return send(res,404,{ok:false,error:'No verified Presto source registered for this game',game:requestedGame,accepted:['2026-09-06-mcmaster-guelph','20260906_zejw','zejw']});
   let boot={status:null,ok:false,cookie:'',found:null,sample:''}, attempts=[];
   try{ boot=await bootstrap(source); }catch(e){ boot.error=String(e?.message||e); }
   const candidates=[];

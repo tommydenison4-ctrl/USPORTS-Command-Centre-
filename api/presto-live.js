@@ -282,6 +282,64 @@ function scoreFallbackFromPlays(plays,source){
 }
 function flattenDrives(data){ const out=[]; walk(data?.drives,(o)=>{ if(Array.isArray(o))return; const plays=num(o.plays??o.playCount??o.numplays),yards=num(o.yards??o.yds??o.netyards),team=text(o.team??o.teamId??o.team_id??o.id),result=text(o.result??o.end??o.summary??o.outcome),time=text(o.time??o.elapsed??o.top); if(plays!=null||yards!=null||result||time)out.push({team,plays,yards,result,time}); }); return out.slice(-24).reverse(); }
 function teamAndPlayerStats(data){ const teamStats=[],playerStats=[]; walk(data?.team,(o,path)=>{ if(Array.isArray(o))return; const id=text(o.id||o.teamId||o.team_id||o.code||o.abbr),name=text(o.name||o.player||o.fullname||o.full_name); const statKeys=Object.keys(o).filter(k=>/^(yds|yards|att|cmp|comp|td|int|rec|car|rush|pass|tkl|tack|sack|fg|xp|punt)/i.test(k)); if(!statKeys.length)return; const stats={}; statKeys.slice(0,24).forEach(k=>{if(['string','number'].includes(typeof o[k]))stats[k]=o[k]}); if(name&&!/^MAC$|^GUE$/i.test(name))playerStats.push({team:id,name,stats,path}); else if(id)teamStats.push({team:id,stats,path}); }); return {teamStats:teamStats.slice(0,30),playerStats:playerStats.slice(0,140)}; }
+
+function scalarLeaves(root, prefix='', out=[], depth=0){
+  if(depth>5 || root==null) return out;
+  if(['string','number'].includes(typeof root)){ out.push({path:prefix,value:root}); return out; }
+  if(Array.isArray(root)) return out; // player arrays / tables are handled elsewhere
+  if(typeof root!=='object') return out;
+  for(const [k,v] of Object.entries(root)){
+    if(/player|roster|individual/i.test(k)) continue;
+    scalarLeaves(v,prefix?`${prefix}.${k}`:k,out,depth+1);
+  }
+  return out;
+}
+function teamRootObjects(data,source){
+  const arr=Array.isArray(data?.team)?data.team:(data?.team&&typeof data.team==='object'?Object.values(data.team):[]);
+  const out={away:null,home:null};
+  for(const o of arr){
+    if(!o||typeof o!=='object') continue;
+    const id=text(o.id||o.teamId||o.team_id||o.code||o.abbr||o.name).toUpperCase();
+    const vh=text(o.vh||o.side||o.homeAway||o.home_away).toUpperCase();
+    if(id===source.awayId.toUpperCase()||vh==='V'||vh==='A') out.away=o;
+    if(id===source.homeId.toUpperCase()||vh==='H') out.home=o;
+  }
+  return out;
+}
+function pickLeaf(leaves, patterns){
+  for(const p of patterns){
+    const x=leaves.find(r=>p.test(r.path));
+    if(x) return x.value;
+  }
+  return null;
+}
+function cleanStat(v){
+  if(v==null||v==='') return null;
+  if(typeof v==='number') return v;
+  const t=String(v).trim();
+  return t.length<40?t:null;
+}
+function teamComparison(data,source){
+  const roots=teamRootObjects(data,source), A=scalarLeaves(roots.away), H=scalarLeaves(roots.home);
+  const defs=[
+    ['Total Yards',[/total.*(?:yards|yds)/i,/(?:yards|yds).*total/i,/total.*off/i,/offense.*(?:yards|yds)/i]],
+    ['Passing Yards',[/pass.*(?:yards|yds)/i,/(?:yards|yds).*pass/i]],
+    ['Rushing Yards',[/rush.*(?:yards|yds)/i,/(?:yards|yds).*rush/i]],
+    ['First Downs',[/first.*down/i,/firstdowns/i]],
+    ['3rd Down',[/third.*down/i,/3rd.*down/i]],
+    ['Turnovers',[/turnover/i,/giveaway/i]],
+    ['Penalties',[/penalt/i]],
+    ['Time of Possession',[/time.*poss/i,/possession.*time/i,/(?:^|\.)top$/i]],
+    ['Sacks',[/sacks?(?:\.|$)/i,/sack.*total/i]],
+    ['Punts',[/punts?(?:\.|$)/i,/punt.*count/i]]
+  ];
+  const rows=[];
+  for(const [label,pats] of defs){
+    const av=cleanStat(pickLeaf(A,pats)), hv=cleanStat(pickLeaf(H,pats));
+    if(av!=null||hv!=null) rows.push({label,away:av,home:hv});
+  }
+  return rows;
+}
 function normalize(data,source){
   const status=data?.status||{};
   const ps=teamAndPlayerStats(data);
@@ -306,8 +364,8 @@ function normalize(data,source){
     source:data?.source||'PrestoSports',version:data?.version||null,platformId:data?.platformId||null,
     lastUpdated:data?.network?.lastUpdated||data?.generated||new Date().toISOString(),
     status:{complete:text(status.complete).toUpperCase()==='Y',period:periodLabel(status),clock:text(status.clock),running:text(status.running)},
-    game:{awayId:source.awayId,homeId:source.homeId,awayScore:away,homeScore:home,scoreSource},
-    situation,plays,drives,teamStats:ps.teamStats,playerStats:ps.playerStats,rawKeys:Object.keys(data||{}),
+    game:{awayId:source.awayId,homeId:source.homeId,awayScore:away,homeScore:home,scoreSource,awayLogo:source.awayLogo||'',homeLogo:source.homeLogo||''},
+    situation,plays,drives,teamStats:ps.teamStats,playerStats:ps.playerStats,statComparison:teamComparison(data,source),rawKeys:Object.keys(data||{}),
     scoreDebug:{latestScoringEventIndex:latestScore.index,scores:data?.scores??null,candidates:scalarScoreCandidates(data,source).slice(0,12)}
   };
 }
@@ -345,7 +403,7 @@ function discover(html){
 async function bootstrap(source){
   const r=await fetch(source.page,{redirect:'follow',headers:{...BASE_HEADERS,'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Upgrade-Insecure-Requests':'1','Sec-Fetch-Site':'none','Sec-Fetch-Mode':'navigate','Sec-Fetch-Dest':'document'}});
   const html=await r.text();
-  const found=discover(html); const li=html.toLowerCase().indexOf('liveupdate'); const ei=html.toLowerCase().indexOf('zejwko'); return {status:r.status,ok:r.ok,cookie:cookieHeader(r),found,sample:html.slice(0,120),liveupdateSnippet:li>=0?html.slice(Math.max(0,li-180),li+500):'',eventSnippet:ei>=0?html.slice(Math.max(0,ei-180),ei+500):''};
+  const found=discover(html); const li=html.toLowerCase().indexOf('liveupdate'); const ei=html.toLowerCase().indexOf('zejwko'); const vm=html.match(/conf\.visitorTeamLogo\s*=\s*['"]([^'"]+)['"]/i); const hm=html.match(/conf\.homeTeamLogo\s*=\s*['"]([^'"]+)['"]/i); return {status:r.status,ok:r.ok,cookie:cookieHeader(r),found,visitorLogo:htmlDecode(vm?.[1]||''),homeLogo:htmlDecode(hm?.[1]||''),sample:html.slice(0,120),liveupdateSnippet:li>=0?html.slice(Math.max(0,li-180),li+500):'',eventSnippet:ei>=0?html.slice(Math.max(0,ei-180),ei+500):''};
 }
 async function fetchLive(source,creds,cookie=''){
   const origin=new URL(source.page).origin;
@@ -386,7 +444,7 @@ module.exports=async function handler(req,res){
       const lr=await fetchLive(source,c,boot.cookie||'');
       attempts.push({kind:c.kind,status:lr.status,url:lr.url,body:lr.body});
       if(lr.ok&&isLivePayload(lr.json)){
-        return send(res,200,{ok:true,game,upstreamStatus:lr.status,cadenceSeconds:10,sourcePage:source.page,bootstrapStatus:boot.status,credentialMode:c.kind,data:normalize(lr.json,source)});
+        return send(res,200,{ok:true,game,upstreamStatus:lr.status,cadenceSeconds:10,sourcePage:source.page,bootstrapStatus:boot.status,credentialMode:c.kind,data:normalize(lr.json,{...source,awayLogo:boot.visitorLogo||'',homeLogo:boot.homeLogo||''})});
       }
       if(lr.json?.error){ attempts[attempts.length-1].upstreamError=String(lr.json.error); }
     }catch(e){ attempts.push({kind:c.kind,status:null,error:String(e?.message||e)}); }

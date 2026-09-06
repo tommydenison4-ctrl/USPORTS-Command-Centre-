@@ -53,6 +53,54 @@ function scoreFromSideNode(node){
   }
   return null;
 }
+
+function scalarScoreCandidates(data, source){
+  const rows=[];
+  walk(data,(o,path)=>{
+    if(!o||Array.isArray(o)||typeof o!=='object') return;
+    const low=String(path).toLowerCase();
+    const id=text(o.id||o.teamId||o.team_id||o.code||o.abbr||o.team).toUpperCase();
+    const vh=text(o.vh||o.side||o.homeAway||o.home_away).toUpperCase();
+    for(const [k,v] of Object.entries(o)){
+      const n=numericScore(v); if(n==null) continue;
+      const key=String(k).toLowerCase();
+      let side=''; let weight=0;
+      if(/^(vscore|visitorscore|visitor_score|awayscore|away_score|v_score|scorev|score_v)$/.test(key)){side='away';weight=120;}
+      else if(/^(hscore|homescore|home_score|hostscore|host_score|h_score|scoreh|score_h)$/.test(key)){side='home';weight=120;}
+      else if(/^(score|points|pts|total|tot)$/.test(key)){
+        if(id===source.awayId.toUpperCase()||vh==='V'||vh==='A'||/visitor|away/.test(low)){side='away';weight=95;}
+        if(id===source.homeId.toUpperCase()||vh==='H'||/home|host/.test(low)){side='home';weight=95;}
+      }
+      if(!side && /score|points|pts/.test(key)){
+        if(/visitor|away/.test(low)){side='away';weight=75;}
+        if(/home|host/.test(low)){side='home';weight=75;}
+      }
+      if(side) rows.push({side,n,weight,path:`${path}.${k}`});
+    }
+  });
+  rows.sort((a,b)=>b.weight-a.weight);
+  return rows;
+}
+function scorePairFromPlayState(plays, source){
+  // Presto football play objects frequently carry the running scoreboard alongside
+  // the play. Prefer the newest play that exposes both sides.
+  let pair={away:null,home:null};
+  walk(plays,(o)=>{
+    if(!o||Array.isArray(o)||typeof o!=='object') return;
+    const av=firstVal(o,['vscore','visitorScore','visitor_score','awayScore','away_score','scoreV','score_v']);
+    const hv=firstVal(o,['hscore','homeScore','home_score','hostScore','host_score','scoreH','score_h']);
+    const a=numericScore(av), h=numericScore(hv);
+    if(a!=null&&h!=null) pair={away:a,home:h};
+  });
+  return pair;
+}
+function bestDeepScorePair(data, source){
+  const rows=scalarScoreCandidates(data,source);
+  const a=rows.find(x=>x.side==='away');
+  const h=rows.find(x=>x.side==='home');
+  return {away:a?.n??null,home:h?.n??null,source:a&&h?'deep-score-fields':''};
+}
+
 function extractScorePair(data,source){
   const scores=data?.scores;
   const aliases={
@@ -180,7 +228,7 @@ function scoreFallbackFromPlays(plays,source){
 }
 function flattenDrives(data){ const out=[]; walk(data?.drives,(o)=>{ if(Array.isArray(o))return; const plays=num(o.plays??o.playCount??o.numplays),yards=num(o.yards??o.yds??o.netyards),team=text(o.team??o.teamId??o.team_id??o.id),result=text(o.result??o.end??o.summary??o.outcome),time=text(o.time??o.elapsed??o.top); if(plays!=null||yards!=null||result||time)out.push({team,plays,yards,result,time}); }); return out.slice(-24).reverse(); }
 function teamAndPlayerStats(data){ const teamStats=[],playerStats=[]; walk(data?.team,(o,path)=>{ if(Array.isArray(o))return; const id=text(o.id||o.teamId||o.team_id||o.code||o.abbr),name=text(o.name||o.player||o.fullname||o.full_name); const statKeys=Object.keys(o).filter(k=>/^(yds|yards|att|cmp|comp|td|int|rec|car|rush|pass|tkl|tack|sack|fg|xp|punt)/i.test(k)); if(!statKeys.length)return; const stats={}; statKeys.slice(0,24).forEach(k=>{if(['string','number'].includes(typeof o[k]))stats[k]=o[k]}); if(name&&!/^MAC$|^GUE$/i.test(name))playerStats.push({team:id,name,stats,path}); else if(id)teamStats.push({team:id,stats,path}); }); return {teamStats:teamStats.slice(0,30),playerStats:playerStats.slice(0,140)}; }
-function normalize(data,source){ const status=data?.status||{},ps=teamAndPlayerStats(data),plays=flattenPlays(data),pair=extractScorePair(data,source),fb=scoreFallbackFromPlays(plays,source),situation=extractSituation(data,plays); return {source:data?.source||'PrestoSports',version:data?.version||null,platformId:data?.platformId||null,lastUpdated:data?.network?.lastUpdated||data?.generated||new Date().toISOString(),status:{complete:text(status.complete).toUpperCase()==='Y',period:periodLabel(status),clock:text(status.clock),running:text(status.running)},game:{awayId:source.awayId,homeId:source.homeId,awayScore:pair.away!=null?pair.away:fb.away,homeScore:pair.home!=null?pair.home:fb.home},situation,plays,drives:flattenDrives(data),teamStats:ps.teamStats,playerStats:ps.playerStats,rawKeys:Object.keys(data||{})}; }
+function normalize(data,source){ const status=data?.status||{},ps=teamAndPlayerStats(data),plays=flattenPlays(data),pair=extractScorePair(data,source),playPair=scorePairFromPlayState(data?.plays,source),deep=bestDeepScorePair(data,source),fb=scoreFallbackFromPlays(plays,source),situation=extractSituation(data,plays); let away=pair.away,home=pair.home,scoreSource='scores'; if(away==null||home==null){ if(playPair.away!=null&&playPair.home!=null){away=playPair.away;home=playPair.home;scoreSource='play-state';} else if(deep.away!=null&&deep.home!=null){away=deep.away;home=deep.home;scoreSource=deep.source;} else {if(away==null)away=fb.away;if(home==null)home=fb.home;scoreSource='scoring-plays';} } return {source:data?.source||'PrestoSports',version:data?.version||null,platformId:data?.platformId||null,lastUpdated:data?.network?.lastUpdated||data?.generated||new Date().toISOString(),status:{complete:text(status.complete).toUpperCase()==='Y',period:periodLabel(status),clock:text(status.clock),running:text(status.running)},game:{awayId:source.awayId,homeId:source.homeId,awayScore:away,homeScore:home,scoreSource},situation,plays,drives:flattenDrives(data),teamStats:ps.teamStats,playerStats:ps.playerStats,rawKeys:Object.keys(data||{}),scoreDebug:{scores:data?.scores??null,candidates:scalarScoreCandidates(data,source).slice(0,12)}}; }
 function isLivePayload(json){ return !!(json && typeof json==='object' && !json.error && (json.status || json.plays || json.drives || json.team || json.scores || json.source==='PrestoSports')); }
 
 const BASE_HEADERS={

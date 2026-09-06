@@ -3316,3 +3316,70 @@ window.addEventListener('load',startPrestoV33);
 </script>
 
 </body></html>
+
+<style>
+/* V46 — discovered live games are real navigation targets */
+.otherGameV45{cursor:pointer!important;transition:background .15s ease,border-color .15s ease}
+.otherGameV45:hover{background:rgba(255,255,255,.055)}
+.otherGameV45:active{transform:translateY(1px)}
+.otherGameV45 .openHintV46{font-size:10px;font-weight:900;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+</style>
+<script>
+/* V46 — persist discovered Presto sources, make rail cards clickable, and keep live games live after navigation. */
+(function(){
+  const DISCOVERED_V46={byInternal:{},pollers:{},last:[]};
+  function normV46(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
+  function teamMatchesV46(slug,label){
+    const t=TEAM?.[slug]; if(!t)return false; const x=normV46(label), vals=[t.short,t.name,t.city,t.abbr,slug].map(normV46).filter(Boolean);
+    return vals.some(v=>x===v||x.includes(v)||v.includes(x));
+  }
+  function internalIdForV46(g){
+    const candidates=(GAMES||[]).filter(x=>x.status!=='final');
+    let best=null,bestScore=-1;
+    for(const x of candidates){let sc=0;if(teamMatchesV46(x.away,g.visitor))sc+=100;if(teamMatchesV46(x.home,g.home))sc+=100;if(teamMatchesV46(x.away,g.home))sc-=40;if(teamMatchesV46(x.home,g.visitor))sc-=40;if(sc>bestScore){bestScore=sc;best=x;}}
+    return bestScore>=180?best.id:'';
+  }
+  function sourceIdsV46(id){const g=GAMES.find(x=>x.id===id);return {awayId:String(TEAM?.[g?.away]?.abbr||'').toUpperCase(),homeId:String(TEAM?.[g?.home]?.abbr||'').toUpperCase()};}
+  function armStateV46(id,d){
+    const gdef=GAMES.find(x=>x.id===id); if(!gdef)return;
+    const st=LIVE_STORE.games[id]||(LIVE_STORE.games[id]={id,away:gdef.away,home:gdef.home,as:0,hs:0,q:'PRE',clock:gdef.time,pos:null,down:'Scheduled',yard:null,first:null,event:'UPCOMING'});
+    st._realLive=true;
+    if(d){st.q=d.status?.period||st.q;st.clock=d.status?.clock||st.clock;if(d.game?.awayScore!=null)st.as=d.game.awayScore;if(d.game?.homeScore!=null)st.hs=d.game.homeScore;st.pos=d.situation?.possession||d.drives?.[0]?.team||st.pos;st.down=d.situation?.down?`${d.situation.down}${d.situation.down===1?'st':d.situation.down===2?'nd':d.situation.down===3?'rd':'th'} & ${d.situation.distance}`:st.down;}
+  }
+  async function pollDynamicV46(id){
+    const src=DISCOVERED_V46.byInternal[id]; if(!src)return;
+    try{
+      const ids=sourceIdsV46(id);
+      const u=`/api/presto-live?game=${encodeURIComponent(id)}&page=${encodeURIComponent(src.page)}&awayId=${encodeURIComponent(ids.awayId)}&homeId=${encodeURIComponent(ids.homeId)}&_=${Date.now()}`;
+      const r=await fetch(u,{cache:'no-store',headers:{Accept:'application/json'}});const j=await r.json();
+      if(j?.ok){PRESTO_V33.lastSnapshot=j;PRESTO_V33.lastError='';armStateV46(id,j.data);applyPrestoSnapshotV33(j);if(location.hash===`#live=${id}`){setTimeout(()=>{patchSnapshotV45?.(j.data);},0);}}
+      else PRESTO_V33.lastError=j?.error||`live source ${r.status}`;
+    }catch(e){PRESTO_V33.lastError=String(e?.message||e);}
+  }
+  function startDynamicV46(id){
+    Object.keys(DISCOVERED_V46.pollers).forEach(k=>{if(k!==id){clearInterval(DISCOVERED_V46.pollers[k]);delete DISCOVERED_V46.pollers[k];}});
+    pollDynamicV46(id);if(!DISCOVERED_V46.pollers[id])DISCOVERED_V46.pollers[id]=setInterval(()=>pollDynamicV46(id),10000);
+  }
+  window.openDiscoveredV46=function(boxId){
+    const g=DISCOVERED_V46.last.find(x=>x.boxId===boxId);if(!g)return;
+    const id=internalIdForV46(g);if(!id){console.warn('No internal game match for discovered live game',g);return;}
+    DISCOVERED_V46.byInternal[id]=g;PRESTO_V33_GAMES.add(id);armStateV46(id,{status:{period:g.period,clock:g.clock},game:{awayScore:g.awayScore,homeScore:g.homeScore}});LIVE_STORE.selected=id;location.hash='live='+id;showGameCast(id);startDynamicV46(id);
+  };
+  function renderRailV46(){
+    const rail=document.getElementById('otherGames');if(!rail)return;
+    const selected=LIVE_STORE.selected;const rows=(DISCOVERED_V46.last||[]).map(g=>({...g,_id:internalIdForV46(g)})).filter(g=>g._id&&g._id!==selected);
+    if(!rows.length){rail.innerHTML='<div class="otherGame noOtherLiveV41"><b>No other verified live football games found.</b><div>National live scan refreshes automatically.</div></div>';return;}
+    rail.innerHTML=rows.map(g=>`<div class="otherGameV45" role="button" tabindex="0" onclick="openDiscoveredV46('${g.boxId}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDiscoveredV46('${g.boxId}')}" title="Open ${esc(g.visitor)} at ${esc(g.home)}"><div class="top"><span class="live">● LIVE</span><span class="state">${esc([g.period,g.clock].filter(Boolean).join(' • '))}</span></div><div class="team"><span>${g.visitorLogo?`<img src="${g.visitorLogo}" onerror="this.style.display='none'">`:''}</span><b>${esc(g.visitor)}</b><span class="score">${g.awayScore}</span></div><div class="team"><span>${g.homeLogo?`<img src="${g.homeLogo}" onerror="this.style.display='none'">`:''}</span><b>${esc(g.home)}</b><span class="score">${g.homeScore}</span></div><div class="openHintV46">Open GameCast →</div></div>`).join('');
+  }
+  async function refreshDiscoveryV46(){
+    try{const r=await fetch(`/api/live-games?date=20260906&_=${Date.now()}`,{cache:'no-store'});const j=await r.json();if(!j?.ok)return;DISCOVERED_V46.last=j.games||[];for(const g of DISCOVERED_V46.last){const id=internalIdForV46(g);if(id){DISCOVERED_V46.byInternal[id]=g;PRESTO_V33_GAMES.add(id);armStateV46(id,{status:{period:g.period,clock:g.clock},game:{awayScore:g.awayScore,homeScore:g.homeScore}});if(location.hash===`#live=${id}`)startDynamicV46(id);}}renderRailV46();}catch(e){console.warn('V46 live discovery',e);}
+  }
+  // Supersede V45 rail rendering with clickable V46 cards.
+  renderDiscoveredV45=function(){renderRailV46();};
+  const oldShowV46=showGameCast;showGameCast=function(id){
+    const src=DISCOVERED_V46.byInternal[id];if(src){armStateV46(id,{status:{period:src.period,clock:src.clock},game:{awayScore:src.awayScore,homeScore:src.homeScore}});startDynamicV46(id);}const out=oldShowV46(id);setTimeout(renderRailV46,0);return out;
+  };
+  window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(h.startsWith('live=')){const id=h.slice(5);if(DISCOVERED_V46.byInternal[id])startDynamicV46(id);}});
+  setTimeout(refreshDiscoveryV46,200);setInterval(refreshDiscoveryV46,20000);
+})();
+</script>

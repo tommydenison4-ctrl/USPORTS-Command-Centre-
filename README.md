@@ -1,11 +1,16 @@
-U SPORTS PRESTO LIVE V45
+# U SPORTS PRESTO LIVE V46
 
-Changes from V44:
-- restores a verified football marker and LOS/first-down lines on the 110-yard field using the live Presto spot and situation
-- moves the ball as verified field position changes
-- hero ribbons now look for newly-arrived notable plays between polls, rather than only checking whichever row happens to be first
-- score changes can also trigger a score-update ribbon
-- adds /api/live-games.js, which scans official U SPORTS and OUA football schedules for today's Presto boxscores and identifies other games that are actually live
-- Live Around U SPORTS refreshes every 20 seconds from that national scan
+Fixes discovered-live-game navigation and persistence.
 
-Deploy all files, including the NEW api/live-games.js file.
+- Other live games in the right rail are now clickable/keyboard accessible.
+- A discovered game is matched to the site's internal matchup ID, armed as a verified live GameCast, and opened directly.
+- Dynamic Presto source pages are passed to the server-side proxy so games beyond McMaster-Guelph can load full score/clock/PBP/drives/field state.
+- Manual navigation to a currently discovered live game now re-arms its live source automatically instead of falling back to pregame.
+- The dynamic live source is polled every 10 seconds; national discovery refreshes every 20 seconds.
+
+Upload the full build. Important files:
+- index.html
+- api/presto-live.js
+- api/live-games.js
+- vercel.json
+- package.json

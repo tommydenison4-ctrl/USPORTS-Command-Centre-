@@ -348,8 +348,9 @@ async function bootstrap(source){
   const found=discover(html); const li=html.toLowerCase().indexOf('liveupdate'); const ei=html.toLowerCase().indexOf('zejwko'); return {status:r.status,ok:r.ok,cookie:cookieHeader(r),found,sample:html.slice(0,120),liveupdateSnippet:li>=0?html.slice(Math.max(0,li-180),li+500):'',eventSnippet:ei>=0?html.slice(Math.max(0,ei-180),ei+500):''};
 }
 async function fetchLive(source,creds,cookie=''){
-  const u=new URL('https://oua.ca/action/sports/liveupdate'); u.searchParams.set('e',creds.event); u.searchParams.set('h',creds.hash);
-  const headers={...BASE_HEADERS,'Accept':'application/json,text/plain,*/*','X-Requested-With':'XMLHttpRequest','Referer':source.page,'Origin':'https://oua.ca','Sec-Fetch-Site':'same-origin','Sec-Fetch-Mode':'cors','Sec-Fetch-Dest':'empty'};
+  const origin=new URL(source.page).origin;
+  const u=new URL('/action/sports/liveupdate',origin); u.searchParams.set('e',creds.event); u.searchParams.set('h',creds.hash);
+  const headers={...BASE_HEADERS,'Accept':'application/json,text/plain,*/*','X-Requested-With':'XMLHttpRequest','Referer':source.page,'Origin':origin,'Sec-Fetch-Site':'same-origin','Sec-Fetch-Mode':'cors','Sec-Fetch-Dest':'empty'};
   if(cookie) headers.Cookie=cookie;
   const r=await fetch(u,{method:'GET',redirect:'follow',headers}); const body=await r.text();
   let json=null; try{json=JSON.parse(body)}catch{}
@@ -360,14 +361,25 @@ module.exports=async function handler(req,res){
   if(req.method==='OPTIONS') return send(res,200,{ok:true});
   if(req.method!=='GET') return send(res,405,{ok:false,error:'GET only'});
   const requestedGame=String(req.query.game||'');
-  const source=SOURCES[requestedGame];
-  const game = source ? '2026-09-06-mcmaster-guelph' : requestedGame;
-  if(!source) return send(res,404,{ok:false,error:'No verified Presto source registered for this game',game:requestedGame,accepted:['2026-09-06-mcmaster-guelph','20260906_zejw','zejw']});
+  const dynamicPage=String(req.query.page||'').trim();
+  let source=SOURCES[requestedGame]||null;
+  let game = source ? '2026-09-06-mcmaster-guelph' : requestedGame;
+  if(!source && dynamicPage){
+    try{
+      const u=new URL(dynamicPage);
+      const host=u.hostname.toLowerCase();
+      const allowed=(host==='oua.ca'||host==='www.oua.ca'||host==='en.usports.ca'||host==='usports.ca'||host==='www.usports.ca');
+      const validPath=/^\/sports\/fball\/2026-27\/boxscores\/20260906_[A-Za-z0-9]+\.xml$/i.test(u.pathname);
+      if(!allowed||!validPath) return send(res,400,{ok:false,error:'Unsupported live-stat source page'});
+      source={page:u.toString(),fallbackEvent:'',fallbackHash:'',awayId:String(req.query.awayId||'').toUpperCase(),homeId:String(req.query.homeId||'').toUpperCase()};
+    }catch{return send(res,400,{ok:false,error:'Invalid source page'});}
+  }
+  if(!source) return send(res,404,{ok:false,error:'No verified Presto source registered for this game',game:requestedGame});
   let boot={status:null,ok:false,cookie:'',found:null,sample:''}, attempts=[];
   try{ boot=await bootstrap(source); }catch(e){ boot.error=String(e?.message||e); }
   const candidates=[];
   if(boot.found) candidates.push({...boot.found,kind:'discovered'});
-  candidates.push({event:source.fallbackEvent,hash:source.fallbackHash,kind:'verified-fallback'});
+  if(source.fallbackEvent&&source.fallbackHash) candidates.push({event:source.fallbackEvent,hash:source.fallbackHash,kind:'verified-fallback'});
   const unique=candidates.filter((x,i,a)=>a.findIndex(y=>y.event===x.event&&y.hash===x.hash)===i);
   for(const c of unique){
     try{

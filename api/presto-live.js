@@ -1,7 +1,7 @@
 const SOURCE_DEF = {
   page: 'https://oua.ca/sports/fball/2026-27/boxscores/20260906_zejw.xml',
   fallbackEvent: 'zejwko398jziv641',
-  fallbackHash: 'jaZCLnq6vCM3X/A8apbO3cnD8QKyJYUz',
+  fallbackHash: 'jaZCLnq6vCM3X/A8apbO3cnD8QKvJYUz',
   awayId: 'MAC',
   homeId: 'GUE'
 };
@@ -44,6 +44,13 @@ function cookieHeader(r){
 function htmlDecode(s=''){ return s.replace(/&amp;/g,'&').replace(/&#x2F;/gi,'/').replace(/&#47;/g,'/'); }
 function discover(html){
   html=htmlDecode(html||'');
+  // Presto's football page exposes the event id and its hash separately in the
+  // bootstrap config. Prefer that explicit pair because the liveupdate URL itself
+  // may contain only the `e` parameter.
+  const confEvent = html.match(/conf\.eventId\s*=\s*['"]([^'"]+)['"]/i);
+  const confHash = html.match(/conf\.eventIdHashCode\s*=\s*['"]([^'"]+)['"]/i);
+  if(confEvent && confHash) return {event:confEvent[1], hash:confHash[1]};
+
   const patterns=[
     /liveupdate\?e=([^&"'<>\\]+)&h=([^"'<>\\\s]+)/i,
     /liveupdate\?e=([^&"'<>\\]+)&amp;h=([^"'<>\\\s]+)/i,

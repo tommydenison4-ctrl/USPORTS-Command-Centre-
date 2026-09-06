@@ -927,6 +927,108 @@ linear-gradient(#f2f2f2,#ededed)}
 }
 @media(max-width:760px){.verifiedGrid{grid-template-columns:1fr 1fr}}
 
+
+/* V29 production-safe logos + no fake live seed */
+.teamLogoBox{
+  --logo-size:34px;
+  width:48px;height:48px;border-radius:14px;background:#fff;
+  display:grid;place-items:center;overflow:hidden;flex:0 0 48px;
+  border:1px solid rgba(255,255,255,.10);
+}
+.teamLogoBox.sm{width:36px;height:36px;border-radius:10px;flex-basis:36px;--logo-size:27px}
+.teamLogoBox.lg{width:72px;height:72px;border-radius:20px;flex-basis:72px;--logo-size:54px}
+.teamLogoBox.xl{width:94px;height:94px;border-radius:24px;flex-basis:94px;--logo-size:72px}
+.teamLogoBox img{
+  width:var(--logo-size);height:var(--logo-size);
+  max-width:86%;max-height:86%;object-fit:contain;display:block;
+}
+.teamLogoFallback{
+  display:none;
+  align-items:center;justify-content:center;
+  width:100%;height:100%;
+  font-weight:1000;font-size:11px;letter-spacing:.04em;
+  background:var(--fallback-bg,#182433);
+  color:var(--fallback-fg,#fff);
+}
+.teamLogoBox.broken img{display:none}
+.teamLogoBox.broken .teamLogoFallback{display:flex}
+.noLiveData{
+  padding:14px 16px;border-radius:16px;
+  background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.07);
+  color:#c7d4e3;font-size:13px;line-height:1.5;
+}
+.livePendingScore{
+  font-size:56px;font-weight:1000;letter-spacing:-.03em
+}
+.livePendingMeta{color:var(--muted);font-size:12px;margin-top:6px}
+
+
+/* V31 Live landing page */
+.liveLanding{
+  display:grid;
+  gap:18px;
+}
+.liveLandingHero{
+  padding:22px;
+  border-radius:22px;
+  background:linear-gradient(180deg,#0f1826,#0a111a);
+  border:1px solid rgba(255,255,255,.07);
+}
+.liveLandingHero h1{margin:0 0 8px;font-size:30px}
+.liveLandingHero p{margin:0;color:var(--muted);line-height:1.5}
+.liveLandingGrid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+}
+.liveLandingCard{
+  cursor:pointer;
+  padding:16px;
+  border-radius:18px;
+  background:#0a1119;
+  border:1px solid #22303d;
+  transition:.16s ease;
+}
+.liveLandingCard:hover{
+  transform:translateY(-2px);
+  border-color:#3a4b5d;
+}
+.liveLandingTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:12px;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.liveLandingTeams{display:grid;gap:10px}
+.liveLandingTeam{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.liveLandingTeam b{font-size:15px}
+.liveLandingStatus{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:5px 8px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.03);
+  color:#dbe6f2;
+  font-size:10px;
+  font-weight:900;
+}
+.liveLandingStatus.live{color:#ff9cab;border-color:rgba(255,85,110,.25);background:rgba(255,85,110,.06)}
+.liveLandingStatus.pre{color:#f2cf6a;border-color:rgba(242,207,106,.22);background:rgba(242,207,106,.05)}
+@media(max-width:900px){.liveLandingGrid{grid-template-columns:1fr}}
+
 </style><style>
 /* === V26 ESPN-style pregame refinement === */
 .pregameHub{max-width:1500px;margin:0 auto}
@@ -1291,23 +1393,26 @@ const LIVE_STORE = {
 };
 function mark(t,cls=''){return `<span class="badgeMark ${cls}" style="background:${t.primary};color:${t.secondary}">${t.abbr}</span>`}
 function seedLiveGames(){
-  const demo=[
-    {id:'2026-09-06-mcmaster-guelph',away:'mcmaster',home:'guelph',as:17,hs:20,q:'Q4',clock:'6:42',pos:'guelph',down:'2nd & 6',yard:63,first:73,event:'Guelph ball',rankAway:null,rankHome:null},
-    {id:'2026-09-06-waterloo-carleton',away:'waterloo',home:'carleton',as:24,hs:27,q:'Q3',clock:'3:18',pos:'waterloo',down:'1st & 10',yard:42,first:52,event:'',rankAway:null,rankHome:null},
-    {id:'2026-09-06-laurier-windsor',away:'laurier',home:'windsor',as:21,hs:17,q:'Q3',clock:'8:03',pos:'windsor',down:'3rd & 4',yard:56,first:60,event:'',rankAway:4,rankHome:null},
-    {id:'2026-09-06-york-western',away:'york',home:'western',as:24,hs:21,q:'Q4',clock:'4:18',pos:'york',down:'1st & 10',yard:69,first:79,event:'UPSET ALERT',rankAway:null,rankHome:7}
-  ];
-  demo.forEach(g=>LIVE_STORE.games[g.id]={...g});
-  LIVE_STORE.selected=demo[0].id;
-  demo.forEach(g=>LIVE_STORE.plays[g.id]=[
-    {q:g.q,clock:g.clock,text:'Live GameCast ready for the next play.',type:'STATE'},
-    {q:g.q,clock:'—',text:'Possession and field position are synchronized with the live state.',type:'SYNC'}
-  ]);
+  LIVE_STORE.games={};
+  LIVE_STORE.plays={};
+  LIVE_STORE.selected=null;
+  LIVE_STORE.connected=false;
+  const scheduled=GAMES.filter(g=>g.date===TODAY && g.status!=='final');
+  scheduled.forEach(g=>{
+    LIVE_STORE.games[g.id]={
+      id:g.id,away:g.away,home:g.home,
+      as:0,hs:0,q:'PRE',clock:g.time,
+      pos:null,down:'Scheduled',yard:null,first:null,
+      event:'UPCOMING',_realLive:false
+    };
+  });
+  if(scheduled.length) LIVE_STORE.selected=scheduled[0].id;
 }
 function isUpset(g){
-  if(g.event==='UPSET ALERT')return true;
-  if(g.rankHome && !g.rankAway && g.as>g.hs && (g.q==='Q4'||g.q==='Q3'))return true;
-  if(g.rankAway && !g.rankHome && g.hs>g.as && (g.q==='Q4'||g.q==='Q3'))return true;
+  if(!g || g._realLive!==true) return false;
+  if(g.event==='UPSET ALERT') return true;
+  if(g.rankHome && !g.rankAway && g.as>g.hs && (g.q==='Q4'||g.q==='Q3')) return true;
+  if(g.rankAway && !g.rankHome && g.hs>g.as && (g.q==='Q4'||g.q==='Q3')) return true;
   return false;
 }
 function otherGameCard(g){
@@ -1396,25 +1501,8 @@ function applyRealtimeEvent(e){
     showRibbon(e.type||'UPDATE',title,sub,color);
   } else renderOtherGames();
 }
-const DEMO_EVENTS=[
- {type:'FIRST DOWN',title:'FIRST DOWN',subtitle:'Guelph moves the chains',delta:{yard:72,first:82,down:'1st & 10'}},
- {type:'EXPLOSIVE',title:'EXPLOSIVE • 24 YDS',subtitle:'#6 breaks into the red zone',delta:{yard:86,first:96,down:'1st & 10'}},
- {type:'TOUCHDOWN',title:'TOUCHDOWN',subtitle:'Guelph • 14-yard rushing TD',score:'home',delta:{yard:100,down:'PAT'}},
- {type:'END Q3',title:'END OF 3RD',subtitle:'One quarter left',delta:{q:'END Q3',clock:'0:00'}},
- {type:'INTERCEPTION',title:'INTERCEPTION',subtitle:'McMaster takes possession',team:'mcmaster',delta:{pos:'mcmaster',yard:42,first:52,q:'Q4',clock:'12:44',down:'1st & 10'}},
- {type:'TOUCHDOWN',title:'TOUCHDOWN',subtitle:'McMaster retakes the lead',score:'away',team:'mcmaster',delta:{yard:100,down:'PAT'}},
- {type:'HALFTIME',title:'HALFTIME',subtitle:'Elsewhere: Laurier 21 • Windsor 17',delta:{q:'Q4',clock:'8:21'}}
-];
-function demoEvent(type){
-  const template=DEMO_EVENTS.find(x=>x.type===type)||DEMO_EVENTS[0],g=selectedGame(),state={...template.delta};
-  if(template.score==='home')state.hs=g.hs+7;if(template.score==='away')state.as=g.as+7;
-  applyRealtimeEvent({game_id:g.id,type:template.type,title:template.title,subtitle:template.subtitle,team:template.team||g.pos,scoring_team:template.score==='away'?g.away:template.score==='home'?g.home:null,state,play:{description:template.subtitle}});
-}
-function startLiveDemo(){
-  stopLiveDemo();LIVE_STORE.demoIndex=0;
-  LIVE_STORE.demoTimer=setInterval(()=>{const x=DEMO_EVENTS[LIVE_STORE.demoIndex%DEMO_EVENTS.length],g=selectedGame(),state={...x.delta};if(x.score==='home')state.hs=g.hs+7;if(x.score==='away')state.as=g.as+7;applyRealtimeEvent({game_id:g.id,type:x.type,title:x.title,subtitle:x.subtitle,team:x.team||g.pos,scoring_team:x.score==='home'?g.home:x.score==='away'?g.away:null,state,play:{description:x.subtitle}});LIVE_STORE.demoIndex++},3300);
-}
-function stopLiveDemo(){if(LIVE_STORE.demoTimer){clearInterval(LIVE_STORE.demoTimer);LIVE_STORE.demoTimer=null}}
+const DEMO_EVENTS=[];
+function demoEvent(type){} function startLiveDemo(){} function stopLiveDemo(){}}
 function connectProductionRealtime(){
   const banner=document.getElementById('liveConnection');
   // Production hook: set window.USPORTS_LIVE_ENDPOINT to an SSE endpoint when deployed.
@@ -2552,4 +2640,179 @@ renderPregameGameCast=function(id){
 }
 
 </script>
+<script>
+
+/* V29 unified logo component */
+function teamLogoV29(t,size=''){
+  const cls=size?` ${size}`:'';
+  return `<span class="teamLogoBox${cls}" style="--fallback-bg:${t.primary};--fallback-fg:${t.secondary}"><img src="${t.logo||''}" alt="${esc(t.short)} logo" onerror="this.parentElement.classList.add('broken')"><span class="teamLogoFallback">${t.abbr}</span></span>`
+}
+logo=function(t,big=false){return teamLogoV29(t,big?'lg':'')}
+gcTeamImg=function(slug){const t=TEAM[slug];return teamLogoV29(t,'sm')}
+mark=function(t,cls=''){return teamLogoV29(t,cls==='hero'?'lg':'sm')}
+
+/* V29: kill demo/simulated live data */
+function seedLiveGames(){
+  LIVE_STORE.games={};
+  LIVE_STORE.plays={};
+  LIVE_STORE.selected=null;
+  LIVE_STORE.connected=false;
+  const todayGames=GAMES.filter(g=>g.date===TODAY && g.status!=='final');
+  if(todayGames.length){
+    const g=todayGames[0];
+    LIVE_STORE.selected=g.id;
+    LIVE_STORE.games[g.id]={
+      id:g.id,away:g.away,home:g.home,
+      as:0,hs:0,q:'PRE',clock:g.time,
+      pos:null,down:'Scheduled',yard:null,first:null,event:'UPCOMING'
+    };
+  }
+}
+function ensureScheduledLiveStateV29(id){
+  const g=GAMES.find(x=>x.id===id);
+  if(!g) return null;
+  if(!LIVE_STORE.games[id]){
+    LIVE_STORE.games[id]={
+      id,away:g.away,home:g.home,
+      as:0,hs:0,q:'PRE',clock:g.time,
+      pos:null,down:'Scheduled',yard:null,first:null,event:'UPCOMING'
+    };
+  }
+  return LIVE_STORE.games[id];
+}
+const _showGameCastProductionV29=showGameCast;
+showGameCast=function(id){
+  const g=GAMES.find(x=>x.id===id);
+  if(g && g.status!=='final'){
+    ensureScheduledLiveStateV29(id);
+    const st=LIVE_STORE.games[id];
+    const pre=(!st || !st.q || ['PRE','UPCOMING'].includes(String(st.q).toUpperCase()));
+    if(pre) return renderPregameGameCast(id);
+  }
+  return _showGameCastProductionV29(id);
+}
+
+/* V29 production-safe live hub: never invent score / clock / possession */
+const _showGameCastLiveOriginalV29=_showGameCastLiveV25;
+_showGameCastLiveV25=function(id){
+  const gdef=GAMES.find(x=>x.id===id);
+  if(gdef && gdef.status!=='final'){
+    const st=ensureScheduledLiveStateV29(id);
+    const hasRealLive = st && st._realLive===true;
+    if(!hasRealLive) return renderPregameGameCast(id);
+  }
+  return _showGameCastLiveOriginalV29(id);
+}
+
+const _applyRealtimeEventProductionV29=applyRealtimeEvent;
+applyRealtimeEvent=function(e){
+  if(e?.game_id){
+    const st=ensureScheduledLiveStateV29(e.game_id);
+    if(st) st._realLive=true;
+  }
+  return _applyRealtimeEventProductionV29(e);
+}
+
+/* disable demo buttons/functions entirely */
+startLiveDemo=function(){};
+stopLiveDemo=function(){};
+demoEvent=function(){};
+
+/* remove hard-coded fake side rail / demo status after renders */
+function sanitizeFakeLiveUIV29(){
+  document.querySelectorAll('.castToolbar').forEach(el=>el.remove());
+  document.querySelectorAll('.demoNotice').forEach(el=>{
+    el.innerHTML='<b>Live feed not connected yet.</b> This page will remain in verified pregame mode until a real event arrives.';
+  });
+}
+const _renderPregameGameCastV29=renderPregameGameCast;
+renderPregameGameCast=function(id){
+  _renderPregameGameCastV29(id);
+  sanitizeFakeLiveUIV29();
+}
+
+</script>
+
+<script>
+/* V30: production-safe live rail */
+renderOtherGames=function(){
+  const box=document.getElementById('otherGames');
+  if(!box) return;
+  const real=Object.values(LIVE_STORE.games||{}).filter(g=>g.id!==LIVE_STORE.selected && g._realLive===true);
+  if(!real.length){
+    box.innerHTML='<div class="noLiveData"><b>No verified live games yet.</b><br>This rail stays empty until a real realtime event is received.</div>';
+    return;
+  }
+  box.innerHTML=real.map(otherGameCard).join('');
+};
+
+showLiveHub=function(){
+  if(!LIVE_STORE.selected) seedLiveGames();
+  const id=LIVE_STORE.selected;
+  if(!id){
+    document.getElementById('app').innerHTML=shell('<div class="panel"><h2>No live games yet</h2><div class="dataNote">The Live page will activate when a scheduled game receives a verified realtime event.</div></div>','live');
+    return;
+  }
+  showGameCast(id);
+};
+</script>
+
+
+<script>
+/* V31: make Live always open without fake state */
+function liveLandingCardV31(g){
+  const a=TEAM[g.away], h=TEAM[g.home];
+  const st=LIVE_STORE.games[g.id];
+  const isReal=st && st._realLive===true;
+  return `<div class="liveLandingCard" onclick="showGameCast('${g.id}')">
+    <div class="liveLandingTop">
+      <span>${cl(g.conference)} • ${esc(g.time)}</span>
+      <span class="liveLandingStatus ${isReal?'live':'pre'}">${isReal?'LIVE':'PREGAME'}</span>
+    </div>
+    <div class="liveLandingTeams">
+      <div class="liveLandingTeam">${teamLogoV29(a,'sm')}<b>${esc(a.name)}</b></div>
+      <div class="liveLandingTeam">${teamLogoV29(h,'sm')}<b>${esc(h.name)}</b></div>
+    </div>
+    <div style="margin-top:12px;color:var(--muted);font-size:11px">${esc(g.venue||'Venue not loaded')}</div>
+  </div>`;
+}
+showLiveHub=function(){
+  const realLive=Object.values(LIVE_STORE.games||{}).filter(g=>g._realLive===true);
+  if(realLive.length){
+    const id=LIVE_STORE.selected && LIVE_STORE.games[LIVE_STORE.selected]?LIVE_STORE.selected:realLive[0].id;
+    LIVE_STORE.selected=id;
+    return showGameCast(id);
+  }
+
+  const todayScheduled=GAMES.filter(g=>g.date===TODAY && g.status!=='final');
+  let games=todayScheduled;
+
+  if(!games.length){
+    const futureDates=[...new Set(GAMES.filter(g=>g.status!=='final' && g.date>=TODAY).map(g=>g.date))].sort();
+    if(futureDates.length) games=GAMES.filter(g=>g.date===futureDates[0] && g.status!=='final');
+  }
+
+  games.forEach(g=>ensureScheduledLiveStateV29(g.id));
+
+  const label=todayScheduled.length?'Today’s games':'Next scheduled games';
+  const content=`<div class="liveLanding">
+    <section class="liveLandingHero">
+      <div class="kicker">LIVE</div>
+      <h1>${label}</h1>
+      <p>No verified realtime feed is active yet. Open any matchup below to view its verified pregame GameCentre. The page will switch to the live GameCast automatically when real events arrive.</p>
+    </section>
+    ${games.length?`<div class="liveLandingGrid">${games.map(liveLandingCardV31).join('')}</div>`:`<div class="panel"><h2>No upcoming games loaded</h2><div class="dataNote">The schedule currently has no future game rows available.</div></div>`}
+  </div>`;
+  document.getElementById('app').innerHTML=shell(content,'live');
+  location.hash='live';
+};
+
+const _routeV31=route;
+route=function(){
+  const h=location.hash.slice(1);
+  if(h==='live'){showLiveHub();return}
+  _routeV31();
+};
+</script>
+
 </body></html>

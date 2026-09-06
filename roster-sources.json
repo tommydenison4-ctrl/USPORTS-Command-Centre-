@@ -1,0 +1,137 @@
+{
+  "carleton": {
+    "url": "https://goravens.ca/sports/football/roster/",
+    "adapter": "generic",
+    "season": "2026"
+  },
+  "guelph": {
+    "url": "https://gryphons.ca/sports/football/roster/2026",
+    "adapter": "sidearm",
+    "season": "2026"
+  },
+  "mcmaster": {
+    "url": "https://marauders.ca/sports/football/roster/2026",
+    "adapter": "sidearm",
+    "season": "2026"
+  },
+  "ottawa": {
+    "url": "https://teams.geegees.ca/sports/fball/2026-27/roster",
+    "adapter": "presto",
+    "season": "2026"
+  },
+  "queens": {
+    "url": "https://gogaelsgo.com/sports/football/roster/2026-2027",
+    "adapter": "sidearm",
+    "season": "2026"
+  },
+  "toronto": {
+    "url": "https://varsityblues.ca/sports/football/roster/2026",
+    "adapter": "sidearm",
+    "season": "2026"
+  },
+  "waterloo": {
+    "url": "https://athletics.uwaterloo.ca/sports/football/roster/2026-27",
+    "adapter": "sidearm",
+    "season": "2026"
+  },
+  "western": {
+    "url": "https://westernmustangs.ca/sports/football/roster/2026",
+    "adapter": "sidearm",
+    "season": "2026"
+  },
+  "windsor": {
+    "url": "https://golancers.ca/sports/football/roster/2026",
+    "adapter": "sidearm",
+    "season": "2026"
+  },
+  "laurier": {
+    "url": "https://laurierathletics.com/sports/football/roster/2026",
+    "adapter": "sidearm",
+    "season": "2026"
+  },
+  "york": {
+    "url": "https://yorkulions.ca/sports/football/roster/2026",
+    "adapter": "sidearm",
+    "season": "2026"
+  },
+  "bishops": {
+    "url": "https://gaiters.ca/sports/football/roster",
+    "adapter": "sidearm",
+    "season": "2026"
+  },
+  "concordia": {
+    "url": "https://stingers.ca/football/roster.php",
+    "adapter": "generic",
+    "season": "2026"
+  },
+  "laval": {
+    "url": "https://rougeetor.ulaval.ca/sports/football/equipe/",
+    "adapter": "generic",
+    "season": "2026"
+  },
+  "mcgill": {
+    "url": "https://mcgillathletics.ca/sports/football/roster/2026-27",
+    "adapter": "sidearm",
+    "season": "2026"
+  },
+  "montreal": {
+    "url": "https://carabins.umontreal.ca/football/equipe/",
+    "adapter": "generic",
+    "season": "2026"
+  },
+  "sherbrooke": {
+    "url": "https://www.usherbrooke.ca/vertetor/sports/football/alignement",
+    "adapter": "generic",
+    "season": "2026"
+  },
+  "acadia": {
+    "url": "https://acadiaathletics.ca/sports/fball/2026-27/roster",
+    "adapter": "presto",
+    "season": "2026"
+  },
+  "mount-allison": {
+    "url": "https://mountiepride.ca/sports/fball/2026-27/roster",
+    "adapter": "presto",
+    "season": "2026"
+  },
+  "saint-marys": {
+    "url": "https://www.smuhuskies.ca/sports/fball/2026-27/roster",
+    "adapter": "presto",
+    "season": "2026"
+  },
+  "stfx": {
+    "url": "https://www.goxgo.ca/sports/fball/2026-27/roster",
+    "adapter": "presto",
+    "season": "2026"
+  },
+  "alberta": {
+    "url": "https://bearsandpandas.ca/sports/football/roster/2026",
+    "adapter": "sidearm",
+    "season": "2026"
+  },
+  "calgary": {
+    "url": "https://godinos.com/sports/football/roster/2026",
+    "adapter": "sidearm",
+    "season": "2026"
+  },
+  "manitoba": {
+    "url": "https://gobisons.ca/sports/football/roster/2026",
+    "adapter": "sidearm",
+    "season": "2026"
+  },
+  "regina": {
+    "url": "https://www.reginacougars.com/sports/football/roster/2026",
+    "adapter": "sidearm",
+    "season": "2026"
+  },
+  "saskatchewan": {
+    "url": "https://huskies.usask.ca/sports/football/roster/2026-27",
+    "adapter": "sidearm",
+    "season": "2026"
+  },
+  "ubc": {
+    "url": "https://gothunderbirds.ca/sports/football/roster/2026-27",
+    "adapter": "sidearm",
+    "season": "2026"
+  }
+}

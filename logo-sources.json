@@ -1,0 +1,110 @@
+{
+  "carleton": {
+    "url": "https://content.sportslogos.net/logos/78/2392/full/2473_carleton_ravens-primary-2013.png",
+    "name": "Carleton Ravens"
+  },
+  "guelph": {
+    "url": "https://content.sportslogos.net/logos/78/2393/full/4204_guelph_gryphons-primary-2011.png",
+    "name": "Guelph Gryphons"
+  },
+  "mcmaster": {
+    "url": "https://content.sportslogos.net/logos/78/2396/full/2571_mcmaster_marauders-primary-2012.png",
+    "name": "McMaster Marauders"
+  },
+  "ottawa": {
+    "url": "https://content.sportslogos.net/logos/78/2398/full/atgnysfpsgdp1ohxkeye.gif",
+    "name": "Ottawa Gee-Gees"
+  },
+  "queens": {
+    "url": "https://content.sportslogos.net/logos/78/2399/full/3480_queens_golden_gaels-primary-2009.png",
+    "name": "Queen's Gaels"
+  },
+  "toronto": {
+    "url": "https://content.sportslogos.net/logos/78/2402/full/esgfgr3xf651g33fwpnu.gif",
+    "name": "Toronto Varsity Blues"
+  },
+  "waterloo": {
+    "url": "https://content.sportslogos.net/logos/78/2404/full/3351_waterloo_warriors-primary-2012.png",
+    "name": "Waterloo Warriors"
+  },
+  "western": {
+    "url": "https://www.uwo.ca/campusrec/img/Mustangs-CMYK.png",
+    "name": "Western Mustangs"
+  },
+  "windsor": {
+    "url": "https://content.sportslogos.net/logos/78/2407/full/g3p42v62e15ocwrzwtm5ghwbm.gif",
+    "name": "Windsor Lancers"
+  },
+  "laurier": {
+    "url": "https://app.streamlineathletes.com/assets/programs/45/wilfrid-laurier-university_track-field_golden-hawks_logo.png",
+    "name": "Wilfrid Laurier Golden Hawks"
+  },
+  "york": {
+    "url": "https://www.google.com/s2/favicons?domain=yorkulions.ca&sz=256",
+    "name": "York Lions"
+  },
+  "bishops": {
+    "url": "https://content.sportslogos.net/logos/183/5406/full/8221_bishops__gaiters_-primary-0.png",
+    "name": "Bishop's Gaiters"
+  },
+  "concordia": {
+    "url": "https://content.sportslogos.net/logos/183/5396/full/8360_concordia_stingers-primary-0.png",
+    "name": "Concordia Stingers"
+  },
+  "laval": {
+    "url": "https://content.sportslogos.net/logos/183/5397/full/7652_laval_rouge_et_or-primary-2012.png",
+    "name": "Laval Rouge et Or"
+  },
+  "mcgill": {
+    "url": "https://cdn.brandfetch.io/idz8kxT5Ro/w/400/h/400/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1767567759945",
+    "name": "McGill Redbirds"
+  },
+  "montreal": {
+    "url": "https://content.sportslogos.net/logos/183/5399/full/8386_montreal_carabins-primary-0.png",
+    "name": "Montr\u00e9al Carabins"
+  },
+  "sherbrooke": {
+    "url": "https://content.sportslogos.net/logos/183/5401/full/7360_sherbrooke__vert_et_or-primary-0.png",
+    "name": "Sherbrooke Vert & Or"
+  },
+  "acadia": {
+    "url": "https://content.sportslogos.net/logos/76/2365/full/5335_acadia_axemen-primary-2007.png",
+    "name": "Acadia Axemen"
+  },
+  "mount-allison": {
+    "url": "https://content.sportslogos.net/logos/76/2369/full/4380_mount_allison_mounties-primary-2011.png",
+    "name": "Mount Allison Mounties"
+  },
+  "saint-marys": {
+    "url": "https://content.sportslogos.net/logos/76/2373/full/3697_saint_marys_huskies-primary-2012.png",
+    "name": "Saint Mary's Huskies"
+  },
+  "stfx": {
+    "url": "https://content.sportslogos.net/logos/76/2374/full/1543_st_francis_xavier_x-men-primary-2010.png",
+    "name": "StFX X-Men"
+  },
+  "alberta": {
+    "url": "https://content.sportslogos.net/logos/77/2377/full/4199_alberta_golden_bears-primary-0.png",
+    "name": "Alberta Golden Bears"
+  },
+  "calgary": {
+    "url": "https://content.sportslogos.net/logos/77/2379/full/5456_calgary_dinos-primary-2013.png",
+    "name": "Calgary Dinos"
+  },
+  "manitoba": {
+    "url": "https://images.sidearmdev.com/convert?type=webp&url=https%3A%2F%2Fdxbhsrqyrr690.cloudfront.net%2Fsidearm.nextgen.sites%2Fgoheat.ca%2Fimages%2F2025%2F9%2F22%2FUMBisons_crest_fullcolour_whitestroke.png",
+    "name": "Manitoba Bisons"
+  },
+  "regina": {
+    "url": "https://content.sportslogos.net/news/2025/08/ram-logo-905x590-20250818-university-of-regina-rams-cougars-football-U-Sports-athletics-unified-brand-visual-identity.jpg",
+    "name": "Regina Rams"
+  },
+  "saskatchewan": {
+    "url": "https://content.sportslogos.net/logos/77/2384/full/3037_saskatchewan_huskies-primary-0.gif",
+    "name": "Saskatchewan Huskies"
+  },
+  "ubc": {
+    "url": "https://content.sportslogos.net/logos/77/2378/full/3060_ubc_thunderbirds-primary-0.gif",
+    "name": "UBC Thunderbirds"
+  }
+}

@@ -3113,4 +3113,83 @@ window.addEventListener('load',startPrestoV33);
 })();
 </script>
 
+
+<style>
+/* V41 — verified-live cleanup. Never show demo/synthetic game state. */
+.goalpostSvgV17,.goalpostSvgV18,.goalpostSvgV19,.goalpostSvgV20,
+[class*="goalpost"],[class*="goalPost"],[class*="goalPosts"]{display:none!important}
+.castToolbar,.castExplain,.liveMetaStrip{display:none!important}
+.fieldBallV9,.losLineV9,.firstLineV9{display:none!important}
+.castTeam .logoHero,.castTeam .logoHero img{background:transparent!important}
+.castTeam .logoHero{padding:0!important;border:0!important;box-shadow:none!important}
+.castTeam .logoHero img{width:82px!important;height:82px!important;object-fit:contain!important}
+.verifiedDriveV41{display:grid;gap:10px;margin-top:8px}
+.verifiedDriveRowV41{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-top:1px solid var(--line)}
+.verifiedDriveRowV41:first-child{border-top:0}.verifiedDriveRowV41 small{display:block;color:var(--muted);margin-top:3px}
+.verifiedOnlyV41{font-size:11px;color:var(--muted);margin-top:10px}
+.noOtherLiveV41 b{color:#fff}.noOtherLiveV41{color:var(--muted)}
+</style>
+<script>
+/* V41 — drive the visible GameCast only from the verified Presto snapshot. */
+(function(){
+  function patchVerifiedLiveV41(payload){
+    if(!payload?.ok || !payload.data) return;
+    const d=payload.data, st=d.status||{}, gm=d.game||{};
+    const away=document.getElementById('castAwayScore'), home=document.getElementById('castHomeScore');
+    if(away) away.textContent = gm.awayScore==null ? '—' : gm.awayScore;
+    if(home) home.textContent = gm.homeScore==null ? '—' : gm.homeScore;
+    const status=document.getElementById('castStatus');
+    if(status) status.textContent = `${prestoPeriodV33(st.period)}${st.clock ? ' • '+st.clock : ''}`;
+
+    // The legacy field renderer contains seeded ball/LOS positions. Until Presto gives
+    // us a verified field-position parser, hide those markers rather than pretending.
+    document.querySelectorAll('.fieldBallV9,.losLineV9,.firstLineV9').forEach(x=>x.style.display='none');
+
+    const driveBox=document.querySelector('.driveLog');
+    if(driveBox){
+      const dr=(d.drives||[])[0];
+      driveBox.innerHTML=`<h3>Current Drive</h3><div class="verifiedDriveV41">${dr ? `
+        <div class="verifiedDriveRowV41"><span><b>${esc(dr.team||'Drive')}</b><small>Verified Presto drive data</small></span><b>${dr.result?esc(dr.result):'LIVE'}</b></div>
+        <div class="verifiedDriveRowV41"><span>Plays</span><b>${dr.plays==null?'—':dr.plays}</b></div>
+        <div class="verifiedDriveRowV41"><span>Yards</span><b>${dr.yards==null?'—':dr.yards}</b></div>
+        <div class="verifiedDriveRowV41"><span>Elapsed</span><b>${esc(dr.time||'—')}</b></div>` : `<div class="verifiedDriveRowV41"><span><b>Drive data not supplied in this update</b><small>Play-by-play remains live.</small></span></div>`}</div>
+        <div class="verifiedOnlyV41">No estimated drive metrics are displayed.</div>`;
+    }
+
+    // Remove old demo controls / seeded analytics if an older renderer recreated them.
+    document.querySelectorAll('.castToolbar,.castExplain,.liveMetaStrip').forEach(x=>x.remove());
+
+    const rail=document.getElementById('otherGames');
+    if(rail && /No verified live games yet/i.test(rail.textContent||'')){
+      rail.innerHTML='<div class="otherGame noOtherLiveV41"><b>No other verified live games.</b><div>This McMaster–Guelph GameCast is live.</div></div>';
+    }
+  }
+
+  const oldApplyV41=applyPrestoSnapshotV33;
+  applyPrestoSnapshotV33=function(payload){
+    const ok=oldApplyV41(payload);
+    if(ok){ setTimeout(()=>patchVerifiedLiveV41(payload),0); }
+    return ok;
+  };
+
+  const oldUpdateV41=updateSelectedUI;
+  updateSelectedUI=function(){
+    oldUpdateV41();
+    if(PRESTO_V33.lastSnapshot?.ok) patchVerifiedLiveV41(PRESTO_V33.lastSnapshot);
+  };
+
+  // Goalposts were added by several historical field versions; remove all of them
+  // after every live render as well as through CSS above.
+  const oldShowV41=showGameCast;
+  showGameCast=function(id){
+    const out=oldShowV41(id);
+    setTimeout(()=>{
+      document.querySelectorAll('[class*="goalpost"],[class*="goalPost"],[class*="goalPosts"]').forEach(x=>x.remove());
+      if(PRESTO_V33.lastSnapshot?.game===id) patchVerifiedLiveV41(PRESTO_V33.lastSnapshot);
+    },0);
+    return out;
+  };
+})();
+</script>
+
 </body></html>

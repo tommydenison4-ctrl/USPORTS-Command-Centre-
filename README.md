@@ -1,10 +1,13 @@
-# U SPORTS Football Game Centre V27
+# U SPORTS Football Game Centre V28
 
-Media-card branding pass:
-- team-specific stories now use the primary team's logo and primary colour
-- article tiles get a team-colour side accent and subtle team-colour glow
-- primary team is identified beneath the source
-- multi-team stories display small team-logo chips
-- national / conference-wide stories keep a neutral U SPORTS treatment instead of arbitrarily choosing one team
+Pregame cleanup:
+- removed the made-up matchup predictor and generated matchup analysis
+- pregame GameCenters now use verified data only
+- records, PF/PA, recent results, standings and leaders come from loaded schedule/gamebook data
+- unavailable stats display as em dash instead of being estimated
+- related stories come from the indexed media feed
+- actual team image logos are restored anywhere the live surfaces previously used abbreviation badges
+- automatic kickoff / first-live-event handoff remains
 
-This pass is visual only; story URLs and article data are unchanged.
+Important production step:
+Cache authorized/current team logo assets locally in the final deployment instead of depending on remote third-party URLs.

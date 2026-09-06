@@ -892,6 +892,41 @@ linear-gradient(#f2f2f2,#ededed)}
   background:color-mix(in srgb,var(--story-team,#223044) 12%, transparent);
 }
 
+
+/* V28 verified-only pregame + actual logo treatment */
+.actualLogoMark{
+  width:42px;height:42px;border-radius:12px;background:#fff;
+  display:grid;place-items:center;overflow:hidden;flex:0 0 42px;
+  border:1px solid rgba(255,255,255,.10);box-shadow:0 6px 16px rgba(0,0,0,.24)
+}
+.actualLogoMark.hero{width:64px;height:64px;border-radius:18px;flex-basis:64px}
+.actualLogoMark img{width:82%;height:82%;object-fit:contain}
+.verifiedBanner{
+  display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:14px;
+  border:1px solid rgba(71,211,124,.20);background:rgba(71,211,124,.06);
+  color:#ccefd8;font-size:12px;line-height:1.5;margin-bottom:12px
+}
+.verifiedBanner .check{
+  width:20px;height:20px;border-radius:50%;background:#2ac96f;color:#08120c;
+  display:grid;place-items:center;font-weight:1000;flex:0 0 20px
+}
+.verifiedGrid{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px
+}
+.verifiedStat{
+  padding:13px;border-radius:14px;background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.06)
+}
+.verifiedStat small{display:block;color:var(--muted);font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.verifiedStat b{font-size:22px}
+.dataCoverageNote{
+  margin-top:10px;color:var(--muted);font-size:11px;line-height:1.5
+}
+.logoSourceNote{
+  margin-top:8px;color:var(--muted);font-size:10px;line-height:1.45
+}
+@media(max-width:760px){.verifiedGrid{grid-template-columns:1fr 1fr}}
+
 </style><style>
 /* === V26 ESPN-style pregame refinement === */
 .pregameHub{max-width:1500px;margin:0 auto}
@@ -2410,4 +2445,111 @@ renderPregameGameCast=renderPregameGameCastV26;
 showGameCast=function(id){const g=GAMES.find(x=>x.id===id),s=LIVE_STORE.games[id];const pre=!!g&&g.status!=='final'&&(!s||!s.q||['PRE','UPCOMING'].includes(String(s.q).toUpperCase()));if(pre)return renderPregameGameCastV26(id);return _showLiveV26(id)};
 </script>
 
+<script>
+
+/* V28: use logo images instead of abbreviation badges anywhere mark() is used */
+mark=function(t,cls=''){
+  return `<span class="actualLogoMark ${cls}"><img src="${t.logo||''}" alt="${esc(t.short)} logo" onerror="this.style.display='none';this.parentElement.textContent='${t.abbr}'"></span>`
+}
+
+/* Verified-only pregame helpers */
+function verifiedPregameMetrics(slug,current){
+  const r=preRecord(slug,current);
+  return {
+    ...r,
+    ppg:r.gp ? r.pf/r.gp : null,
+    papg:r.gp ? r.pa/r.gp : null,
+    diff:r.gp ? (r.pf-r.pa)/r.gp : null
+  };
+}
+function loadedTeamStat(slug){
+  const x=OFFENSE?.[slug];
+  if(!x || !x.games) return null;
+  return {
+    games:x.games,
+    total:x.total/x.games,
+    pass:x.pass/x.games,
+    rush:x.rush/x.games
+  };
+}
+function verifiedSnapshotHTML(game){
+  const a=TEAM[game.away],h=TEAM[game.home];
+  const ar=verifiedPregameMetrics(game.away,game),hr=verifiedPregameMetrics(game.home,game);
+  const ao=loadedTeamStat(game.away),ho=loadedTeamStat(game.home);
+  const fmt=x=>x==null?'—':x.toFixed(1);
+  return `<div class="verifiedBanner"><span class="check">✓</span><div><b>Verified-data mode.</b> Everything below comes from loaded schedules, completed results, normalized gamebooks, standings and indexed stories. Missing fields stay blank instead of being estimated.</div></div>
+  <div class="verifiedGrid">
+    <div class="verifiedStat"><small>${esc(a.short)} Record</small><b>${ar.w}-${ar.l}</b></div>
+    <div class="verifiedStat"><small>${esc(a.short)} PF / Game</small><b>${fmt(ar.ppg)}</b></div>
+    <div class="verifiedStat"><small>${esc(h.short)} Record</small><b>${hr.w}-${hr.l}</b></div>
+    <div class="verifiedStat"><small>${esc(h.short)} PF / Game</small><b>${fmt(hr.ppg)}</b></div>
+    <div class="verifiedStat"><small>${esc(a.short)} PA / Game</small><b>${fmt(ar.papg)}</b></div>
+    <div class="verifiedStat"><small>${esc(a.short)} Offense / Game</small><b>${ao?ao.total.toFixed(1):'—'}</b></div>
+    <div class="verifiedStat"><small>${esc(h.short)} PA / Game</small><b>${fmt(hr.papg)}</b></div>
+    <div class="verifiedStat"><small>${esc(h.short)} Offense / Game</small><b>${ho?ho.total.toFixed(1):'—'}</b></div>
+  </div>
+  <div class="dataCoverageNote">“—” means that stat has not yet been normalized from an official completed gamebook. It is not an estimate.</div>`
+}
+function verifiedLeaderRow(slug,cat){
+  const row=teamLeaderByCat(slug,cat);
+  return row ? `${esc(row.name)} • ${row.value} yds` : 'Not yet loaded';
+}
+function verifiedLeadersHTML(game){
+  const a=TEAM[game.away],h=TEAM[game.home];
+  const cats=[['pass','Passing'],['rush','Rushing'],['receive','Receiving']];
+  return `<table class="teamCompTable"><thead><tr><th>${esc(a.short)}</th><th></th><th>${esc(h.short)}</th></tr></thead><tbody>${cats.map(([cat,label])=>`<tr><td><b>${verifiedLeaderRow(game.away,cat)}</b></td><td>${label}</td><td><b>${verifiedLeaderRow(game.home,cat)}</b></td></tr>`).join('')}</tbody></table><div class="dataCoverageNote">Leaders are drawn only from the normalized official gamebooks currently loaded into the build.</div>`
+}
+function verifiedRecentHTML(game){
+  return `<div class="lastFiveGrid">${preLastFiveTable(game.away,game,false)}${preLastFiveTable(game.home,game,true)}</div>`
+}
+function verifiedStoriesHTML(game){
+  return pregameStoriesBlock(game)
+}
+
+/* Replace pregame renderer with verified-only version */
+renderPregameGameCast=function(id){
+  const game=GAMES.find(x=>x.id===id);
+  if(!game){_showGameCastLiveV25(id);return}
+  LIVE_STORE.selected=id; location.hash='live='+id;
+  if(!LIVE_STORE.games[id]) LIVE_STORE.games[id]={id,away:game.away,home:game.home,as:0,hs:0,q:'PRE',clock:game.time,pos:game.away,down:'Kickoff',yard:50,first:60,event:'UPCOMING'};
+  const a=TEAM[game.away],h=TEAM[game.home],ar=preRecord(game.away,game),hr=preRecord(game.home,game);
+  const content=`<div class="pregameHub"><button class="back" onclick="goHome()">← National schedule</button>
+  <div class="pregameNotice"><b>Pregame GameCenter.</b> This page uses verified pre-kickoff data only. At kickoff, or as soon as the first realtime event arrives, it hands off to the live GameCast.</div>
+  <section class="pregameTopHero">
+    <div class="pregameStatusLine"><span>${cl(game.conference)} • ${formatGameDateLong(game)}</span><span class="pregameKickBadge">Scheduled kickoff • ${esc(game.time)}</span></div>
+    <div class="pregameHeroGrid">
+      <div class="pregameTeamCard"><div class="pregameLogoWrap"><img src="${a.logo}" alt="${esc(a.short)} logo"></div><div><h2>${esc(a.name)}</h2><div class="pregameMeta"><span>${esc(a.city)}</span><span class="pregameRecordPill">${ar.w}-${ar.l}</span></div></div></div>
+      <div class="pregameMidCard"><div class="pregameTime">${esc(game.time)}</div><div class="pregameDate">${formatGameDateLong(game)}</div><div class="pregameVenue">${esc(game.venue||'Venue not loaded')}</div><div class="pregameMetaRow"><span class="pregameChip">${cl(game.conference)}</span><span class="pregameChip">Pregame</span><span class="pregameChip">Verified only</span></div></div>
+      <div class="pregameTeamCard home"><div><h2>${esc(h.name)}</h2><div class="pregameMeta"><span class="pregameRecordPill">${hr.w}-${hr.l}</span><span>${esc(h.city)}</span></div></div><div class="pregameLogoWrap"><img src="${h.logo}" alt="${esc(h.short)} logo"></div></div>
+    </div>
+  </section>
+  <div class="pregameGrid">
+    <main class="pregameMain">
+      <section class="gcPregameCard"><h3>Pregame Snapshot</h3>${verifiedSnapshotHTML(game)}</section>
+      <section class="gcPregameCard"><h3>Season Leaders</h3>${verifiedLeadersHTML(game)}</section>
+      <section class="gcPregameCard"><h3>Recent Results</h3>${verifiedRecentHTML(game)}</section>
+      <section class="gcPregameCard"><h3>Related Coverage</h3><div class="newsStack">${verifiedStoriesHTML(game)}</div></section>
+    </main>
+    <aside class="pregameRail">
+      <section class="gcPregameCard"><h3>Game Information</h3>
+        <div class="infoGrid">
+          <div class="infoItem"><small>Date</small><b>${formatGameDateLong(game)}</b></div>
+          <div class="infoItem"><small>Kickoff</small><b>${esc(game.time)}</b></div>
+          <div class="infoItem"><small>Venue</small><b>${esc(game.venue||'Not loaded')}</b></div>
+          <div class="infoItem"><small>Conference</small><b>${cl(game.conference)}</b></div>
+          <div class="infoItem"><small>${esc(a.short)} Record</small><b>${ar.w}-${ar.l}</b></div>
+          <div class="infoItem"><small>${esc(h.short)} Record</small><b>${hr.w}-${hr.l}</b></div>
+        </div>
+      </section>
+      <section class="gcPregameCard"><h3>${cl(game.conference)} Standings</h3>${standingsTableHTML(game.conference,game)}</section>
+      <section class="gcPregameCard"><div class="feedReady"><span class="dot"></span><div><b>Live handoff armed.</b><br>First score / clock / play event replaces this page with the live GameCast automatically.</div></div></section>
+      <section class="gcPregameCard"><h3>Logo Treatment</h3><div class="subtle">GameCenter and live-score surfaces now use the team image logo field instead of generic abbreviation badges.</div><div class="logoSourceNote">For production, we should cache licensed/current team marks locally rather than depending on third-party remote images.</div></section>
+    </aside>
+  </div></div>`;
+  document.getElementById('app').innerHTML=shell(content,'live');
+  connectProductionRealtime();
+  if(typeof startPregameKickoffWatchV26==='function') startPregameKickoffWatchV26(game);
+}
+
+</script>
 </body></html>

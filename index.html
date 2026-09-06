@@ -1060,29 +1060,6 @@ linear-gradient(#f2f2f2,#ededed)}
   color:#c9e4f8;font-size:12px;line-height:1.45
 }
 
-
-/* V33 roster database */
-.rosterControlsV33{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
-.rosterControlsV33 button{border:1px solid #263747;background:#101a25;color:#dce7f3;border-radius:12px;padding:8px 11px;font-weight:800;font-size:11px}
-.rosterControlsV33 button.active{border-color:#647f9d;background:#172638}
-.rosterMetaV33{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:11px;margin:0 0 13px}
-.rosterGridV33{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.rosterPlayerV33{display:grid;grid-template-columns:58px minmax(0,1fr);gap:11px;align-items:center;padding:12px;border-radius:15px;background:#0b131d;border:1px solid #202f3d}
-.rosterHeadV33{width:58px;height:66px;border-radius:12px;background:#121e2b;display:grid;place-items:center;overflow:hidden;border:1px solid #273849}
-.rosterHeadV33 img{width:100%;height:100%;object-fit:cover}
-.rosterHeadV33 .ph{font-size:19px;font-weight:1000;color:#71849a}
-.rosterPlayerV33 h4{margin:0;font-size:14px}
-.rosterPlayerV33 .pmeta{margin-top:4px;color:#9fb0c4;font-size:10px;line-height:1.45}
-.rosterPlayerV33 .num{color:#f0c75a;margin-right:5px}
-.rosterPlayerV33 .statline{margin-top:7px;font-size:10px;color:#d6e1ec}
-.rosterLoadingV33{padding:18px;border:1px dashed #33475b;border-radius:15px;color:#a9bacd}
-.playersNationalV33{display:grid;gap:16px}
-.teamPickerV33{display:flex;gap:7px;flex-wrap:wrap}
-.teamPickerV33 button{display:flex;align-items:center;gap:6px;border:1px solid #263747;background:#0d1620;color:#e8eef5;border-radius:12px;padding:7px 9px;font-size:10px;font-weight:900}
-.teamPickerV33 img{width:22px;height:22px;object-fit:contain;background:white;border-radius:5px;padding:1px}
-@media(max-width:1000px){.rosterGridV33{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:650px){.rosterGridV33{grid-template-columns:1fr}}
-
 </style><style>
 /* === V26 ESPN-style pregame refinement === */
 .pregameHub{max-width:1500px;margin:0 auto}
@@ -2944,168 +2921,134 @@ route=function(){
 </script>
 
 
+<style>
+.prestoLiveBadgeV33{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;background:#0e6b45;color:#fff;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.prestoLiveBadgeV33 .pulse{width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 0 rgba(255,255,255,.55);animation:prestoPulseV33 1.5s infinite}
+@keyframes prestoPulseV33{70%{box-shadow:0 0 0 8px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+.prestoMetaV33{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0;color:var(--muted);font-size:11px}
+.prestoPanelV33{margin-top:14px;border:1px solid rgba(255,255,255,.12);border-radius:14px;overflow:hidden;background:rgba(0,0,0,.16)}
+.prestoPanelV33 h3{margin:0;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.10);font-size:13px}
+.prestoGridV33{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.prestoCellV33{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.prestoCellV33:nth-child(odd){border-right:1px solid rgba(255,255,255,.08)}
+.prestoCellV33 small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.prestoCellV33 b{font-size:13px}
+@media(max-width:760px){.prestoGridV33{grid-template-columns:1fr}.prestoCellV33:nth-child(odd){border-right:0}}
+</style>
 <script>
-/* V33 full roster/player pipeline */
-const ROSTER_CACHE_V33={};
-let ROSTER_FILTER_V33='ALL';
+/* V33 — verified OUA PrestoSports live transport */
+const PRESTO_V33_GAMES = new Set(['2026-09-06-mcmaster-guelph']);
+const PRESTO_V33 = { timer:null, busy:false, lastStamp:'', lastError:'', lastSnapshot:null };
 
-function rosterGamebookStatsV33(slug,name){
-  const p=(typeof teamPlayersV21==='function'?teamPlayersV21(slug):[]).find(x=>x.name?.toLowerCase()===name?.toLowerCase());
-  if(!p)return '';
-  const bits=[];
-  if(p.pass)bits.push(`${p.pass.cmp}/${p.pass.att}, ${p.pass.yds} pass yds`);
-  if(p.rush)bits.push(`${p.rush.att} rush, ${p.rush.yds} yds`);
-  if(p.rec)bits.push(`${p.rec.rec} rec, ${p.rec.yds} yds`);
-  return bits.join(' • ');
+function prestoPeriodV33(p){
+  const s=String(p||'').toUpperCase();
+  if(/^Q[1-4]$/.test(s)) return s;
+  if(/^\d$/.test(s)) return 'Q'+s;
+  return s||'LIVE';
 }
-function rosterPlayerCardV33(slug,p){
-  const stat=rosterGamebookStatsV33(slug,p.name);
-  const initials=(p.name||'?').split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase();
-  const img=p.headshot?`<img src="${p.headshot}" alt="${esc(p.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span class="ph" style="display:none">${initials}</span>`:`<span class="ph">${initials}</span>`;
-  const num=p.number?`<span class="num">#${esc(p.number)}</span>`:'';
-  const details=[p.position,p.height,p.weight,p.year,p.hometown].filter(Boolean).map(esc).join(' • ');
-  return `<div class="rosterPlayerV33"><div class="rosterHeadV33">${img}</div><div><h4>${num}${esc(p.name)}</h4><div class="pmeta">${details||'Rostered player'}${p.major?`<br>${esc(p.major)}`:''}</div><div class="statline">${stat?stat:'No recorded 2026 gamebook stats yet'}</div></div></div>`;
+function prestoPlayTypeV33(t){
+  const s=String(t||'PLAY').toUpperCase();
+  if(/TOUCHDOWN|TD/.test(s)) return 'TOUCHDOWN';
+  if(/INTERCEPTION|INT/.test(s)) return 'INTERCEPTION';
+  if(/FUMBLE|TURNOVER/.test(s)) return 'TURNOVER';
+  if(/SACK/.test(s)) return 'SACK';
+  return s;
 }
-function renderRosterV33(slug,players,target='teamRosterV33'){
-  const el=document.getElementById(target);if(!el)return;
-  const positions=['ALL',...new Set(players.map(p=>p.position).filter(Boolean))];
-  const filtered=ROSTER_FILTER_V33==='ALL'?players:players.filter(p=>p.position===ROSTER_FILTER_V33);
-  el.innerHTML=`<div class="rosterControlsV33">${positions.map(pos=>`<button class="${ROSTER_FILTER_V33===pos?'active':''}" onclick="ROSTER_FILTER_V33='${pos.replace(/'/g,"\\'")}';renderRosterV33('${slug}',ROSTER_CACHE_V33['${slug}']||[],'${target}')">${esc(pos)}</button>`).join('')}</div><div class="rosterMetaV33"><span>${players.length} rostered players</span><span>•</span><span>${filtered.length} shown</span></div><div class="rosterGridV33">${filtered.map(p=>rosterPlayerCardV33(slug,p)).join('')}</div>`;
-}
-async function loadRosterV33(slug,target='teamRosterV33'){
-  const el=document.getElementById(target);if(el)el.innerHTML='<div class="rosterLoadingV33">Loading full official roster…</div>';
-  if(ROSTER_CACHE_V33[slug]){renderRosterV33(slug,ROSTER_CACHE_V33[slug],target);return}
-  const tries=[`/data/rosters/${slug}.json`,`/api/roster?team=${encodeURIComponent(slug)}`];
-  let lastErr='';
-  for(const u of tries){
-    try{
-      const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(`HTTP ${r.status}`);
-      const j=await r.json();const players=j.players||j?.teams?.[slug]?.players||[];
-      if(players.length){ROSTER_CACHE_V33[slug]=players;ROSTER_FILTER_V33='ALL';renderRosterV33(slug,players,target);return}
-    }catch(e){lastErr=e.message}
+function prestoLatestDownV33(plays){
+  for(const p of (plays||[])){
+    const d=String(p.description||'');
+    const m=d.match(/\b([1-4])(st|nd|rd|th)\s*(?:and|&)\s*([0-9]+|goal)\b/i);
+    if(m) return `${m[1]}${m[2].toLowerCase()} & ${m[3]}`;
   }
-  if(el)el.innerHTML=`<div class="emptyV21">Roster source is configured but did not return players in this environment. ${esc(lastErr)}</div>`;
+  return 'LIVE';
 }
-
-const _teamTabHTMLBeforeRosterV33=teamTabHTMLV21;
-teamTabHTMLV21=function(slug,tab){
-  if(tab==='roster'||tab==='players'){
-    const t=TEAM[slug];
-    setTimeout(()=>loadRosterV33(slug,'teamRosterV33'),0);
-    return `<section class="hubPanelV21"><h2>${tab==='roster'?'2026 Roster':'Players'}</h2><div class="dataNote">Every rostered player belongs here whether or not he has recorded a statistic. Official gamebook stats are merged onto the roster record when available.</div><div id="teamRosterV33" class="rosterLoadingV33">Loading ${esc(t.short)} roster…</div></section>`;
+function renderPrestoDetailsV33(snap){
+  let host=document.getElementById('prestoDetailsV33');
+  if(!host){
+    const target=document.querySelector('.liveFeed') || document.querySelector('.castPanel');
+    if(!target) return;
+    host=document.createElement('section'); host.id='prestoDetailsV33'; host.className='prestoPanelV33';
+    target.parentNode.insertBefore(host,target.nextSibling);
   }
-  return _teamTabHTMLBeforeRosterV33(slug,tab);
-};
-
-function showPlayersV33(slug='mcmaster'){
-  location.hash='players='+slug;
-  const teams=TEAMS.map(t=>`<button onclick="showPlayersV33('${t.slug}')"><img src="/assets/teams/${t.slug}.png" onerror="this.src='${t.logo}'">${esc(t.short)}</button>`).join('');
-  document.getElementById('app').innerHTML=shell(`<div class="playersNationalV33"><section class="panel"><div class="kicker">PLAYER DATABASE</div><h1 style="margin:6px 0 8px">Every rostered player. Not just stat leaders.</h1><p style="color:var(--muted)">Select a program to load its official 2026 roster. Gamebook statistics are attached to these player records when available.</p><div class="teamPickerV33">${teams}</div></section><section class="panel"><h2>${esc(TEAM[slug].name)}</h2><div id="nationalRosterV33" class="rosterLoadingV33">Loading roster…</div></section></div>`,'players');
-  loadRosterV33(slug,'nationalRosterV33');
+  const d=snap.data||{}, st=d.status||{}, gm=d.game||{};
+  const latest=(d.plays||[])[0];
+  const drive=(d.drives||[])[0];
+  host.innerHTML=`<h3><span class="prestoLiveBadgeV33"><span class="pulse"></span> Verified Presto Live</span></h3>
+    <div class="prestoGridV33">
+      <div class="prestoCellV33"><small>Game state</small><b>${esc(prestoPeriodV33(st.period))} • ${esc(st.clock||'')}</b></div>
+      <div class="prestoCellV33"><small>Feed updated</small><b>${esc(d.lastUpdated||'Live')}</b></div>
+      <div class="prestoCellV33"><small>Latest play</small><b>${esc(latest?.description||'Waiting for next play')}</b></div>
+      <div class="prestoCellV33"><small>Current / latest drive</small><b>${esc(drive ? `${drive.team||''}${drive.plays!=null?' • '+drive.plays+' plays':''}${drive.yards!=null?' • '+drive.yards+' yds':''}${drive.result?' • '+drive.result:''}` : 'Drive data active')}</b></div>
+    </div>`;
 }
-
-/* locally cached team logo first, remote source only as fallback */
-teamLogoV29=function(t,size=''){
-  const cls=size?` ${size}`:'';
-  const local=`/assets/teams/${t.slug}.png`;
-  return `<span class="teamLogoBox${cls}" style="--fallback-bg:${t.primary};--fallback-fg:${t.secondary}"><img src="${local}" alt="${esc(t.short)} logo" onerror="if(!this.dataset.remote){this.dataset.remote='1';this.src='${t.logo||''}'}else{this.parentElement.classList.add('broken')}"><span class="teamLogoFallback">${t.abbr}</span></span>`;
-};
-logo=function(t,big=false){return teamLogoV29(t,big?'lg':'')};
-gcTeamImg=function(slug){return teamLogoV29(TEAM[slug],'sm')};
-mark=function(t,cls=''){return teamLogoV29(t,cls==='hero'?'lg':'sm')};
-
-/* final navigation shell includes Players */
-shell=function(content,active='schedule'){
-  return `<div class="shell"><header class="topbar">
-    <button class="brand" onclick="goHome()" style="background:none;border:0;color:inherit;padding:0"><span class="roundel">U</span><span>U SPORTS<small>FOOTBALL</small></span></button>
-    <nav class="nav">
-      <button class="${active==='live'?'active':''}" onclick="openLiveV32()">Live</button>
-      <button class="${active==='schedule'?'active':''}" onclick="goHome()">Schedule</button>
-      <button class="${active==='leaders'?'active':''}" onclick="showLeaders()">Leaders</button>
-      <button class="${active==='teamstats'?'active':''}" onclick="showTeamStats()">Team Stats</button>
-      <button class="${active==='media'?'active':''}" onclick="showMedia()">Media</button>
-      <button onclick="showTeams()">Teams</button>
-      <button class="${active==='players'?'active':''}" onclick="showPlayersV33()">Players</button>
-      <button onclick="showConferences()">Conferences</button>
-    </nav>
-  </header>${content}<div class="footer">U SPORTS Football Game Centre • V33 • roster-data build</div></div>`;
-};
-const _routeBeforePlayersV33=route;
-route=function(){
-  const h=location.hash.slice(1);
-  if(h.startsWith('players=')){showPlayersV33(h.slice(8)||'mcmaster');return}
-  _routeBeforePlayersV33();
-};
-</script>
-
-
-<script>
-/* V34 deployment-safe roster/logo resolution */
-const ROSTER_SOURCES_V34={"carleton":{"url":"https://goravens.ca/sports/football/roster/","adapter":"generic","season":"2026"},"guelph":{"url":"https://gryphons.ca/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"mcmaster":{"url":"https://marauders.ca/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"ottawa":{"url":"https://teams.geegees.ca/sports/fball/2026-27/roster","adapter":"presto","season":"2026"},"queens":{"url":"https://gogaelsgo.com/sports/football/roster/2026-2027","adapter":"sidearm","season":"2026"},"toronto":{"url":"https://varsityblues.ca/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"waterloo":{"url":"https://athletics.uwaterloo.ca/sports/football/roster/2026-27","adapter":"sidearm","season":"2026"},"western":{"url":"https://westernmustangs.ca/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"windsor":{"url":"https://golancers.ca/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"laurier":{"url":"https://laurierathletics.com/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"york":{"url":"https://yorkulions.ca/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"bishops":{"url":"https://gaiters.ca/sports/football/roster","adapter":"sidearm","season":"2026"},"concordia":{"url":"https://stingers.ca/football/roster.php","adapter":"generic","season":"2026"},"laval":{"url":"https://rougeetor.ulaval.ca/sports/football/equipe/","adapter":"generic","season":"2026"},"mcgill":{"url":"https://mcgillathletics.ca/sports/football/roster/2026-27","adapter":"sidearm","season":"2026"},"montreal":{"url":"https://carabins.umontreal.ca/football/equipe/","adapter":"generic","season":"2026"},"sherbrooke":{"url":"https://www.usherbrooke.ca/vertetor/sports/football/alignement","adapter":"generic","season":"2026"},"acadia":{"url":"https://acadiaathletics.ca/sports/fball/2026-27/roster","adapter":"presto","season":"2026"},"mount-allison":{"url":"https://mountiepride.ca/sports/fball/2026-27/roster","adapter":"presto","season":"2026"},"saint-marys":{"url":"https://www.smuhuskies.ca/sports/fball/2026-27/roster","adapter":"presto","season":"2026"},"stfx":{"url":"https://www.goxgo.ca/sports/fball/2026-27/roster","adapter":"presto","season":"2026"},"alberta":{"url":"https://bearsandpandas.ca/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"calgary":{"url":"https://godinos.com/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"manitoba":{"url":"https://gobisons.ca/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"regina":{"url":"https://www.reginacougars.com/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"saskatchewan":{"url":"https://huskies.usask.ca/sports/football/roster/2026-27","adapter":"sidearm","season":"2026"},"ubc":{"url":"https://gothunderbirds.ca/sports/football/roster/2026-27","adapter":"sidearm","season":"2026"}};
-
-async function loadRosterV34(slug,target='teamRosterV33'){
-  const el=document.getElementById(target);
-  if(el)el.innerHTML='<div class="rosterLoadingV33">Loading full official roster…</div>';
-
-  if(ROSTER_CACHE_V33[slug]){
-    ROSTER_FILTER_V33='ALL';
-    renderRosterV33(slug,ROSTER_CACHE_V33[slug],target);
-    return;
+function applyPrestoSnapshotV33(payload){
+  if(!payload?.ok || !payload.data) return false;
+  const id=payload.game, d=payload.data, st=d.status||{};
+  const def=GAMES.find(x=>x.id===id); if(!def) return false;
+  const g=ensureScheduledLiveStateV29(id); if(!g) return false;
+  const liveSignal=!!(st.clock || st.period || (d.plays&&d.plays.length) || d.game?.awayScore!=null || d.game?.homeScore!=null);
+  if(!liveSignal) return false;
+  const wasReal=g._realLive===true;
+  g._realLive=true;
+  g.q=prestoPeriodV33(st.period);
+  g.clock=st.clock||g.clock||'';
+  if(d.game?.awayScore!=null) g.as=d.game.awayScore;
+  if(d.game?.homeScore!=null) g.hs=d.game.homeScore;
+  g.down=prestoLatestDownV33(d.plays);
+  g.event=st.complete?'FINAL':'LIVE';
+  g._prestoUpdated=d.lastUpdated||'';
+  LIVE_STORE.plays[id]=(d.plays||[]).map(p=>({q:p.q?prestoPeriodV33(p.q):g.q,clock:p.clock||'',text:p.description,type:prestoPlayTypeV33(p.type)})).slice(0,50);
+  PRESTO_V33.lastSnapshot=payload;
+  if(LIVE_STORE.selected===id){
+    if(!wasReal || document.querySelector('.pregameHub')) showGameCast(id);
+    else if(typeof updateSelectedUI==='function') updateSelectedUI();
+    renderPrestoDetailsV33(payload);
   }
-
-  const attempts=[
-    async()=>{
-      const r=await fetch(`/data/rosters/${slug}.json?${Date.now()}`,{cache:'no-store'});
-      if(!r.ok)throw new Error(`team cache ${r.status}`);
-      const j=await r.json();return j.players||[];
-    },
-    async()=>{
-      const r=await fetch(`/data/rosters/all.json?${Date.now()}`,{cache:'no-store'});
-      if(!r.ok)throw new Error(`all cache ${r.status}`);
-      const j=await r.json();return j?.teams?.[slug]?.players||[];
-    },
-    async()=>{
-      const r=await fetch(`/api/roster?team=${encodeURIComponent(slug)}`,{cache:'no-store'});
-      if(!r.ok)throw new Error(`api ${r.status}`);
-      const j=await r.json();return j.players||[];
-    }
-  ];
-
-  const errs=[];
-  for(const getPlayers of attempts){
-    try{
-      const players=await getPlayers();
-      if(players?.length){
-        ROSTER_CACHE_V33[slug]=players;
-        ROSTER_FILTER_V33='ALL';
-        renderRosterV33(slug,players,target);
-        return;
+  if(typeof renderOtherGames==='function') renderOtherGames();
+  return true;
+}
+async function pollPrestoV33(){
+  if(PRESTO_V33.busy) return;
+  const ids=[...PRESTO_V33_GAMES].filter(id=>GAMES.some(g=>g.id===id));
+  if(!ids.length) return;
+  PRESTO_V33.busy=true;
+  try{
+    for(const id of ids){
+      try{
+        const r=await fetch(`/api/presto-live?game=${encodeURIComponent(id)}&_=${Date.now()}`,{cache:'no-store',headers:{'Accept':'application/json'}});
+        const j=await r.json();
+        if(!r.ok || !j.ok) throw new Error(j.error||`HTTP ${r.status}`);
+        applyPrestoSnapshotV33(j);
+        PRESTO_V33.lastError='';
+      }catch(err){
+        PRESTO_V33.lastError=String(err?.message||err);
+        const banner=document.getElementById('liveConnection');
+        if(banner && !LIVE_STORE.games[id]?._realLive){
+          banner.className='demoNotice';
+          banner.textContent=`Verified Presto source registered • waiting for accessible upstream response (${PRESTO_V33.lastError})`;
+        }
       }
-    }catch(e){errs.push(e.message)}
-  }
-
-  if(el)el.innerHTML=`<div class="emptyV21"><b>Roster has not synced yet.</b><br>The deploy-time crawler did not produce a roster for this program. Source: <a href="${ROSTER_SOURCES_V34?.[slug]?.url||'#'}" target="_blank">official roster page ↗</a><br><small>${esc(errs.join(' • '))}</small></div>`;
+    }
+  } finally { PRESTO_V33.busy=false; }
 }
-loadRosterV33=loadRosterV34;
+function startPrestoV33(){
+  pollPrestoV33();
+  if(!PRESTO_V33.timer) PRESTO_V33.timer=setInterval(pollPrestoV33,10000);
+}
 
-teamLogoV29=function(t,size=''){
-  const cls=size?` ${size}`:'';
-  const png=`/assets/teams/${t.slug}.png`;
-  const svg=`/assets/teams/${t.slug}.svg`;
-  const remote=t.logo||'';
-  return `<span class="teamLogoBox${cls}" style="--fallback-bg:${t.primary};--fallback-fg:${t.secondary}">
-    <img src="${png}" alt="${esc(t.short)} logo"
-      onerror="
-        if(!this.dataset.stage){this.dataset.stage='svg';this.src='${svg}'}
-        else if(this.dataset.stage==='svg' && '${remote.replace(/'/g,"\\'")}'){this.dataset.stage='remote';this.src='${remote.replace(/'/g,"\\'")}'}
-        else{this.parentElement.classList.add('broken')}
-      ">
-    <span class="teamLogoFallback">${t.abbr}</span>
-  </span>`;
+/* Replace historical placeholder SSE connector. */
+connectProductionRealtime=function(){
+  startPrestoV33();
+  const banner=document.getElementById('liveConnection');
+  const id=LIVE_STORE.selected;
+  if(banner && PRESTO_V33_GAMES.has(id)){
+    const live=LIVE_STORE.games[id]?._realLive===true;
+    banner.className=live?'demoNotice realtimeOk':'demoNotice';
+    banner.innerHTML=live?'<b>VERIFIED PRESTO LIVE • polling official OUA feed every 10 seconds</b>':'<b>VERIFIED PRESTO SOURCE ARMED • checking official OUA live feed every 10 seconds</b>';
+  }
 };
-logo=function(t,big=false){return teamLogoV29(t,big?'lg':'')};
-gcTeamImg=function(slug){return teamLogoV29(TEAM[slug],'sm')};
-mark=function(t,cls=''){return teamLogoV29(t,cls==='hero'?'lg':'sm')};
-</script>
 
+/* Keep live hub responsive to a feed that becomes active while user is elsewhere. */
+window.addEventListener('load',startPrestoV33);
+</script>
 </body></html>

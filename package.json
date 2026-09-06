@@ -1,16 +1,9 @@
 {
-  "name": "usports-football-command-centre",
+  "name": "usports-command-centre",
+  "version": "34.0.0",
   "private": true,
-  "version": "33.0.0",
-  "type": "module",
-  "scripts": {
-    "sync:rosters": "node scripts/sync-rosters.mjs",
-    "sync:logos": "node scripts/cache-logos.mjs",
-    "sync:data": "npm run sync:rosters && npm run sync:logos",
-    "build": "node scripts/build-site.mjs"
-  },
-  "dependencies": {
-    "cheerio": "^1.0.0",
-    "sharp": "^0.34.3"
+  "scripts": {},
+  "engines": {
+    "node": ">=20"
   }
 }

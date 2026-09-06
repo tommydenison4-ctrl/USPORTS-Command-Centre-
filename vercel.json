@@ -1,6 +1,8 @@
 {
   "version": 2,
-  "rewrites": [
-    { "source": "/api/presto-live", "destination": "/api/presto-live.js" }
-  ]
+  "functions": {
+    "api/presto-live.js": {
+      "runtime": "nodejs22.x"
+    }
+  }
 }

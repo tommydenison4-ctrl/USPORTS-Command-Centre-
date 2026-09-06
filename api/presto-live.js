@@ -25,11 +25,91 @@ function walk(root, cb, path='$', seen=new WeakSet()){
   else Object.entries(root).forEach(([k,v])=>walk(v,cb,`${path}.${k}`,seen));
 }
 function periodLabel(status){ const raw=Array.isArray(status?.period)?status.period[0]:status?.period; const p=text(raw).trim(); if(!p)return''; return /^\d+$/.test(p)?`Q${p}`:p.toUpperCase(); }
-function findTeamScore(data,teamId){ let best=null; walk(data,(o,path)=>{ const id=text(o.id||o.teamId||o.team_id||o.code||o.abbr).toUpperCase(); if(id!==teamId.toUpperCase())return; for(const key of ['score','points','pts','total','totpts','tot_points']) if(o[key]!=null){ const n=num(o[key]); if(n!=null&&n>=0&&n<200){ const rank=/scores|team|dnp/.test(path.toLowerCase())?3:1; if(!best||rank>best.rank) best={value:n,rank}; } } }); return best?.value??null; }
+function numericScore(v){
+  if(v==null) return null;
+  if(typeof v==='number') return Number.isFinite(v)&&v>=0&&v<200?v:null;
+  if(typeof v==='string' && /^\s*\d{1,3}\s*$/.test(v)){ const n=Number(v); return n<200?n:null; }
+  return null;
+}
+function scoreFromSideNode(node){
+  if(node==null) return null;
+  const direct=numericScore(node); if(direct!=null) return direct;
+  if(Array.isArray(node)){
+    // Quarter-by-quarter arrays are common in line-score payloads. If no explicit
+    // total is present, sum plausible quarter values.
+    const vals=node.map(x=>numericScore(x)).filter(x=>x!=null);
+    if(vals.length && vals.length===node.length && vals.every(x=>x<=60)) return vals.reduce((a,b)=>a+b,0);
+    let best=null;
+    for(const x of node){ const n=scoreFromSideNode(x); if(n!=null) best=n; }
+    return best;
+  }
+  if(typeof node==='object'){
+    for(const k of ['total','score','points','pts','totpts','tot_points','teamScore','team_score']){
+      const n=numericScore(node[k]); if(n!=null) return n;
+    }
+    // Line-score objects can be q1/q2/q3/q4/ot without a total.
+    const qvals=Object.entries(node).filter(([k])=>/^(?:q|quarter|period)?[1-9]|ot\d*$/i.test(k)).map(([,v])=>numericScore(v)).filter(v=>v!=null);
+    if(qvals.length>=2) return qvals.reduce((a,b)=>a+b,0);
+  }
+  return null;
+}
+function extractScorePair(data,source){
+  const scores=data?.scores;
+  const aliases={
+    away:[source.awayId,'away','visitor','vis','v','awayteam','visitorTeam'],
+    home:[source.homeId,'home','host','h','hometeam','homeTeam']
+  };
+  const out={away:null,home:null};
+  if(scores && typeof scores==='object'){
+    for(const side of ['away','home']){
+      for(const a of aliases[side]){
+        for(const [k,v] of Object.entries(scores)){
+          if(String(k).toLowerCase()===String(a).toLowerCase()){
+            const n=scoreFromSideNode(v); if(n!=null){ out[side]=n; break; }
+          }
+        }
+        if(out[side]!=null) break;
+      }
+    }
+    if(Array.isArray(scores)){
+      for(const o of scores){
+        if(!o||typeof o!=='object') continue;
+        const vh=text(o.vh||o.side||o.homeAway||o.home_away).toUpperCase();
+        const id=text(o.id||o.teamId||o.team_id||o.code||o.abbr).toUpperCase();
+        const n=scoreFromSideNode(o); if(n==null) continue;
+        if(vh==='V'||vh==='A'||id===source.awayId.toUpperCase()) out.away=n;
+        if(vh==='H'||id===source.homeId.toUpperCase()) out.home=n;
+      }
+    }
+  }
+  // Look for explicit home/visitor scoreboard fields anywhere in the payload.
+  walk(data,(o,path)=>{
+    if(Array.isArray(o)) return;
+    const low=path.toLowerCase();
+    const id=text(o.id||o.teamId||o.team_id||o.code||o.abbr).toUpperCase();
+    const vh=text(o.vh||o.side||o.homeAway||o.home_away).toUpperCase();
+    const n=scoreFromSideNode(o);
+    if(n!=null){
+      if(out.away==null && (id===source.awayId.toUpperCase()||vh==='V'||vh==='A'||/visitor|away/.test(low))) out.away=n;
+      if(out.home==null && (id===source.homeId.toUpperCase()||vh==='H'||/home|host/.test(low))) out.home=n;
+    }
+    for(const [k,v] of Object.entries(o)){
+      const sv=numericScore(v); if(sv==null) continue;
+      const key=k.toLowerCase();
+      if(out.away==null && /^(?:visitor|vis|away)(?:score|points|pts)?$/.test(key)) out.away=sv;
+      if(out.home==null && /^(?:home|host)(?:score|points|pts)?$/.test(key)) out.home=sv;
+    }
+  });
+  return out;
+}
+function findTeamScore(data,teamId,source){
+  const pair=extractScorePair(data,source);
+  return teamId.toUpperCase()===source.awayId.toUpperCase()?pair.away:pair.home;
+}
 function flattenPlays(data){ const out=[],seen=new Set(); walk(data?.plays,(o)=>{ if(Array.isArray(o))return; const desc=o.description??o.desc??o.text??o.play??o.summary??o.pbp; if(typeof desc!=='string'||desc.trim().length<4)return; const clock=text(o.clock??o.time??o.gameclock??o.game_clock), q=text(o.qtr??o.quarter??o.period??o.q), key=`${q}|${clock}|${desc}`; if(seen.has(key))return; seen.add(key); out.push({q,clock,description:desc.trim(),type:text(o.type??o.result??'PLAY').toUpperCase()}); }); return out.slice(-80).reverse(); }
 function flattenDrives(data){ const out=[]; walk(data?.drives,(o)=>{ if(Array.isArray(o))return; const plays=num(o.plays??o.playCount??o.numplays),yards=num(o.yards??o.yds??o.netyards),team=text(o.team??o.teamId??o.team_id??o.id),result=text(o.result??o.end??o.summary??o.outcome),time=text(o.time??o.elapsed??o.top); if(plays!=null||yards!=null||result||time)out.push({team,plays,yards,result,time}); }); return out.slice(-24).reverse(); }
 function teamAndPlayerStats(data){ const teamStats=[],playerStats=[]; walk(data?.team,(o,path)=>{ if(Array.isArray(o))return; const id=text(o.id||o.teamId||o.team_id||o.code||o.abbr),name=text(o.name||o.player||o.fullname||o.full_name); const statKeys=Object.keys(o).filter(k=>/^(yds|yards|att|cmp|comp|td|int|rec|car|rush|pass|tkl|tack|sack|fg|xp|punt)/i.test(k)); if(!statKeys.length)return; const stats={}; statKeys.slice(0,24).forEach(k=>{if(['string','number'].includes(typeof o[k]))stats[k]=o[k]}); if(name&&!/^MAC$|^GUE$/i.test(name))playerStats.push({team:id,name,stats,path}); else if(id)teamStats.push({team:id,stats,path}); }); return {teamStats:teamStats.slice(0,30),playerStats:playerStats.slice(0,140)}; }
-function normalize(data,source){ const status=data?.status||{},ps=teamAndPlayerStats(data); return {source:data?.source||'PrestoSports',version:data?.version||null,platformId:data?.platformId||null,lastUpdated:data?.network?.lastUpdated||data?.generated||new Date().toISOString(),status:{complete:text(status.complete).toUpperCase()==='Y',period:periodLabel(status),clock:text(status.clock),running:text(status.running)},game:{awayId:source.awayId,homeId:source.homeId,awayScore:findTeamScore(data,source.awayId),homeScore:findTeamScore(data,source.homeId)},plays:flattenPlays(data),drives:flattenDrives(data),teamStats:ps.teamStats,playerStats:ps.playerStats,rawKeys:Object.keys(data||{})}; }
+function normalize(data,source){ const status=data?.status||{},ps=teamAndPlayerStats(data); return {source:data?.source||'PrestoSports',version:data?.version||null,platformId:data?.platformId||null,lastUpdated:data?.network?.lastUpdated||data?.generated||new Date().toISOString(),status:{complete:text(status.complete).toUpperCase()==='Y',period:periodLabel(status),clock:text(status.clock),running:text(status.running)},game:{awayId:source.awayId,homeId:source.homeId,awayScore:findTeamScore(data,source.awayId,source),homeScore:findTeamScore(data,source.homeId,source)},plays:flattenPlays(data),drives:flattenDrives(data),teamStats:ps.teamStats,playerStats:ps.playerStats,rawKeys:Object.keys(data||{})}; }
 function isLivePayload(json){ return !!(json && typeof json==='object' && !json.error && (json.status || json.plays || json.drives || json.team || json.scores || json.source==='PrestoSports')); }
 
 const BASE_HEADERS={

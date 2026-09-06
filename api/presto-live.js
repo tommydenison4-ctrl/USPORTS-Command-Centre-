@@ -200,6 +200,60 @@ function flattenPlays(data){
   });
   return out.slice(-100).reverse();
 }
+
+function latestScoringScorePair(data){
+  const rows = Array.isArray(data?.scores?.score) ? data.scores.score : [];
+  // Presto's scoring array is chronological and every scoring row carries the
+  // cumulative visitor/home score after that event. The LAST valid row is the
+  // authoritative running scoreboard.
+  for(let i=rows.length-1;i>=0;i--){
+    const r=rows[i]||{};
+    const away=numericScore(r.vscore), home=numericScore(r.hscore);
+    if(away!=null && home!=null) return {away,home,index:i,source:'latest-scoring-event'};
+  }
+  return {away:null,home:null,index:null,source:''};
+}
+
+function parseDestinationSpot(desc=''){
+  const m=String(desc).match(/\bto the ([A-Z]{2,5})-?0?(\d{1,2})\b/i);
+  return m ? `${m[1].toUpperCase()}${Number(m[2])}` : '';
+}
+function parseGain(desc=''){
+  const t=String(desc);
+  let m=t.match(/\bfor loss of (\d+) yards?\b/i); if(m) return -Number(m[1]);
+  if(/\bfor no gain\b/i.test(t)) return 0;
+  m=t.match(/\bfor (-?\d+) yards?\b/i); if(m) return Number(m[1]);
+  return null;
+}
+function isSubstantiveSnap(p){
+  if(!p?.description) return false;
+  const t=String(p.description).toUpperCase();
+  if(/^CLOCK\s/.test(t) || /^(START OF|END OF|TIMEOUT|\d+(?:ST|ND|RD|TH) AND )/.test(t)) return false;
+  if(/PENALTY/.test(t)) return false;
+  return /RUSH|PASS|SACK|PUNT|KICKOFF|FIELD GOAL|FUMBLE|INTERCEPT/.test(t);
+}
+function currentSituationFromLatestPlay(plays,drives){
+  const p=(plays||[]).find(isSubstantiveSnap) || (plays||[])[0];
+  if(!p) return {down:null,distance:null,spot:'',possession:text(drives?.[0]?.team)};
+  let down=p.down, distance=p.distance, spot=parseDestinationSpot(p.description)||p.spot||'', possession=p.possession||text(drives?.[0]?.team);
+  const t=String(p.description).toUpperCase();
+  const gain=parseGain(p.description);
+  // For normal scrimmage snaps, Presto's down/distance fields describe the snap
+  // that just occurred. Convert them to the NEXT live situation when possible.
+  if(Number.isFinite(Number(down)) && Number.isFinite(Number(distance)) && /RUSH|PASS|SACK/.test(t) && !/TOUCHDOWN|TURNOVER|INTERCEPT|FUMBLE LOST/.test(t)){
+    down=Number(down); distance=Number(distance);
+    if(gain!=null){
+      const remain=Math.max(0,distance-gain);
+      if(remain<=0){ down=1; distance=10; }
+      else { down=down+1; distance=remain; }
+    } else if(/INCOMPLETE/.test(t)){
+      down=down+1;
+    }
+    if(down>3){ down=null; distance=null; }
+  }
+  return {down,distance,spot,possession};
+}
+
 function extractSituation(data, plays){
   let out={down:null,distance:null,spot:'',possession:''};
   const candidates=[data?.status,data?.primetime,data?.game,data?.network];
@@ -228,7 +282,35 @@ function scoreFallbackFromPlays(plays,source){
 }
 function flattenDrives(data){ const out=[]; walk(data?.drives,(o)=>{ if(Array.isArray(o))return; const plays=num(o.plays??o.playCount??o.numplays),yards=num(o.yards??o.yds??o.netyards),team=text(o.team??o.teamId??o.team_id??o.id),result=text(o.result??o.end??o.summary??o.outcome),time=text(o.time??o.elapsed??o.top); if(plays!=null||yards!=null||result||time)out.push({team,plays,yards,result,time}); }); return out.slice(-24).reverse(); }
 function teamAndPlayerStats(data){ const teamStats=[],playerStats=[]; walk(data?.team,(o,path)=>{ if(Array.isArray(o))return; const id=text(o.id||o.teamId||o.team_id||o.code||o.abbr),name=text(o.name||o.player||o.fullname||o.full_name); const statKeys=Object.keys(o).filter(k=>/^(yds|yards|att|cmp|comp|td|int|rec|car|rush|pass|tkl|tack|sack|fg|xp|punt)/i.test(k)); if(!statKeys.length)return; const stats={}; statKeys.slice(0,24).forEach(k=>{if(['string','number'].includes(typeof o[k]))stats[k]=o[k]}); if(name&&!/^MAC$|^GUE$/i.test(name))playerStats.push({team:id,name,stats,path}); else if(id)teamStats.push({team:id,stats,path}); }); return {teamStats:teamStats.slice(0,30),playerStats:playerStats.slice(0,140)}; }
-function normalize(data,source){ const status=data?.status||{},ps=teamAndPlayerStats(data),plays=flattenPlays(data),pair=extractScorePair(data,source),playPair=scorePairFromPlayState(data?.plays,source),deep=bestDeepScorePair(data,source),fb=scoreFallbackFromPlays(plays,source),situation=extractSituation(data,plays); let away=pair.away,home=pair.home,scoreSource='scores'; if(away==null||home==null){ if(playPair.away!=null&&playPair.home!=null){away=playPair.away;home=playPair.home;scoreSource='play-state';} else if(deep.away!=null&&deep.home!=null){away=deep.away;home=deep.home;scoreSource=deep.source;} else {if(away==null)away=fb.away;if(home==null)home=fb.home;scoreSource='scoring-plays';} } return {source:data?.source||'PrestoSports',version:data?.version||null,platformId:data?.platformId||null,lastUpdated:data?.network?.lastUpdated||data?.generated||new Date().toISOString(),status:{complete:text(status.complete).toUpperCase()==='Y',period:periodLabel(status),clock:text(status.clock),running:text(status.running)},game:{awayId:source.awayId,homeId:source.homeId,awayScore:away,homeScore:home,scoreSource},situation,plays,drives:flattenDrives(data),teamStats:ps.teamStats,playerStats:ps.playerStats,rawKeys:Object.keys(data||{}),scoreDebug:{scores:data?.scores??null,candidates:scalarScoreCandidates(data,source).slice(0,12)}}; }
+function normalize(data,source){
+  const status=data?.status||{};
+  const ps=teamAndPlayerStats(data);
+  const plays=flattenPlays(data);
+  const drives=flattenDrives(data);
+  const latestScore=latestScoringScorePair(data);
+  const pair=extractScorePair(data,source);
+  const playPair=scorePairFromPlayState(data?.plays,source);
+  const deep=bestDeepScorePair(data,source);
+  const fb=scoreFallbackFromPlays(plays,source);
+  let away=latestScore.away, home=latestScore.home, scoreSource=latestScore.source;
+  if(away==null||home==null){
+    away=pair.away; home=pair.home; scoreSource='scores';
+    if(away==null||home==null){
+      if(playPair.away!=null&&playPair.home!=null){away=playPair.away;home=playPair.home;scoreSource='play-state';}
+      else if(deep.away!=null&&deep.home!=null){away=deep.away;home=deep.home;scoreSource=deep.source;}
+      else {if(away==null)away=fb.away;if(home==null)home=fb.home;scoreSource='scoring-plays';}
+    }
+  }
+  const situation=currentSituationFromLatestPlay(plays,drives);
+  return {
+    source:data?.source||'PrestoSports',version:data?.version||null,platformId:data?.platformId||null,
+    lastUpdated:data?.network?.lastUpdated||data?.generated||new Date().toISOString(),
+    status:{complete:text(status.complete).toUpperCase()==='Y',period:periodLabel(status),clock:text(status.clock),running:text(status.running)},
+    game:{awayId:source.awayId,homeId:source.homeId,awayScore:away,homeScore:home,scoreSource},
+    situation,plays,drives,teamStats:ps.teamStats,playerStats:ps.playerStats,rawKeys:Object.keys(data||{}),
+    scoreDebug:{latestScoringEventIndex:latestScore.index,scores:data?.scores??null,candidates:scalarScoreCandidates(data,source).slice(0,12)}
+  };
+}
 function isLivePayload(json){ return !!(json && typeof json==='object' && !json.error && (json.status || json.plays || json.drives || json.team || json.scores || json.source==='PrestoSports')); }
 
 const BASE_HEADERS={

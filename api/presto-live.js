@@ -30,6 +30,7 @@ function flattenPlays(data){ const out=[],seen=new Set(); walk(data?.plays,(o)=>
 function flattenDrives(data){ const out=[]; walk(data?.drives,(o)=>{ if(Array.isArray(o))return; const plays=num(o.plays??o.playCount??o.numplays),yards=num(o.yards??o.yds??o.netyards),team=text(o.team??o.teamId??o.team_id??o.id),result=text(o.result??o.end??o.summary??o.outcome),time=text(o.time??o.elapsed??o.top); if(plays!=null||yards!=null||result||time)out.push({team,plays,yards,result,time}); }); return out.slice(-24).reverse(); }
 function teamAndPlayerStats(data){ const teamStats=[],playerStats=[]; walk(data?.team,(o,path)=>{ if(Array.isArray(o))return; const id=text(o.id||o.teamId||o.team_id||o.code||o.abbr),name=text(o.name||o.player||o.fullname||o.full_name); const statKeys=Object.keys(o).filter(k=>/^(yds|yards|att|cmp|comp|td|int|rec|car|rush|pass|tkl|tack|sack|fg|xp|punt)/i.test(k)); if(!statKeys.length)return; const stats={}; statKeys.slice(0,24).forEach(k=>{if(['string','number'].includes(typeof o[k]))stats[k]=o[k]}); if(name&&!/^MAC$|^GUE$/i.test(name))playerStats.push({team:id,name,stats,path}); else if(id)teamStats.push({team:id,stats,path}); }); return {teamStats:teamStats.slice(0,30),playerStats:playerStats.slice(0,140)}; }
 function normalize(data,source){ const status=data?.status||{},ps=teamAndPlayerStats(data); return {source:data?.source||'PrestoSports',version:data?.version||null,platformId:data?.platformId||null,lastUpdated:data?.network?.lastUpdated||data?.generated||new Date().toISOString(),status:{complete:text(status.complete).toUpperCase()==='Y',period:periodLabel(status),clock:text(status.clock),running:text(status.running)},game:{awayId:source.awayId,homeId:source.homeId,awayScore:findTeamScore(data,source.awayId),homeScore:findTeamScore(data,source.homeId)},plays:flattenPlays(data),drives:flattenDrives(data),teamStats:ps.teamStats,playerStats:ps.playerStats,rawKeys:Object.keys(data||{})}; }
+function isLivePayload(json){ return !!(json && typeof json==='object' && !json.error && (json.status || json.plays || json.drives || json.team || json.scores || json.source==='PrestoSports')); }
 
 const BASE_HEADERS={
   'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36',
@@ -46,7 +47,9 @@ function discover(html){
   const patterns=[
     /liveupdate\?e=([^&"'<>\\]+)&h=([^"'<>\\\s]+)/i,
     /liveupdate\?e=([^&"'<>\\]+)&amp;h=([^"'<>\\\s]+)/i,
-    /["']e["']\s*:\s*["']([^"']+)["'][\s\S]{0,300}?["']h["']\s*:\s*["']([^"']+)["']/i
+    /liveupdate[^\n]{0,300}?[?&]e(?:=|%3D)([^&"'<>\\\s]+)[&%][^\n]{0,80}?h(?:=|%3D)([^"'<>\\\s&]+)/i,
+    /["']e["']\s*:\s*["']([^"']+)["'][\s\S]{0,500}?["']h["']\s*:\s*["']([^"']+)["']/i,
+    /["']event["']\s*:\s*["']([^"']+)["'][\s\S]{0,500}?["'](?:hash|h)["']\s*:\s*["']([^"']+)["']/i
   ];
   for(const p of patterns){ const m=html.match(p); if(m) return {event:decodeURIComponent(m[1]),hash:decodeURIComponent(m[2])}; }
   return null;
@@ -54,7 +57,7 @@ function discover(html){
 async function bootstrap(source){
   const r=await fetch(source.page,{redirect:'follow',headers:{...BASE_HEADERS,'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Upgrade-Insecure-Requests':'1','Sec-Fetch-Site':'none','Sec-Fetch-Mode':'navigate','Sec-Fetch-Dest':'document'}});
   const html=await r.text();
-  return {status:r.status,ok:r.ok,cookie:cookieHeader(r),found:discover(html),sample:html.slice(0,120)};
+  const found=discover(html); const li=html.toLowerCase().indexOf('liveupdate'); const ei=html.toLowerCase().indexOf('zejwko'); return {status:r.status,ok:r.ok,cookie:cookieHeader(r),found,sample:html.slice(0,120),liveupdateSnippet:li>=0?html.slice(Math.max(0,li-180),li+500):'',eventSnippet:ei>=0?html.slice(Math.max(0,ei-180),ei+500):''};
 }
 async function fetchLive(source,creds,cookie=''){
   const u=new URL('https://oua.ca/action/sports/liveupdate'); u.searchParams.set('e',creds.event); u.searchParams.set('h',creds.hash);
@@ -82,10 +85,11 @@ module.exports=async function handler(req,res){
     try{
       const lr=await fetchLive(source,c,boot.cookie||'');
       attempts.push({kind:c.kind,status:lr.status,url:lr.url,body:lr.body});
-      if(lr.ok&&lr.json){
+      if(lr.ok&&isLivePayload(lr.json)){
         return send(res,200,{ok:true,game,upstreamStatus:lr.status,cadenceSeconds:10,sourcePage:source.page,bootstrapStatus:boot.status,credentialMode:c.kind,data:normalize(lr.json,source)});
       }
+      if(lr.json?.error){ attempts[attempts.length-1].upstreamError=String(lr.json.error); }
     }catch(e){ attempts.push({kind:c.kind,status:null,error:String(e?.message||e)}); }
   }
-  return send(res,502,{ok:false,game,error:'OUA/Presto did not return usable live JSON to the Vercel function',sourcePage:source.page,bootstrapStatus:boot.status,bootstrapOk:boot.ok,discoveredCredentials:!!boot.found,attempts});
+  return send(res,502,{ok:false,game,error:'OUA/Presto returned a response, but it was not a usable live-stat payload',sourcePage:source.page,bootstrapStatus:boot.status,bootstrapOk:boot.ok,discoveredCredentials:!!boot.found,bootstrapLiveupdateSnippet:boot.liveupdateSnippet||'',bootstrapEventSnippet:boot.eventSnippet||'',attempts});
 };

@@ -106,10 +106,81 @@ function findTeamScore(data,teamId,source){
   const pair=extractScorePair(data,source);
   return teamId.toUpperCase()===source.awayId.toUpperCase()?pair.away:pair.home;
 }
-function flattenPlays(data){ const out=[],seen=new Set(); walk(data?.plays,(o)=>{ if(Array.isArray(o))return; const desc=o.description??o.desc??o.text??o.play??o.summary??o.pbp; if(typeof desc!=='string'||desc.trim().length<4)return; const clock=text(o.clock??o.time??o.gameclock??o.game_clock), q=text(o.qtr??o.quarter??o.period??o.q), key=`${q}|${clock}|${desc}`; if(seen.has(key))return; seen.add(key); out.push({q,clock,description:desc.trim(),type:text(o.type??o.result??'PLAY').toUpperCase()}); }); return out.slice(-80).reverse(); }
+function firstVal(o, keys){ for(const k of keys){ if(o && o[k]!=null && o[k]!=='' ) return o[k]; } return null; }
+function normalizeDown(v){ const n=num(v); if(n!=null && n>=1 && n<=4) return n; const m=text(v).match(/\b([1-4])(?:st|nd|rd|th)?\b/i); return m?Number(m[1]):null; }
+function parseSituationText(desc=''){
+  const t=String(desc);
+  let down=null,distance=null,spot='',pos='';
+  let m=t.match(/\b([1-4])(?:st|nd|rd|th)?\s*(?:&|and)\s*(goal|\d+)\s+(?:at|on)\s+([A-Z]{2,5})\s*0?(\d{1,2})\b/i);
+  if(m){ down=Number(m[1]); distance=/goal/i.test(m[2])?'Goal':Number(m[2]); pos=m[3].toUpperCase(); spot=`${pos} ${Number(m[4])}`; }
+  if(!m){ m=t.match(/\b([1-4])(?:st|nd|rd|th)?\s*(?:&|and)\s*(goal|\d+)\b/i); if(m){down=Number(m[1]);distance=/goal/i.test(m[2])?'Goal':Number(m[2]);} }
+  return {down,distance,spot,pos};
+}
+function playTypeFromDescription(desc='', raw=''){
+  const t=(String(raw)+' '+String(desc)).toUpperCase();
+  if(/PICK SIX|INTERCEPTION.*TOUCHDOWN/.test(t)) return 'PICK SIX';
+  if(/TOUCHDOWN/.test(t)) return 'TOUCHDOWN';
+  if(/INTERCEPT/.test(t)) return 'INTERCEPTION';
+  if(/FUMBLE/.test(t) && /RECOVER|LOST|TURNOVER/.test(t)) return 'FUMBLE';
+  if(/SAFETY/.test(t)) return 'SAFETY';
+  if(/FIELD GOAL.*GOOD|FIELD GOAL IS GOOD|GOOD FIELD GOAL/.test(t)) return 'FIELD GOAL';
+  if(/FIELD GOAL.*MISS|MISSED FIELD GOAL/.test(t)) return 'MISSED FG';
+  if(/BLOCKED/.test(t) && /KICK|PUNT|FIELD GOAL/.test(t)) return 'BLOCKED KICK';
+  if(/FIRST DOWN/.test(t)) return 'FIRST DOWN';
+  const y=t.match(/(?:FOR|GAIN OF)\s+(-?\d+)\s+YARDS?/); if(y && Number(y[1])>=15) return 'EXPLOSIVE';
+  return text(raw||'PLAY').toUpperCase()||'PLAY';
+}
+function flattenPlays(data){
+  const out=[],seen=new Set();
+  walk(data?.plays,(o)=>{
+    if(Array.isArray(o))return;
+    const desc=o.description??o.desc??o.text??o.play??o.summary??o.pbp;
+    if(typeof desc!=='string'||desc.trim().length<4)return;
+    const clock=text(firstVal(o,['clock','time','gameclock','game_clock','clk']));
+    const q=text(firstVal(o,['qtr','quarter','period','q','prd']));
+    const parsed=parseSituationText(desc);
+    const down=normalizeDown(firstVal(o,['down','dn','dwn','currentDown'])) ?? parsed.down;
+    let distance=firstVal(o,['distance','dist','ytg','yardsToGo','yards_to_go','togo']);
+    if(distance!=null && /^\d+$/.test(String(distance))) distance=Number(distance); else if(distance==null) distance=parsed.distance;
+    const spotRaw=firstVal(o,['spot','yardline','yard_line','ballOn','ball_on','location','yard']);
+    const possession=text(firstVal(o,['possession','poss','offense','team','teamId','team_id','side'])) || parsed.pos;
+    const spot=text(spotRaw)||parsed.spot;
+    const rawType=text(firstVal(o,['type','result','event','category']));
+    const type=playTypeFromDescription(desc,rawType);
+    const key=`${q}|${clock}|${desc}`; if(seen.has(key))return; seen.add(key);
+    out.push({q,clock,description:desc.trim(),type,down,distance,spot,possession});
+  });
+  return out.slice(-100).reverse();
+}
+function extractSituation(data, plays){
+  let out={down:null,distance:null,spot:'',possession:''};
+  const candidates=[data?.status,data?.primetime,data?.game,data?.network];
+  for(const o of candidates){ if(!o||typeof o!=='object')continue; out.down??=normalizeDown(firstVal(o,['down','dn','dwn'])); out.distance??=num(firstVal(o,['distance','dist','ytg','yardsToGo'])); out.spot ||= text(firstVal(o,['spot','yardline','yard_line','ballOn'])); out.possession ||= text(firstVal(o,['possession','poss','offense','team'])); }
+  const p=(plays||[])[0]; if(p){ out.down??=p.down; out.distance??=p.distance; out.spot ||= p.spot||''; out.possession ||= p.possession||''; }
+  return out;
+}
+function scoringDelta(desc=''){
+  const t=String(desc).toUpperCase();
+  if(/TOUCHDOWN/.test(t)) return 6;
+  if(/FIELD GOAL/.test(t) && /GOOD|IS GOOD/.test(t) && !/NO GOOD|MISS/.test(t)) return 3;
+  if(/SAFETY/.test(t)) return 2;
+  if(/ROUGE|SINGLE POINT/.test(t)) return 1;
+  if(/CONVERT|EXTRA POINT|PAT/.test(t) && /GOOD|SUCCESS/.test(t)) return /TWO|2-POINT|2 POINT/.test(t)?2:1;
+  return 0;
+}
+function scoreFallbackFromPlays(plays,source){
+  let away=0,home=0,seenAny=false;
+  for(const p of [...(plays||[])].reverse()){
+    const pts=scoringDelta(p.description); if(!pts) continue;
+    const who=String(p.possession||'').toUpperCase(); const d=String(p.description||'').toUpperCase();
+    if(who===source.awayId.toUpperCase()||d.includes('MCMASTER')||d.includes('MAC ')){ away+=pts; seenAny=true; }
+    else if(who===source.homeId.toUpperCase()||d.includes('GUELPH')||d.includes('GUE ')){ home+=pts; seenAny=true; }
+  }
+  return seenAny?{away,home}:{away:null,home:null};
+}
 function flattenDrives(data){ const out=[]; walk(data?.drives,(o)=>{ if(Array.isArray(o))return; const plays=num(o.plays??o.playCount??o.numplays),yards=num(o.yards??o.yds??o.netyards),team=text(o.team??o.teamId??o.team_id??o.id),result=text(o.result??o.end??o.summary??o.outcome),time=text(o.time??o.elapsed??o.top); if(plays!=null||yards!=null||result||time)out.push({team,plays,yards,result,time}); }); return out.slice(-24).reverse(); }
 function teamAndPlayerStats(data){ const teamStats=[],playerStats=[]; walk(data?.team,(o,path)=>{ if(Array.isArray(o))return; const id=text(o.id||o.teamId||o.team_id||o.code||o.abbr),name=text(o.name||o.player||o.fullname||o.full_name); const statKeys=Object.keys(o).filter(k=>/^(yds|yards|att|cmp|comp|td|int|rec|car|rush|pass|tkl|tack|sack|fg|xp|punt)/i.test(k)); if(!statKeys.length)return; const stats={}; statKeys.slice(0,24).forEach(k=>{if(['string','number'].includes(typeof o[k]))stats[k]=o[k]}); if(name&&!/^MAC$|^GUE$/i.test(name))playerStats.push({team:id,name,stats,path}); else if(id)teamStats.push({team:id,stats,path}); }); return {teamStats:teamStats.slice(0,30),playerStats:playerStats.slice(0,140)}; }
-function normalize(data,source){ const status=data?.status||{},ps=teamAndPlayerStats(data); return {source:data?.source||'PrestoSports',version:data?.version||null,platformId:data?.platformId||null,lastUpdated:data?.network?.lastUpdated||data?.generated||new Date().toISOString(),status:{complete:text(status.complete).toUpperCase()==='Y',period:periodLabel(status),clock:text(status.clock),running:text(status.running)},game:{awayId:source.awayId,homeId:source.homeId,awayScore:findTeamScore(data,source.awayId,source),homeScore:findTeamScore(data,source.homeId,source)},plays:flattenPlays(data),drives:flattenDrives(data),teamStats:ps.teamStats,playerStats:ps.playerStats,rawKeys:Object.keys(data||{})}; }
+function normalize(data,source){ const status=data?.status||{},ps=teamAndPlayerStats(data),plays=flattenPlays(data),pair=extractScorePair(data,source),fb=scoreFallbackFromPlays(plays,source),situation=extractSituation(data,plays); return {source:data?.source||'PrestoSports',version:data?.version||null,platformId:data?.platformId||null,lastUpdated:data?.network?.lastUpdated||data?.generated||new Date().toISOString(),status:{complete:text(status.complete).toUpperCase()==='Y',period:periodLabel(status),clock:text(status.clock),running:text(status.running)},game:{awayId:source.awayId,homeId:source.homeId,awayScore:pair.away!=null?pair.away:fb.away,homeScore:pair.home!=null?pair.home:fb.home},situation,plays,drives:flattenDrives(data),teamStats:ps.teamStats,playerStats:ps.playerStats,rawKeys:Object.keys(data||{})}; }
 function isLivePayload(json){ return !!(json && typeof json==='object' && !json.error && (json.status || json.plays || json.drives || json.team || json.scores || json.source==='PrestoSports')); }
 
 const BASE_HEADERS={

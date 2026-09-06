@@ -3038,4 +3038,74 @@ route=function(){
 };
 </script>
 
+
+<script>
+/* V34 deployment-safe roster/logo resolution */
+const ROSTER_SOURCES_V34={"carleton":{"url":"https://goravens.ca/sports/football/roster/","adapter":"generic","season":"2026"},"guelph":{"url":"https://gryphons.ca/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"mcmaster":{"url":"https://marauders.ca/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"ottawa":{"url":"https://teams.geegees.ca/sports/fball/2026-27/roster","adapter":"presto","season":"2026"},"queens":{"url":"https://gogaelsgo.com/sports/football/roster/2026-2027","adapter":"sidearm","season":"2026"},"toronto":{"url":"https://varsityblues.ca/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"waterloo":{"url":"https://athletics.uwaterloo.ca/sports/football/roster/2026-27","adapter":"sidearm","season":"2026"},"western":{"url":"https://westernmustangs.ca/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"windsor":{"url":"https://golancers.ca/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"laurier":{"url":"https://laurierathletics.com/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"york":{"url":"https://yorkulions.ca/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"bishops":{"url":"https://gaiters.ca/sports/football/roster","adapter":"sidearm","season":"2026"},"concordia":{"url":"https://stingers.ca/football/roster.php","adapter":"generic","season":"2026"},"laval":{"url":"https://rougeetor.ulaval.ca/sports/football/equipe/","adapter":"generic","season":"2026"},"mcgill":{"url":"https://mcgillathletics.ca/sports/football/roster/2026-27","adapter":"sidearm","season":"2026"},"montreal":{"url":"https://carabins.umontreal.ca/football/equipe/","adapter":"generic","season":"2026"},"sherbrooke":{"url":"https://www.usherbrooke.ca/vertetor/sports/football/alignement","adapter":"generic","season":"2026"},"acadia":{"url":"https://acadiaathletics.ca/sports/fball/2026-27/roster","adapter":"presto","season":"2026"},"mount-allison":{"url":"https://mountiepride.ca/sports/fball/2026-27/roster","adapter":"presto","season":"2026"},"saint-marys":{"url":"https://www.smuhuskies.ca/sports/fball/2026-27/roster","adapter":"presto","season":"2026"},"stfx":{"url":"https://www.goxgo.ca/sports/fball/2026-27/roster","adapter":"presto","season":"2026"},"alberta":{"url":"https://bearsandpandas.ca/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"calgary":{"url":"https://godinos.com/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"manitoba":{"url":"https://gobisons.ca/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"regina":{"url":"https://www.reginacougars.com/sports/football/roster/2026","adapter":"sidearm","season":"2026"},"saskatchewan":{"url":"https://huskies.usask.ca/sports/football/roster/2026-27","adapter":"sidearm","season":"2026"},"ubc":{"url":"https://gothunderbirds.ca/sports/football/roster/2026-27","adapter":"sidearm","season":"2026"}};
+
+async function loadRosterV34(slug,target='teamRosterV33'){
+  const el=document.getElementById(target);
+  if(el)el.innerHTML='<div class="rosterLoadingV33">Loading full official roster…</div>';
+
+  if(ROSTER_CACHE_V33[slug]){
+    ROSTER_FILTER_V33='ALL';
+    renderRosterV33(slug,ROSTER_CACHE_V33[slug],target);
+    return;
+  }
+
+  const attempts=[
+    async()=>{
+      const r=await fetch(`/data/rosters/${slug}.json?${Date.now()}`,{cache:'no-store'});
+      if(!r.ok)throw new Error(`team cache ${r.status}`);
+      const j=await r.json();return j.players||[];
+    },
+    async()=>{
+      const r=await fetch(`/data/rosters/all.json?${Date.now()}`,{cache:'no-store'});
+      if(!r.ok)throw new Error(`all cache ${r.status}`);
+      const j=await r.json();return j?.teams?.[slug]?.players||[];
+    },
+    async()=>{
+      const r=await fetch(`/api/roster?team=${encodeURIComponent(slug)}`,{cache:'no-store'});
+      if(!r.ok)throw new Error(`api ${r.status}`);
+      const j=await r.json();return j.players||[];
+    }
+  ];
+
+  const errs=[];
+  for(const getPlayers of attempts){
+    try{
+      const players=await getPlayers();
+      if(players?.length){
+        ROSTER_CACHE_V33[slug]=players;
+        ROSTER_FILTER_V33='ALL';
+        renderRosterV33(slug,players,target);
+        return;
+      }
+    }catch(e){errs.push(e.message)}
+  }
+
+  if(el)el.innerHTML=`<div class="emptyV21"><b>Roster has not synced yet.</b><br>The deploy-time crawler did not produce a roster for this program. Source: <a href="${ROSTER_SOURCES_V34?.[slug]?.url||'#'}" target="_blank">official roster page ↗</a><br><small>${esc(errs.join(' • '))}</small></div>`;
+}
+loadRosterV33=loadRosterV34;
+
+teamLogoV29=function(t,size=''){
+  const cls=size?` ${size}`:'';
+  const png=`/assets/teams/${t.slug}.png`;
+  const svg=`/assets/teams/${t.slug}.svg`;
+  const remote=t.logo||'';
+  return `<span class="teamLogoBox${cls}" style="--fallback-bg:${t.primary};--fallback-fg:${t.secondary}">
+    <img src="${png}" alt="${esc(t.short)} logo"
+      onerror="
+        if(!this.dataset.stage){this.dataset.stage='svg';this.src='${svg}'}
+        else if(this.dataset.stage==='svg' && '${remote.replace(/'/g,"\\'")}'){this.dataset.stage='remote';this.src='${remote.replace(/'/g,"\\'")}'}
+        else{this.parentElement.classList.add('broken')}
+      ">
+    <span class="teamLogoFallback">${t.abbr}</span>
+  </span>`;
+};
+logo=function(t,big=false){return teamLogoV29(t,big?'lg':'')};
+gcTeamImg=function(slug){return teamLogoV29(TEAM[slug],'sm')};
+mark=function(t,cls=''){return teamLogoV29(t,cls==='hero'?'lg':'sm')};
+</script>
+
 </body></html>

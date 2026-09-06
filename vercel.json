@@ -1,0 +1,30 @@
+{
+  "framework": null,
+  "buildCommand": "npm run build",
+  "outputDirectory": ".",
+  "functions": {
+    "api/roster.js": {
+      "maxDuration": 30
+    }
+  },
+  "headers": [
+    {
+      "source": "/data/rosters/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, s-maxage=21600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/assets/teams/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=86400"
+        }
+      ]
+    }
+  ]
+}

@@ -6,7 +6,8 @@
   "scripts": {
     "sync:rosters": "node scripts/sync-rosters.mjs",
     "sync:logos": "node scripts/cache-logos.mjs",
-    "sync:data": "npm run sync:rosters && npm run sync:logos"
+    "sync:data": "npm run sync:rosters && npm run sync:logos",
+    "build": "node scripts/build-site.mjs"
   },
   "dependencies": {
     "cheerio": "^1.0.0",

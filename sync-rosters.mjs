@@ -7,7 +7,9 @@ const root=process.cwd();
 const sources=JSON.parse(await fs.readFile(path.join(root,'data/roster-sources.json'),'utf8'));
 const outDir=path.join(root,'data','rosters');
 await fs.mkdir(outDir,{recursive:true});
-const all={generated_at:new Date().toISOString(),teams:{}};
+let previous={teams:{}};
+try{previous=JSON.parse(await fs.readFile(path.join(outDir,'all.json'),'utf8'))}catch{}
+const all={generated_at:new Date().toISOString(),teams:{},status:{}};
 
 for(const [slug,source] of Object.entries(sources)){
   try{
@@ -23,11 +25,26 @@ for(const [slug,source] of Object.entries(sources)){
     }));
     const payload={team:slug,source:source.url,adapter:source.adapter,fetched_at:new Date().toISOString(),count:players.length,players};
     await fs.writeFile(path.join(outDir,`${slug}.json`),JSON.stringify(payload,null,2));
-    all.teams[slug]=payload;
+    if(players.length){
+      all.teams[slug]=payload;
+      all.status[slug]={ok:true,count:players.length,source:source.url};
+    }else if(previous.teams?.[slug]?.players?.length){
+      all.teams[slug]=previous.teams[slug];
+      all.status[slug]={ok:false,using_cached:true,count:previous.teams[slug].players.length,source:source.url};
+    }else{
+      all.teams[slug]=payload;
+      all.status[slug]={ok:false,count:0,source:source.url};
+    }
     console.log(`${slug}: ${players.length}`);
   }catch(e){
     console.error(`${slug}: ${e.message}`);
-    all.teams[slug]={team:slug,source:source.url,error:e.message,count:0,players:[]};
+    if(previous.teams?.[slug]?.players?.length){
+      all.teams[slug]=previous.teams[slug];
+      all.status[slug]={ok:false,using_cached:true,error:e.message,count:previous.teams[slug].players.length,source:source.url};
+    }else{
+      all.teams[slug]={team:slug,source:source.url,error:e.message,count:0,players:[]};
+      all.status[slug]={ok:false,error:e.message,count:0,source:source.url};
+    }
   }
 }
 await fs.writeFile(path.join(outDir,'all.json'),JSON.stringify(all,null,2));

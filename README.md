@@ -1,13 +1,11 @@
-U SPORTS PRESTO LIVE V41
+U SPORTS PRESTO LIVE V42
 
-Changes from V40:
-- Fixes Presto score extraction across common score/line-score structures.
-- Removes all field-goal posts from GameCast.
-- Removes LIVE DEMO controls and all seeded/fake YPP, explosive, turnover, drive and success-rate values.
-- Current Drive now shows only verified Presto drive fields; otherwise it explicitly stays blank.
-- Score displays a dash rather than a false 0 when an upstream score is unavailable.
-- Hides unverified ball/LOS/first-down field markers until field position is parsed from verified data.
-- Changes the live rail to "No other verified live games" when McMaster-Guelph itself is active.
-- Keeps the 10-second official OUA/Presto polling path from V40.
+Changes from V41:
+- Larger team logo/avatar treatment in GameCast.
+- Stronger Presto score extraction plus play-by-play scoring fallback when explicit totals are absent.
+- Parses down, distance, possession and spot from Presto play fields where available, with description fallback.
+- Adds verified situational pills under the live scoreboard.
+- Restores hero ribbons for notable verified plays: TD, turnover, FG, safety, blocked kick, explosive and first down.
+- Keeps goalposts, demo controls and synthetic metrics removed.
 
-Critical files to replace: index.html AND api/presto-live.js
+Deploy: replace index.html and api/presto-live.js. Other files are unchanged but included for convenience.

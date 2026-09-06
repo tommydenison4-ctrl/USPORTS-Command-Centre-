@@ -3192,4 +3192,61 @@ window.addEventListener('load',startPrestoV33);
 })();
 </script>
 
+
+<style>
+/* V42 — live presentation: readable marks, verified situation bar, notable-play ribbons. */
+.castTeam .teamLogoBox.lg{width:142px!important;height:142px!important;min-width:142px!important;border-radius:24px!important}
+.castTeam .teamLogoBox.lg img{width:126px!important;height:126px!important;object-fit:contain!important}
+.castTeam b{font-size:26px!important}.castTeam small{font-size:14px!important}
+.castScore{grid-template-columns:minmax(260px,1fr) minmax(260px,auto) minmax(260px,1fr)!important;padding:24px 26px!important}
+.castBigScore{font-size:72px!important;line-height:.9!important}.castStatus{font-size:14px!important}.castDown{font-size:16px!important;margin-top:10px!important;color:#e8edf7!important}
+.situationV42{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:12px auto 4px;max-width:760px}
+.sitPillV42{padding:8px 13px;border-radius:999px;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.05);font-size:13px;font-weight:900;color:#edf3ff;letter-spacing:.02em}
+.heroRibbonV42{position:absolute;z-index:30;left:50%;top:25%;transform:translate(-50%,-50%) scale(.96);width:min(720px,88%);padding:18px 22px;border-radius:20px;background:rgba(4,8,14,.94);border:2px solid var(--eventColor,#fff);box-shadow:0 18px 60px rgba(0,0,0,.45),inset 0 0 80px color-mix(in srgb,var(--eventColor,#fff) 15%,transparent);opacity:0;pointer-events:none;transition:.2s}
+.heroRibbonV42.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.heroRibbonV42 .k{font-size:12px;font-weight:1000;letter-spacing:.14em;color:var(--eventColor,#fff);text-transform:uppercase}.heroRibbonV42 .t{font-size:29px;font-weight:1000;margin-top:4px}.heroRibbonV42 .s{font-size:14px;color:#c3cddd;margin-top:5px}
+@media(max-width:850px){.castTeam .teamLogoBox.lg{width:100px!important;height:100px!important;min-width:100px!important}.castTeam .teamLogoBox.lg img{width:90px!important;height:90px!important}.castBigScore{font-size:52px!important}.castScore{grid-template-columns:1fr auto 1fr!important;padding:18px 10px!important}.castTeam b{font-size:18px!important}}
+</style>
+<script>
+/* V42 — surface all verified information already present in the Presto snapshot. */
+(function(){
+  let ribbonKeyV42='';
+  function sitTextV42(s){
+    if(!s) return '';
+    const d=s.down,dist=s.distance;
+    if(d==null) return '';
+    const suf=d===1?'st':d===2?'nd':d===3?'rd':'th';
+    return `${d}${suf} & ${dist==null?'?':dist}`;
+  }
+  function notableV42(p){
+    const t=String(p?.type||'').toUpperCase(),d=String(p?.description||'').toUpperCase();
+    if(['TOUCHDOWN','PICK SIX','INTERCEPTION','FUMBLE','SAFETY','FIELD GOAL','MISSED FG','BLOCKED KICK','EXPLOSIVE','FIRST DOWN'].includes(t)) return t;
+    if(/TOUCHDOWN/.test(d)) return 'TOUCHDOWN'; if(/INTERCEPT/.test(d)) return 'INTERCEPTION'; if(/FUMBLE/.test(d)) return 'FUMBLE';
+    const m=d.match(/(?:FOR|GAIN OF)\s+(\d+)\s+YARDS?/); if(m&&Number(m[1])>=15) return 'EXPLOSIVE';
+    return '';
+  }
+  function colorV42(type){ if(/TOUCHDOWN|FIELD GOAL|FIRST DOWN|EXPLOSIVE/.test(type))return '#f5c542'; if(/INTERCEPTION|FUMBLE|PICK SIX|BLOCKED/.test(type))return '#ff5268'; if(/SAFETY/.test(type))return '#6bd7ff'; return '#ffffff'; }
+  function ensureRibbonV42(){
+    const field=document.querySelector('.liveFieldV9,.liveField,.fieldStage'); if(!field)return null;
+    let r=document.getElementById('heroRibbonV42'); if(!r){r=document.createElement('div');r.id='heroRibbonV42';r.className='heroRibbonV42';field.appendChild(r);} return r;
+  }
+  function patchV42(payload){
+    if(!payload?.ok||!payload.data)return;
+    const d=payload.data,s=d.situation||{},gm=d.game||{},p=(d.plays||[])[0];
+    const a=document.getElementById('castAwayScore'),h=document.getElementById('castHomeScore');
+    if(a) a.textContent=gm.awayScore==null?'—':gm.awayScore;
+    if(h) h.textContent=gm.homeScore==null?'—':gm.homeScore;
+    const down=document.getElementById('castDown');
+    const pieces=[]; const dt=sitTextV42(s); if(dt)pieces.push(dt); if(s.spot)pieces.push(String(s.spot).replace(/([A-Z]{2,5})(\d+)/,'$1 $2')); if(s.possession)pieces.push(`${String(s.possession).toUpperCase()} BALL`);
+    if(down) down.textContent=pieces.length?pieces.join(' • '):'Situation awaiting next verified play';
+    const center=document.querySelector('.castCenter'); if(center){ let bar=document.getElementById('situationV42'); if(!bar){bar=document.createElement('div');bar.id='situationV42';bar.className='situationV42';center.appendChild(bar);} const pills=[]; if(dt)pills.push(dt);if(s.spot)pills.push(s.spot);if(s.possession)pills.push(`${String(s.possession).toUpperCase()} possession`); if(p?.description)pills.push(`Last: ${p.description.length>58?p.description.slice(0,58)+'…':p.description}`);bar.innerHTML=pills.map(x=>`<span class="sitPillV42">${esc(x)}</span>`).join(''); }
+    if(p){ const type=notableV42(p),key=`${p.q}|${p.clock}|${p.description}`; if(type&&key!==ribbonKeyV42){ ribbonKeyV42=key; const r=ensureRibbonV42(); if(r){r.style.setProperty('--eventColor',colorV42(type));r.innerHTML=`<div class="k">${esc(type)}</div><div class="t">${esc(p.description)}</div><div class="s">${esc([p.q&&prestoPeriodV33(p.q),p.clock,sitTextV42(p)].filter(Boolean).join(' • '))}</div>`;requestAnimationFrame(()=>r.classList.add('show'));clearTimeout(r._hide);r._hide=setTimeout(()=>r.classList.remove('show'),type==='TOUCHDOWN'||type==='INTERCEPTION'||type==='FUMBLE'?4500:3000);}}
+    }
+  }
+  const prev=applyPrestoSnapshotV33; applyPrestoSnapshotV33=function(payload){const ok=prev(payload);if(ok)setTimeout(()=>patchV42(payload),0);return ok;};
+  const prevUI=updateSelectedUI; updateSelectedUI=function(){prevUI();if(PRESTO_V33.lastSnapshot?.ok)patchV42(PRESTO_V33.lastSnapshot);};
+  const prevShow=showGameCast;showGameCast=function(id){const x=prevShow(id);setTimeout(()=>{if(PRESTO_V33.lastSnapshot?.game===id)patchV42(PRESTO_V33.lastSnapshot)},0);return x;};
+})();
+</script>
+
 </body></html>

@@ -3104,7 +3104,7 @@ window.addEventListener('load',startPrestoV33);
     const id=LIVE_STORE.selected;
     const n=document.getElementById('prestoProbeV36');
     if(n && PRESTO_V33.lastError){
-      n.innerHTML='<b>LIVE FEED CHECK ACTIVE</b> • upstream is not returning usable live JSON yet. Retrying automatically every 10 seconds.';
+      n.innerHTML='<b>LIVE FEED CHECK ACTIVE</b> • '+esc(PRESTO_V33.lastError||'waiting for verified live JSON')+'. Retrying every 10 seconds.';
     }
   };
 

@@ -1,8 +1,11 @@
-# U SPORTS PRESTO LIVE V50
+U SPORTS PRESTO LIVE V57
 
-Changes from V49:
-- Fully suspends the legacy McMaster fallback poll whenever a dynamically discovered game (such as Waterloo–Carleton) is selected.
-- Uses the official Presto team logo URLs published in each game page bootstrap.
-- Adds a GAME FEED / LIVE STATS toggle beneath the GameCast.
-- Live Stats reads verified team comparison values from the Presto team payload and falls back to verified drive totals when a category is unavailable.
-- Keeps the V48 narrow live-games rail and V47 broadcast layout.
+FIX
+- Historical games (date before the viewer's current local date) are treated as completed for navigation.
+- Past schedule cards now say FINAL / BOX SCORE instead of GAMECAST / OPEN GAMECAST.
+- Clicking any past game opens its Box Score view.
+- Old #live= links for past games are automatically routed to Box Score.
+- Future/current games continue to use GameCast.
+
+DEPLOY
+Replace the full V56 build with this V57 build.

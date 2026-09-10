@@ -1122,7 +1122,7 @@ let selectedWeek=currentWeekIndex(TODAY),q="",conf="ALL",status="ALL";
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
 const cl=c=>c==="CW"?"Canada West":c;
 function logo(t,hero=false){return `<span class="${hero?'logoHero':'logo'}"><img class="${hero?'':'teamLogoImg'}" src="${t.logo}" alt="${esc(t.name)} logo" onerror="this.style.display='none';this.parentElement.textContent='${t.abbr}'"></span>`}
-function shell(content,active="schedule"){return `<div class="shell"><header class="topbar"><button class="brand" onclick="goHome()" style="background:none;border:0;color:inherit;padding:0"><span class="roundel">U</span><span>U SPORTS<small>FOOTBALL</small></span></button><nav class="nav"><button class="${active==="schedule"?"active":""}" onclick="goHome()">Schedule</button><button class="${active==="leaders"?"active":""}" onclick="showLeaders()">Leaders</button><button class="${active==="teamstats"?"active":""}" onclick="showTeamStats()">Team Stats</button><button onclick="showTeams()">Teams</button><button onclick="showConferences()">Conferences</button></nav></header>${content}<div class="footer">U SPORTS Football Game Centre • V3 • verified results through Sept. 5, 2026</div></div>`}
+function shell(content,active="schedule"){return `<div class="shell"><header class="topbar"><button class="brand" onclick="goHome()" style="background:none;border:0;color:inherit;padding:0"><span class="roundel">U</span><span>U SPORTS<small>FOOTBALL</small></span></button><nav class="nav"><button class="${active==="schedule"?"active":""}" onclick="goHome()">Schedule</button><button class="${active==="leaders"?"active":""}" onclick="showLeaders()">Leaders</button><button class="${active==="teamstats"?"active":""}" onclick="showTeamStats()">Team Stats</button><button onclick="showTeams()">Teams</button><button onclick="showConferences()">Conferences</button></nav></header>${content}<div class="footer">U SPORTS Football Game Centre • live schedule + normalized historical gamebooks</div></div>`}
 function goHome(){location.hash="";renderHome()} function fmtDate(d){return new Date(d+"T12:00:00").toLocaleDateString("en-CA",{weekday:"long",month:"long",day:"numeric"})}
 function filtered(){let w=WEEKS[selectedWeek];return GAMES.filter(g=>g.date>=w[2]&&g.date<=w[3]).filter(g=>{let a=TEAM[g.away],h=TEAM[g.home],blob=(a.name+" "+h.name+" "+a.short+" "+h.short).toLowerCase();if(q&&!blob.includes(q.toLowerCase()))return false;if(conf==="FAV"&&!FAVS.has(g.away)&&!FAVS.has(g.home))return false;if(conf!=="ALL"&&conf!=="FAV"&&g.conference!==conf)return false;if(status==="FINAL"&&g.status!=="final")return false;if(status==="UPCOMING"&&g.status==="final")return false;return true})}
 function gameCard(g){let a=TEAM[g.away],h=TEAM[g.home],fin=g.status==="final",hasbox=!!BOX[g.id]||!!SCORE_SOURCES[g.id];return `<div class="gameCard" onclick="${fin?`showGame('${g.id}')`:`showGameCast('${g.id}')`}"><div class="gameTop"><span>${cl(g.conference)} • ${esc(g.time)}</span><span class="gameStatus ${fin?'final':''}">${fin?'FINAL':'UPCOMING'}</span></div><div class="teamRow">${logo(a)}<div><div class="name">${esc(a.short)}</div><div class="city">${esc(a.city)}</div></div><div class="${fin?'score':'at'}">${fin?g.awayScore:'@'}</div></div><div class="teamRow">${logo(h)}<div><div class="name">${esc(h.short)}</div><div class="city">${esc(h.city)}</div></div><div class="score">${fin?g.homeScore:''}</div></div>${g.venue?`<div class="venue">${esc(g.venue)}</div>`:''}${fin?`<div class="gameAction"><button class="miniBtn">${hasbox?'BOX SCORE':'GAME DETAILS'} →</button></div>`:''}</div>`}
@@ -3622,6 +3622,83 @@ async function refreshNewsV61(){
 }
 refreshNewsV61();
 setInterval(refreshNewsV61,15*60*1000);
+</script>
+
+<style id="v62-history-style">
+.historySource62{margin-top:10px;font-size:11px;color:var(--muted)}
+</style>
+<script>
+/* V62 — hydrate historical cards/box scores from the normalized gamebooks already bundled in the app.
+   This runs BEFORE the network fallback, so completed RSEQ/AUS/CW/OUA games do not show blanks simply
+   because /api/final-games cannot rediscover their original host page. */
+(function(){
+  function today62(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+  function isPast62(g){return !!g?.date && g.date<today62()}
+  function sumQ62(q){return Array.isArray(q)?q.reduce((n,v)=>n+(Number(v)||0),0):null}
+  function statRows62(d){
+    if(!d?.awayStats||!d?.homeStats)return [];
+    const a=d.awayStats,h=d.homeStats;
+    const pass=(x)=>`${x.comp??'—'}-${x.att??'—'}-${x.int??'—'}`;
+    const frac=(m,a)=>`${m??'—'}/${a??'—'}`;
+    return [
+      ['First Downs',a.first??'—',h.first??'—'],
+      ['Rushing Yards',a.rushYds??'—',h.rushYds??'—'],
+      ['Passing Yards',a.passYds??'—',h.passYds??'—'],
+      ['Total Offense',a.totalYds??'—',h.totalYds??'—'],
+      ['Passing',pass(a),pass(h)],
+      ['Rushing Attempts',a.rushAtt??'—',h.rushAtt??'—'],
+      ['Third Down',frac(a.thirdMade,a.thirdAtt),frac(h.thirdMade,h.thirdAtt)],
+      ['Turnovers',(Number(a.int)||0)+(Number(a.fumLost)||0),(Number(h.int)||0)+(Number(h.fumLost)||0)],
+      ['Penalties',`${a.pen??'—'}-${a.penYds??'—'}`,`${h.pen??'—'}-${h.penYds??'—'}`],
+      ['Sacks',a.sacks??'—',h.sacks??'—'],
+      ['Time of Possession',a.poss??'—',h.poss??'—'],
+      ['Field Goals',frac(a.fgm,a.fga),frac(h.fgm,h.fga)]
+    ];
+  }
+  function topLeader62(rows,slug){
+    if(!Array.isArray(rows)||!rows.length)return null;
+    const r=[...rows].sort((x,y)=>(Number(y[3]??y[2])||0)-(Number(x[3]??x[2])||0))[0];
+    const yards=Number(r[3]??r[2])||0;
+    return [r[0],slug,yards];
+  }
+  function leaders62(d,g){
+    const out={pass:[],rush:[],receive:[]};
+    const defs=[['pass','passing'],['rush','rushing'],['receive','receiving']];
+    for(const [dst,src] of defs){
+      const aa=topLeader62(d?.[src]?.[g.away],g.away),hh=topLeader62(d?.[src]?.[g.home],g.home);
+      out[dst]=[aa,hh].filter(Boolean).sort((x,y)=>y[2]-x[2]);
+    }
+    return out;
+  }
+  function hydrateOne62(g){
+    if(!g||!isPast62(g))return false;
+    const rich=(typeof RICH_GAMES!=='undefined'&&RICH_GAMES[g.id])||null;
+    const lim=(typeof LIMITED_GAMES!=='undefined'&&LIMITED_GAMES[g.id])||null;
+    const d=rich||lim;if(!d)return false;
+    const q=d.quarters;
+    const as=sumQ62(q?.away),hs=sumQ62(q?.home);
+    if(Number.isFinite(as))g.awayScore=as;
+    if(Number.isFinite(hs))g.homeScore=hs;
+    g.status='final';
+    const add={source:d.source||BOX?.[g.id]?.source||'',summary:d.notes||BOX?.[g.id]?.summary||''};
+    if(q?.away&&q?.home)add.quarters=q;
+    if(rich){add.teamstats=statRows62(rich);add.leaders=leaders62(rich,g)}
+    BOX[g.id]={...(BOX[g.id]||{}),...add};
+    return Number.isFinite(as)&&Number.isFinite(hs);
+  }
+  function hydrateAll62(){for(const g of GAMES)hydrateOne62(g)}
+  hydrateAll62();
+
+  const oldUpdate62=window.updateCal;
+  window.updateCal=function(){hydrateAll62();return oldUpdate62.apply(this,arguments)};
+  const oldHome62=window.renderHome;
+  window.renderHome=function(){hydrateAll62();return oldHome62.apply(this,arguments)};
+  const oldShow62=window.showGame;
+  window.showGame=function(id){const g=GAMES.find(x=>x.id===id);if(g)hydrateOne62(g);return oldShow62.apply(this,arguments)};
+
+  // Repaint the currently visible historical week immediately with the newly hydrated local gamebooks.
+  if(document.querySelector('.calendar')) setTimeout(()=>window.updateCal(),0);
+})();
 </script>
 </body></html>
 

@@ -1,13 +1,12 @@
-U SPORTS PRESTO LIVE V61
+# U SPORTS Presto Live V62
 
-NEWS REFRESH FIX
-- Added /api/news.js.
-- News is no longer frozen at the embedded Sep. 5/6 index.
-- On load, the app asks the backend for official football stories published in the last 14 days.
-- The backend checks official athletics football pages, parses dated news links, deduplicates them, and returns newest-first JSON.
-- The existing embedded news remains only as a fallback if a source is temporarily unavailable.
-- Media hub, home news, team news, and matchup news repaint when fresh stories arrive.
-- Refreshes every 15 minutes in an open browser; backend response is CDN-cached for 15 minutes.
+Fixes historical games that were still showing blank scores/data.
 
-DEPLOY
-Upload the complete build because api/news.js is new.
+## What changed
+- Historical games now hydrate from the normalized `RICH_GAMES` and `LIMITED_GAMES` data already bundled in the app before attempting any network rediscovery.
+- This restores completed-game scores across OUA, RSEQ, AUS and Canada West wherever a normalized gamebook/result is already present.
+- Full normalized games also populate quarter scoring, team stats and leaders in the Box Score view.
+- The existing `/api/final-games` fallback remains in place for completed games that are not yet bundled locally, including the Sep. 6 OUA finals.
+- V61 live news refresh and all live GameCast functionality are preserved.
+
+Deploy the full project contents to the same Vercel project.

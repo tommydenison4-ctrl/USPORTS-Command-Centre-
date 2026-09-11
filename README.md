@@ -31,3 +31,6 @@ V98: Removed the late V97 route wrapper. V93 is again the sole owner of live rou
 - Mobile live updates use the existing V94 DOM patch poller only; no route/hash/page rebuild during normal polling.
 - Retired flat V47 field is forcibly hidden; only the tilted 3D V97 field is shown in the modern live center.
 - V99 player-stat parser retained unchanged.
+
+
+V102 stability rebuild: removed competing V92/V93/V94/V97/V101 front-end live controllers and replaced them with one shared desktop/mobile live controller. One polling loop, one 3D field, DOM-only live patches, session-cached source/snapshot, stable scroll. Player rows now carry an explicit away/home side from Presto team-root order.

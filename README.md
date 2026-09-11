@@ -17,3 +17,6 @@ No Supabase is required. Deploy the full folder to Vercel.
 
 
 V77: Replaced raw PF/PA-heavy prediction with opponent-adjusted power. Model uses 30% opponent-adjusted current performance, 25% Elo, 15% strength of schedule, 10% conference strength, 10% historical/prior baseline, and 10% normalized gamebook efficiency. Historical prior decays as current-season sample grows. Top-10 rank is display-only to avoid double-counting Elo.
+
+
+V79 deployment hardening: root index is mirrored to public/index.html and Vercel explicitly rewrites / to /index.html so either a root-static or public-output project configuration resolves the application instead of returning NOT_FOUND.

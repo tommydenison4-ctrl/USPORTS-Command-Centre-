@@ -12,3 +12,6 @@ Deploy the full project so the `/api/live-games` and `/api/presto-live` serverle
 
 
 V93: authoritative current-date live discovery, direct SMU Presto source coverage, and clickable live cards.
+
+
+V94: redesigned live GameCenter, projection at top, methodology banners removed, play-by-play collapsed by default, live individual/team box score views, and DOM-only polling to preserve scroll position during refreshes.

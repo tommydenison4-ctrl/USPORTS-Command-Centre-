@@ -33,14 +33,42 @@ function isActuallyLive(meta,j){if(meta.final)return false;const complete=String
 async function scanSchedule(scheduleUrl,date){
   const s=await getText(scheduleUrl);if(!s.ok)return [];
   const origin=new URL(scheduleUrl).origin;
-  const re=new RegExp(`(?:https?:\\/\\/[^"'<>\\s]+)?\\/sports\\/fball\\/2026-27\\/boxscores\\/${date}_[A-Za-z0-9]+\\.xml`,'gi');
-  const set=new Set();for(const m of s.text.matchAll(re)){let u=m[0];if(u.startsWith('/'))u=origin+u;set.add(u);}
+  const set=new Set();
+  const html=dec(s.text||'');
+  // Presto pages can expose the live-stat XML as absolute, root-relative, or
+  // season-relative hrefs. Do not require one specific host/path shape.
+  const patterns=[
+    new RegExp(`https?:\\/\\/[^"'<>\\s]+\\/sports\\/fball\\/[^"'<>\\s]+\\/boxscores\\/${date}_[A-Za-z0-9_-]+\\.xml`,'gi'),
+    new RegExp(`\\/sports\\/fball\\/[^"'<>\\s]+\\/boxscores\\/${date}_[A-Za-z0-9_-]+\\.xml`,'gi'),
+    new RegExp(`(?:href|data-url|data-link)=["']([^"']*boxscores\\/${date}_[A-Za-z0-9_-]+\\.xml[^"']*)["']`,'gi')
+  ];
+  for(const re of patterns){
+    for(const m of html.matchAll(re)){
+      let u=(m[1]||m[0]||'').replace(/^(?:href|data-url|data-link)=["']?/i,'').replace(/["']$/,'');
+      try{u=new URL(u,origin).href;}catch{continue;}
+      set.add(u);
+    }
+  }
   return [...set];
 }
 module.exports=async function handler(req,res){
   if(req.method!=='GET')return send(res,405,{ok:false,error:'GET only'});
   const date=String(req.query.date||'20260906').replace(/\D/g,'').slice(0,8);
-  const scheduleUrls=['https://en.usports.ca/sports/fball/2026-27/schedule','https://oua.ca/sports/fball/2026-27/schedule'];
+  const scheduleUrls=[
+    'https://en.usports.ca/sports/fball/2026-27/schedule',
+    'https://oua.ca/sports/fball/2026-27/schedule',
+    'https://www.atlanticuniversitysport.com/sports/fball/2026-27/schedule',
+    'https://atlanticuniversitysport.com/sports/fball/2026-27/schedule',
+    'https://aus.prestosports.com/sports/fball/2026-27/schedule',
+    'https://smuhuskies.ca/sports/fball/2026-27/schedule',
+    'https://www.smuhuskies.ca/sports/fball/2026-27/schedule',
+    'https://smu.prestosports.com/sports/fball/2026-27/schedule',
+    'https://smu.prestosports.com/sports/fball/index',
+    'https://mountiepride.ca/sports/fball/2026-27/schedule',
+    'https://mountiepriderefresh2023.prestosports.com/sports/fball/2026-27/schedule',
+    'https://mountiepriderefresh2023.prestosports.com/sports/fball/index',
+    'https://www.mountiepride.ca/sports/fball/2026-27/schedule'
+  ];
   let pages=[];for(const u of scheduleUrls){try{pages.push(...await scanSchedule(u,date));}catch{}}
   pages=[...new Set(pages)].slice(0,20);
   const games=(await Promise.all(pages.map(async page=>{

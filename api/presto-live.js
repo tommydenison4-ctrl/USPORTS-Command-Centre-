@@ -426,8 +426,9 @@ module.exports=async function handler(req,res){
     try{
       const u=new URL(dynamicPage);
       const host=u.hostname.toLowerCase();
-      const allowed=(host==='oua.ca'||host==='www.oua.ca'||host==='en.usports.ca'||host==='usports.ca'||host==='www.usports.ca');
-      const validPath=/^\/sports\/fball\/2026-27\/boxscores\/20260906_[A-Za-z0-9]+\.xml$/i.test(u.pathname);
+      const allowedHosts=new Set(['oua.ca','www.oua.ca','en.usports.ca','usports.ca','www.usports.ca','atlanticuniversitysport.com','www.atlanticuniversitysport.com','aus.prestosports.com','smuhuskies.ca','www.smuhuskies.ca','mountiepride.ca','www.mountiepride.ca']);
+      const allowed=allowedHosts.has(host)||host.endsWith('.prestosports.com');
+      const validPath=/^\/sports\/fball\/2026-27\/boxscores\/\d{8}_[A-Za-z0-9]+\.xml$/i.test(u.pathname);
       if(!allowed||!validPath) return send(res,400,{ok:false,error:'Unsupported live-stat source page'});
       source={page:u.toString(),fallbackEvent:'',fallbackHash:'',awayId:String(req.query.awayId||'').toUpperCase(),homeId:String(req.query.homeId||'').toUpperCase()};
     }catch{return send(res,400,{ok:false,error:'Invalid source page'});}
@@ -449,5 +450,5 @@ module.exports=async function handler(req,res){
       if(lr.json?.error){ attempts[attempts.length-1].upstreamError=String(lr.json.error); }
     }catch(e){ attempts.push({kind:c.kind,status:null,error:String(e?.message||e)}); }
   }
-  return send(res,502,{ok:false,game,error:'OUA/Presto returned a response, but it was not a usable live-stat payload',sourcePage:source.page,bootstrapStatus:boot.status,bootstrapOk:boot.ok,discoveredCredentials:!!boot.found,bootstrapLiveupdateSnippet:boot.liveupdateSnippet||'',bootstrapEventSnippet:boot.eventSnippet||'',attempts});
+  return send(res,502,{ok:false,game,error:'PrestoSports returned a response, but it was not a usable live-stat payload',sourcePage:source.page,bootstrapStatus:boot.status,bootstrapOk:boot.ok,discoveredCredentials:!!boot.found,bootstrapLiveupdateSnippet:boot.liveupdateSnippet||'',bootstrapEventSnippet:boot.eventSnippet||'',attempts});
 };

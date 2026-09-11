@@ -281,30 +281,7 @@ function scoreFallbackFromPlays(plays,source){
   return seenAny?{away,home}:{away:null,home:null};
 }
 function flattenDrives(data){ const out=[]; walk(data?.drives,(o)=>{ if(Array.isArray(o))return; const plays=num(o.plays??o.playCount??o.numplays),yards=num(o.yards??o.yds??o.netyards),team=text(o.team??o.teamId??o.team_id??o.id),result=text(o.result??o.end??o.summary??o.outcome),time=text(o.time??o.elapsed??o.top); if(plays!=null||yards!=null||result||time)out.push({team,plays,yards,result,time}); }); return out.slice(-24).reverse(); }
-function teamAndPlayerStats(data){
-  const teamStats=[],playerStats=[],seen=new Set();
-  // Presto changes the exact nesting of individual football tables between
-  // hosts. Walk the ENTIRE payload, not only data.team.
-  walk(data,(o,path)=>{
-    if(Array.isArray(o)||!o||typeof o!=='object')return;
-    const low=String(path||'').toLowerCase();
-    const id=text(o.teamId||o.team_id||o.team||o.code||o.abbr||o.id);
-    const name=text(o.player||o.playerName||o.player_name||o.fullname||o.full_name||o.name||o.displayName||o.display_name);
-    const scalar=Object.entries(o).filter(([k,v])=>['string','number'].includes(typeof v));
-    const statKeys=scalar.filter(([k])=>/^(yds|yards|att|attempts?|cmp|comp|completions?|td|touchdowns?|int|interceptions?|rec|receptions?|car|carries|rush|pass|tkl|tackles?|solo|ast|sacks?|fg|xp|punts?|long|avg|average)$/i.test(k)).map(([k])=>k);
-    if(!statKeys.length)return;
-    const stats={}; statKeys.slice(0,28).forEach(k=>stats[k]=o[k]);
-    const playerish = !!name && (/player|individual|passing|rushing|receiv|defen|tackle|scoring|punting|kicking/i.test(low) || statKeys.length>=2);
-    const teamish = !playerish && !!id;
-    if(playerish){
-      // Avoid treating obvious team summary labels as players.
-      if(/^(team|totals?|visitor|home|away)$/i.test(name))return;
-      const key=`${id}|${name}|${statKeys.join(',')}|${path}`; if(seen.has(key))return; seen.add(key);
-      playerStats.push({team:id,name,stats,path});
-    } else if(teamish){ teamStats.push({team:id,stats,path}); }
-  });
-  return {teamStats:teamStats.slice(0,60),playerStats:playerStats.slice(0,260)};
-}
+function teamAndPlayerStats(data){ const teamStats=[],playerStats=[]; walk(data?.team,(o,path)=>{ if(Array.isArray(o))return; const id=text(o.id||o.teamId||o.team_id||o.code||o.abbr),name=text(o.name||o.player||o.fullname||o.full_name); const statKeys=Object.keys(o).filter(k=>/^(yds|yards|att|cmp|comp|td|int|rec|car|rush|pass|tkl|tack|sack|fg|xp|punt)/i.test(k)); if(!statKeys.length)return; const stats={}; statKeys.slice(0,24).forEach(k=>{if(['string','number'].includes(typeof o[k]))stats[k]=o[k]}); if(name&&!/^MAC$|^GUE$/i.test(name))playerStats.push({team:id,name,stats,path}); else if(id)teamStats.push({team:id,stats,path}); }); return {teamStats:teamStats.slice(0,30),playerStats:playerStats.slice(0,140)}; }
 
 function scalarLeaves(root, prefix='', out=[], depth=0){
   if(depth>5 || root==null) return out;

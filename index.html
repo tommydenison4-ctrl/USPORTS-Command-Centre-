@@ -3592,6 +3592,23 @@ window.addEventListener('load',startPrestoV33);
 
 
 <script>
+/* V70 guaranteed post-Sep-5 news fallback. These are verified official stories and remain visible even if /api/news is temporarily unavailable. */
+const NEWS_V70_FALLBACK=[
+ {teams:['laurier'],date:'2026-09-09',title:'Golden Hawks football ranked #5 nationally heading into Week 3',source:'Laurier Athletics',url:'https://laurierathletics.com/news/2026/9/9/football-golden-hawks-football-ranked-5-nationally-heading-into-week-3.aspx',type:'official'},
+ {teams:['laurier','windsor'],date:'2026-09-09',title:"#9 Windsor snaps #4 Laurier's 17-game regular-season win streak",source:'Laurier Athletics',url:'https://laurierathletics.com/news/2026/9/9/football-9-windsor-snaps-4-lauriers-17-game-regular-season-win-streak.aspx',type:'official'},
+ {teams:['western'],date:'2026-09-09',title:'Mustangs Recap: Sept. 4-6',source:'Western Mustangs',url:'https://westernmustangs.ca/news/2026/9/9/mustangs-recap-sept-4-6.aspx',type:'official'},
+ {teams:['mcmaster'],date:'2026-09-08',title:'Marauder Minute (August 31-September 6, 2026)',source:'McMaster Athletics',url:'https://marauders.ca/news/2026/9/8/media-marauder-minute-august-31-september-6-2026.aspx',type:'official'},
+ {teams:['laurier'],date:'2026-09-08',title:'Goetz, Hughes, and Jackson named Laurier football Players of the Week',source:'Laurier Athletics',url:'https://laurierathletics.com/news/2026/9/8/football-goetz-hughes-and-jackson-named-laurier-football-players-of-the-week.aspx',type:'official'},
+ {teams:['york','western'],date:'2026-09-06',title:'Lions lose first game of 2026 to Mustangs',source:'York Athletics',url:'https://yorkulions.ca/news/2026/9/6/football-lions-lose-first-game-of-2026-to-mustangs.aspx',type:'official'},
+ {teams:['western','york'],date:'2026-09-06',title:'Mustangs dominate York 78-7 in season opener',source:'Western Mustangs',url:'https://westernmustangs.ca/news/2026/9/6/football-mustangs-dominate-york-78-7-in-season-opener.aspx',type:'official'},
+ {teams:['western'],date:'2026-09-06',title:'Michael Faulds: Coming Home',source:'Western Mustangs',url:'https://westernmustangs.ca/news/2026/9/6/football-michael-faulds-coming-home.aspx',type:'official'},
+ {teams:['mcmaster','guelph'],date:'2026-09-06',title:'Marauders stifle Gryphons in 20-11 victory',source:'McMaster Athletics',url:'https://marauders.ca/news/2026/9/6/football-marauders-stifle-gryphons-in-20-11-victory.aspx',type:'official'}
+];
+(function seedNewsV70(){
+ const mm=new Map(); [...NEWS_V70_FALLBACK,...MEDIA_FEED].forEach(n=>{if(n?.url&&!mm.has(n.url))mm.set(n.url,n)}); MEDIA_FEED=[...mm.values()].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ const nn=new Map(); [...NEWS_V70_FALLBACK,...NEWS_SEED].forEach(n=>{if(n?.url&&!nn.has(n.url))nn.set(n.url,n)}); NEWS_SEED=[...nn.values()].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+})();
+
 /* V61 live article refresh: official athletics listings -> /api/news, seed remains fallback */
 window.NEWS_REFRESH_META={state:'loading',generatedAt:null,count:0};
 function mergeFreshNewsV61(rows){
@@ -3610,18 +3627,31 @@ function repaintNewsV61(){
   if(h.startsWith('live=')){const id=h.slice(5);document.getElementById('matchup-news-v20')?.remove();v20AppendMatchupNews(id);return}
   if(!h){document.getElementById('home-news-v20')?.remove();v20AppendHomeNews()}
 }
-async function refreshNewsV61(){
+let NEWS_REFRESH_BUSY_V70=false;
+async function refreshNewsV61(force=false){
+  if(NEWS_REFRESH_BUSY_V70)return;
+  NEWS_REFRESH_BUSY_V70=true;
   try{
-    const r=await fetch('/api/news?days=14',{cache:'no-store'});
+    // two-minute bucket is enough to bypass the browser cache while still letting Vercel share a short scrape cache
+    const bucket=Math.floor(Date.now()/60000);
+    const r=await fetch('/api/news?days=14&v='+bucket+(force?'&force=1':''),{cache:'no-store'});
     const j=await r.json();
     if(!r.ok||!j.ok)throw new Error(j.error||('HTTP '+r.status));
+    const before=(typeof MEDIA_FEED!=='undefined'?MEDIA_FEED.length:0);
     mergeFreshNewsV61(j.stories||[]);
-    NEWS_REFRESH_META={state:'live',generatedAt:j.generatedAt,count:(j.stories||[]).length};
+    const after=(typeof MEDIA_FEED!=='undefined'?MEDIA_FEED.length:before);
+    NEWS_REFRESH_META={state:'live',generatedAt:j.generatedAt,count:(j.stories||[]).length,newCount:Math.max(0,after-before),sources:j.sourceStatus||[]};
     repaintNewsV61();
+    window.dispatchEvent(new CustomEvent('usports-news-refresh',{detail:NEWS_REFRESH_META}));
   }catch(e){NEWS_REFRESH_META={state:'fallback',generatedAt:null,count:0,error:String(e&&e.message||e)}}
+  finally{NEWS_REFRESH_BUSY_V70=false}
 }
-refreshNewsV61();
-setInterval(refreshNewsV61,15*60*1000);
+// Continuous news collector while the site is open. Also refresh immediately when the tab regains focus.
+refreshNewsV61(true);
+window.NEWS_REFRESH_TIMER_V70=setInterval(()=>refreshNewsV61(false),60*1000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshNewsV61(true)});
+window.addEventListener('focus',()=>refreshNewsV61(true));
+window.addEventListener('online',()=>refreshNewsV61(true));
 </script>
 
 <style id="v62-history-style">
@@ -3698,6 +3728,249 @@ setInterval(refreshNewsV61,15*60*1000);
 
   // Repaint the currently visible historical week immediately with the newly hydrated local gamebooks.
   if(document.querySelector('.calendar')) setTimeout(()=>window.updateCal(),0);
+})();
+</script>
+
+<style id="v64-final-style">
+.v64-wrap{max-width:1180px;margin:0 auto;padding:18px 0 42px}.v64-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;margin-top:14px}.v64-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px}.v64-card h3{margin:0 0 14px;font-size:17px}.v64-loading{padding:34px;text-align:center;color:var(--muted)}.v64-note{color:var(--muted);font-size:12px;line-height:1.55}.v64-leader{display:grid;grid-template-columns:1fr auto;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);align-items:center}.v64-leader:last-child{border-bottom:0}.v64-leader small{display:block;color:var(--muted);font-weight:800;letter-spacing:.06em}.v64-leader b{font-size:15px}.v64-leader strong{font-size:23px}.v64-source{display:block;margin-top:10px;padding:12px 14px;text-align:center;border:1px solid var(--line);border-radius:12px;color:#fff;text-decoration:none;font-weight:900}.v64-scoretable,.v64-statstable{width:100%;border-collapse:collapse}.v64-scoretable th,.v64-scoretable td,.v64-statstable th,.v64-statstable td{padding:10px;border-bottom:1px solid var(--line);text-align:center}.v64-scoretable th:first-child,.v64-scoretable td:first-child,.v64-statstable th:first-child,.v64-statstable td:first-child{text-align:left}.v64-scoretable th,.v64-statstable th{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.06em}.v64-scoretable td,.v64-statstable td{font-size:13px}.v64-play{padding:10px 0;border-bottom:1px solid var(--line)}.v64-play:last-child{border-bottom:0}.v64-play small{color:var(--muted);font-weight:800;margin-right:8px}.v64-empty{padding:18px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);font-size:12px;line-height:1.5}.v64-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.v64-tabs button{border:1px solid var(--line);background:#0d1723;color:#fff;border-radius:999px;padding:9px 13px;font-weight:900;cursor:pointer}.v64-tabs button:hover{border-color:#6d8199}
+@media(max-width:900px){.v64-grid{grid-template-columns:1fr}.v64-wrap{padding:12px 0 28px}.v64-card{padding:14px}}
+</style>
+<script>
+/* V64 — one final-game resolver/renderer for every completed game. No legacy score-only path. */
+(function(){
+  function localFinal64(id){
+    const g=GAMES.find(x=>x.id===id); if(!g)return null;
+    const rich=(typeof RICH_GAMES!=='undefined'&&RICH_GAMES[id])||null;
+    const lim=(typeof LIMITED_GAMES!=='undefined'&&LIMITED_GAMES[id])||null;
+    const box=(typeof BOX!=='undefined'&&BOX[id])||null;
+    if(rich)return {kind:'rich',data:rich};
+    if(lim)return {kind:'limited',data:lim};
+    if(box&&(box.quarters||box.teamstats?.length||box.leaders||box.source))return {kind:'box',data:box};
+    return null;
+  }
+  function qTable64(g,a,h,q){
+    if(!q?.away||!q?.home)return '';
+    const max=Math.max(q.away.length,q.home.length,4); const hs=Array.from({length:max},(_,i)=>`<th>${i+1}</th>`).join('');
+    const cells=(arr)=>Array.from({length:max},(_,i)=>`<td>${arr[i]??'—'}</td>`).join('');
+    return `<table class="v64-scoretable"><thead><tr><th>Team</th>${hs}<th>F</th></tr></thead><tbody><tr><td><b>${esc(a.short)}</b></td>${cells(q.away)}<td><b>${g.awayScore??'—'}</b></td></tr><tr><td><b>${esc(h.short)}</b></td>${cells(q.home)}<td><b>${g.homeScore??'—'}</b></td></tr></tbody></table>`;
+  }
+  function teamStats64(a,h,rows){
+    if(!Array.isArray(rows)||!rows.length)return '<div class="v64-empty">Detailed team comparison is not available from this source.</div>';
+    return `<table class="v64-statstable"><thead><tr><th>Category</th><th>${esc(a.short)}</th><th>${esc(h.short)}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${r[1]??'—'}</td><td>${r[2]??'—'}</td></tr>`).join('')}</tbody></table>`;
+  }
+  function richStatsRows64(d){
+    const x=d?.awayStats,y=d?.homeStats;if(!x||!y)return [];
+    const safe=(n,d=0)=>Number.isFinite(Number(n))?Number(n):d;
+    return [
+      ['First Downs',x.firstDowns??'—',y.firstDowns??'—'],['Total Offense',x.totalYds??'—',y.totalYds??'—'],['Rushing Yards',x.rushYds??'—',y.rushYds??'—'],['Passing Yards',x.passYds??'—',y.passYds??'—'],['Plays',x.plays??'—',y.plays??'—'],['Turnovers',safe(x.int)+safe(x.fumLost),safe(y.int)+safe(y.fumLost)],['Penalties',x.pen!=null?`${x.pen}-${x.penYds??0}`:'—',y.pen!=null?`${y.pen}-${y.penYds??0}`:'—'],['Possession',x.poss??'—',y.poss??'—'],['Field Goals',x.fgm!=null?`${x.fgm}/${x.fga??0}`:'—',y.fgm!=null?`${y.fgm}/${y.fga??0}`:'—']
+    ];
+  }
+  function leaders64(obj){
+    if(!obj)return '<div class="v64-empty">Player leaders are not available from this completed source.</div>';
+    const aliases=[['pass','passing','PASSING'],['rush','rushing','RUSHING'],['receive','receiving','RECEIVING']];
+    let out='';
+    for(const [k1,k2,label] of aliases){const rows=obj[k1]||obj[k2]||[];for(const r of rows.slice(0,2)){let team=''; if(typeof r[1]==='string'&&TEAM[r[1]])team=TEAM[r[1]].short;out+=`<div class="v64-leader"><div><small>${label}</small><b>${esc(r[0])}${team?` · ${esc(team)}`:''}</b></div><strong>${r[2]??r[3]??'—'}</strong></div>`}}
+    return out||'<div class="v64-empty">Player leaders are not available from this completed source.</div>';
+  }
+  function offense64(d,g){
+    if(!d)return '';
+    const groups=[['Passing','passing',['Player','CMP','ATT','YDS','TD','INT','LONG','SACK']],['Rushing','rushing',['Player','ATT','YDS','TD','LONG','AVG']],['Receiving','receiving',['Player','REC','YDS','TD','LONG']]];
+    let html='';
+    for(const [label,key,heads] of groups){const obj=d[key];if(!obj)continue;let body='';for(const slug of [g.away,g.home]){const rows=obj[slug]||[];if(!rows.length)continue;body+=`<div class="teamStatHead">${gcTeamImg(slug)}${esc(TEAM[slug].short)}</div>${boxTable(heads,rows)}`;}if(body)html+=`<div class="v64-card"><h3>${label}</h3>${body}</div>`}
+    return html;
+  }
+  function renderFinal64(id,payload){
+    const g=GAMES.find(x=>x.id===id);if(!g)return;const a=TEAM[g.away],h=TEAM[g.home];
+    let q=null,rows=[],leaders=null,source='',notes='',offense='',plays=[];
+    if(payload?.kind==='rich'){const d=payload.data;q=d.quarters;rows=richStatsRows64(d);leaders=d;source=d.source||'';notes=d.notes||'';offense=offense64(d,g)}
+    else if(payload?.kind==='limited'){const d=payload.data;q=d.quarters;leaders=d;source=d.source||'';notes=d.notes||'';offense=offense64(d,g)}
+    else {const b=payload?.data||{};q=b.quarters;rows=b.teamstats||b.teamStats||[];leaders=b.leaders;source=b.source||b.page||'';notes=b.summary||b.notes||'';plays=b.plays||[]}
+    const qhtml=qTable64(g,a,h,q);
+    const hero=`<section class="gameHero6"><div class="gameHeroTop"><span>${cl(g.conference)} • ${fmtDate(g.date)} • ${esc(g.time)}</span><span style="color:var(--green)">FINAL</span></div><div class="match6"><div class="team6">${gcTeamImg(g.away)}<div><h2>${esc(a.name)}</h2><small>${esc(a.city)}</small></div></div><div class="score6">${g.awayScore??'—'}–${g.homeScore??'—'}<small>FINAL</small></div><div class="team6 home"><div><h2>${esc(h.name)}</h2><small>${esc(h.city)}</small></div>${gcTeamImg(g.home)}</div></div></section>`;
+    const main=`${qhtml?`<section class="v64-card" id="summary64"><h3>Scoring by Quarter</h3>${qhtml}</section>`:''}<section class="v64-card" id="team64"><h3>Team Stats</h3>${teamStats64(a,h,rows)}</section>${offense}${plays.length?`<section class="v64-card"><h3>Play-by-Play</h3>${plays.map(p=>`<div class="v64-play"><small>${esc(p.q||'')} ${esc(p.clock||'')}</small>${esc(p.description||'')}</div>`).join('')}</section>`:''}${notes?`<section class="v64-card"><h3>Game Notes</h3><div class="v64-note">${esc(notes)}</div></section>`:''}`;
+    const side=`<section class="v64-card"><h3>Game Leaders</h3>${leaders64(leaders)}</section><section class="v64-card"><h3>Game Information</h3><div class="v64-note">${esc(g.venue||'Venue not listed')}</div>${source?`<a class="v64-source" href="${esc(source)}" target="_blank" rel="noopener">OPEN OFFICIAL BOX SCORE ↗</a>`:''}</section>`;
+    const content=`<div class="v64-wrap"><button class="back" onclick="goHome()">← All Scores</button>${hero}<div class="v64-tabs"><button onclick="document.getElementById('summary64')?.scrollIntoView({behavior:'smooth'})">Summary</button><button onclick="document.getElementById('team64')?.scrollIntoView({behavior:'smooth'})">Team Stats</button></div><div class="v64-grid"><main>${main}</main><aside>${side}</aside></div></div>`;
+    document.getElementById('app').innerHTML=shell(content,'schedule');
+  }
+  async function fetchFinal64(g){
+    const date=g.date.replace(/-/g,'');
+    const u=`/api/final-games?date=${encodeURIComponent(date)}&away=${encodeURIComponent(TEAM[g.away]?.short||g.away)}&home=${encodeURIComponent(TEAM[g.home]?.short||g.home)}&detail=1&_=${Date.now()}`;
+    try{const r=await fetch(u,{cache:'no-store'});const j=await r.json();const x=j?.games?.[0];if(!x)return null;if(x.awayScore!=null)g.awayScore=Number(x.awayScore);if(x.homeScore!=null)g.homeScore=Number(x.homeScore);g.status='final';const b={quarters:x.quarters||null,teamstats:x.teamStats||[],leaders:x.leaders||null,source:x.page||'',plays:x.plays||[],drives:x.drives||[]};BOX[g.id]=Object.assign({},BOX[g.id]||{},b);return {kind:'box',data:BOX[g.id]};}catch(e){return null}
+  }
+  window.showGame=async function(id){
+    const g=GAMES.find(x=>x.id===id);if(!g)return;
+    location.hash='game='+id;
+    const local=localFinal64(id);if(local){renderFinal64(id,local);return;}
+    document.getElementById('app').innerHTML=shell(`<div class="v64-wrap"><button class="back" onclick="goHome()">← All Scores</button><div class="v64-card v64-loading">Loading completed box score…</div></div>`,'schedule');
+    const remote=await fetchFinal64(g);
+    if(location.hash!=='#game='+id)return;
+    if(remote){renderFinal64(id,remote);return;}
+    // Never leave a blank page: retain verified final header even if the detail endpoint fails.
+    const a=TEAM[g.away],h=TEAM[g.home];
+    const content=`<div class="v64-wrap"><button class="back" onclick="goHome()">← All Scores</button><section class="gameHero6"><div class="gameHeroTop"><span>${cl(g.conference)} • ${fmtDate(g.date)} • ${esc(g.time)}</span><span style="color:var(--green)">FINAL</span></div><div class="match6"><div class="team6">${gcTeamImg(g.away)}<div><h2>${esc(a.name)}</h2></div></div><div class="score6">${g.awayScore??'—'}–${g.homeScore??'—'}<small>FINAL</small></div><div class="team6 home"><div><h2>${esc(h.name)}</h2></div>${gcTeamImg(g.home)}</div></div></section><div class="v64-card"><h3>Box Score</h3><div class="v64-empty">The final score is loaded, but the detailed completed-game source did not answer this request. The page will retry when reopened; no statistics are fabricated.</div></div></div>`;
+    document.getElementById('app').innerHTML=shell(content,'schedule');
+  };
+})();
+</script>
+
+<style id="v65-platform-style">
+:root{--v65gold:#f2c94c;--v65red:#ff5b65;--v65green:#32d583;--v65blue:#65a7ff}
+.v65-wrap{max-width:1480px;margin:0 auto;padding:18px 20px 46px}.v65-hero{border:1px solid var(--line);background:linear-gradient(135deg,#111c28,#0a111a);border-radius:22px;padding:24px;margin-bottom:16px}.v65-hero h1{font-size:38px;margin:4px 0 8px}.v65-hero p{margin:0;color:var(--muted);max-width:850px;line-height:1.55}.v65-kicker{font-size:10px;letter-spacing:.14em;font-weight:1000;color:var(--v65gold)}
+.v65-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}.v65-card{grid-column:span 4;border:1px solid var(--line);border-radius:17px;background:var(--panel);padding:16px;min-width:0}.v65-card.wide{grid-column:span 8}.v65-card.full{grid-column:1/-1}.v65-card.half{grid-column:span 6}.v65-card h3{margin:0 0 10px;font-size:16px}.v65-card p{color:var(--muted);font-size:12px;line-height:1.5}.v65-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}.v65-row:last-child{border-bottom:0}.v65-team{display:flex;align-items:center;gap:9px;min-width:0}.v65-logo{width:28px;height:28px;object-fit:contain}.v65-score{font-weight:1000;font-size:19px}.v65-muted{color:var(--muted);font-size:11px}.v65-chip{display:inline-flex;gap:6px;align-items:center;padding:5px 8px;border:1px solid var(--line);border-radius:999px;font-size:10px;font-weight:900}.v65-chip.live{background:rgba(50,213,131,.12);color:#67e3a7}.v65-chip.alert{background:rgba(255,91,101,.12);color:#ff8d95}.v65-chip.rank{background:rgba(242,201,76,.10);color:#f2c94c}.v65-big{font-size:34px;font-weight:1000;line-height:1}.v65-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px}.v65-tabs button,.v65-btn{border:1px solid var(--line);background:#111a24;color:#cdd6df;border-radius:10px;padding:9px 12px;font-weight:900;cursor:pointer}.v65-tabs button.active,.v65-btn.active{background:#f2c94c;color:#101318;border-color:#f2c94c}.v65-meter{height:12px;border-radius:999px;overflow:hidden;background:#283443;display:flex;margin:8px 0}.v65-meter span{height:100%}.v65-probLabels{display:flex;justify-content:space-between;font-weight:1000}.v65-table{width:100%;border-collapse:collapse;font-size:12px}.v65-table th{color:var(--muted);font-size:9px;letter-spacing:.08em;text-transform:uppercase}.v65-table th,.v65-table td{padding:9px 8px;text-align:right;border-bottom:1px solid var(--line)}.v65-table th:first-child,.v65-table td:first-child{text-align:left}.v65-rank{width:28px;text-align:center;font-size:18px;font-weight:1000}.v65-swing{font-weight:1000}.v65-pos{color:var(--v65green)}.v65-neg{color:var(--v65red)}.v65-play{padding:10px 0;border-bottom:1px solid var(--line);font-size:12px;line-height:1.45}.v65-play b{display:block;margin-bottom:2px}.v65-redzone{border-left:4px solid var(--v65red)!important}.v65-highlight{display:grid;grid-template-columns:120px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}.v65-thumb{height:68px;background:#0b1118;border:1px solid var(--line);border-radius:10px;display:grid;place-items:center;font-size:25px}.v65-profile{display:grid;grid-template-columns:74px 1fr;gap:14px}.v65-avatar{width:74px;height:74px;border-radius:16px;background:#0a1118;border:1px solid var(--line);display:grid;place-items:center;font-size:30px}.v65-select{width:100%;padding:10px 11px;border-radius:10px;border:1px solid var(--line);background:#0f1721;color:#fff}.v65-upload{border:1px dashed #415368;border-radius:14px;padding:16px;text-align:center}.v65-ticker{position:sticky;top:0;z-index:90;background:#070d13;border-bottom:1px solid #223142;display:flex;overflow:auto;white-space:nowrap}.v65-tick{padding:9px 14px;border-right:1px solid #223142;font-size:11px;cursor:pointer}.v65-tick b{margin-left:7px}.v65-insight{border-left:4px solid var(--v65gold);padding:10px 12px;background:#111b25;border-radius:10px;margin:8px 0;font-size:12px}.v65-drive{display:flex;gap:4px;align-items:flex-end;height:88px}.v65-drive div{flex:1;min-width:16px;border-radius:4px 4px 0 0;background:#34465a;position:relative}.v65-drive div.td{background:#32d583}.v65-drive div.fg{background:#f2c94c}.v65-drive div.to{background:#ff5b65}.v65-drive div span{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:8px;color:var(--muted)}
+@media(max-width:1000px){.v65-card,.v65-card.wide,.v65-card.half{grid-column:span 6}}@media(max-width:700px){.v65-wrap{padding:10px}.v65-card,.v65-card.wide,.v65-card.half{grid-column:1/-1}.v65-hero h1{font-size:29px}.v65-highlight{grid-template-columns:90px 1fr}.nav{overflow:auto;max-width:calc(100vw - 150px)}}
+</style>
+<script>
+/* V65 — national command-center feature layer. All calculations run from the verified data already in this build. */
+(function(){
+ const V65={rankings:[], playerIndex:[], highlights:[], lastGame:null};
+ const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+ const num=v=>Number.isFinite(Number(v))?Number(v):0;
+ const img65=t=>t?.logo?`<img class="v65-logo" src="${t.logo}" onerror="this.style.display='none'">`:`<span class="v65-logo"></span>`;
+ const finalGames=()=>GAMES.filter(g=>g.status==='final'||g.date<today()).filter(g=>Number.isFinite(Number(g.awayScore))&&Number.isFinite(Number(g.homeScore)));
+ function records65(){const o={};TEAMS.forEach(t=>o[t.slug]={w:0,l:0,pf:0,pa:0,g:0,opp:0});for(const g of finalGames()){let a=o[g.away],h=o[g.home];if(!a||!h)continue;let as=num(g.awayScore),hs=num(g.homeScore);a.g++;h.g++;a.pf+=as;a.pa+=hs;h.pf+=hs;h.pa+=as;if(as>hs){a.w++;h.l++}else if(hs>as){h.w++;a.l++}}return o}
+ function teamStrength65(slug){const r=records65()[slug]||{};let base=(r.w||0)*100-(r.l||0)*22+((r.pf||0)-(r.pa||0))*.75;const rich=Object.entries(RICH_GAMES||{}).filter(([id,d])=>d.away===slug||d.home===slug);for(const [,d] of rich){const st=d.away===slug?d.awayStats:d.homeStats;if(st){base+=num(st.totalYds)*.025+num(st.first)*.7-num(st.int)*4-num(st.fumLost)*5}}return base}
+ function rankings65(){const rec=records65();return TEAMS.map(t=>({t,r:rec[t.slug]||{},s:teamStrength65(t.slug)})).filter(x=>x.r.g).sort((a,b)=>b.s-a.s).slice(0,10).map((x,i)=>({...x,rank:i+1}))}
+ function expected65(g){const sa=teamStrength65(g.away),sh=teamStrength65(g.home)+8;const p=1/(1+Math.exp(-(sa-sh)/42));return Math.max(.08,Math.min(.92,p))}
+ function liveObj65(id){return (typeof LIVE_STORE!=='undefined'&&LIVE_STORE.games&&LIVE_STORE.games[id])||null}
+ function winProb65(g){let p=expected65(g);const L=liveObj65(g.id);if(!L||!L._realLive)return p;const diff=num(L.as)-num(L.hs);let q=String(L.q||'Q1').match(/([1-4])/);let quarter=q?num(q[1]):1;let clock=String(L.clock||'15:00').split(':').map(Number);let remain=(4-quarter)*15+(Number.isFinite(clock[0])?clock[0]:8)+(Number.isFinite(clock[1])?clock[1]/60:0);let leverage=(60-remain)/60;const logit=Math.log(p/(1-p))+diff*(.10+.30*leverage);return Math.max(.01,Math.min(.99,1/(1+Math.exp(-logit))))}
+ function watchScore65(g){const pa=expected65(g);const closeness=1-Math.abs(pa-.5)*2;const rank=rankings65();const ra=rank.find(x=>x.t.slug===g.away)?.rank||20,rh=rank.find(x=>x.t.slug===g.home)?.rank||20;const quality=Math.max(0,1-(ra+rh-2)/35);const conference=g.conference?1:.7;return Math.round(100*(.52*closeness+.35*quality+.13*conference))}
+ function ticker65(){const ds=[...GAMES].filter(g=>g.date===today()||liveObj65(g.id)?._realLive).slice(0,16);if(!ds.length)return'';return `<div class="v65-ticker">${ds.map(g=>{const L=liveObj65(g.id),fin=g.status==='final'||g.date<today();let score=L?`${L.as??0}-${L.hs??0}`:(fin&&g.awayScore!=null?`${g.awayScore}-${g.homeScore}`:'');return `<div class="v65-tick" onclick="${fin?`showGame('${g.id}')`:`showGameCast('${g.id}')`}">${esc(TEAM[g.away]?.abbr||g.away)} @ ${esc(TEAM[g.home]?.abbr||g.home)} <b>${score||esc(g.time)}</b></div>`}).join('')}</div>`}
+ function currentInsight65(g){const L=liveObj65(g.id),plays=(LIVE_STORE?.plays?.[g.id]||[]);if(!L||!L._realLive)return `Pregame model: ${TEAM[g.away].short} ${Math.round(expected65(g)*100)}%, ${TEAM[g.home].short} ${Math.round((1-expected65(g))*100)}%.`;const recent=plays.slice(0,8);const exp=recent.filter(p=>/\b(1[5-9]|[2-9]\d)\s*(yard|yd)/i.test(p.text||'')).length;const neg=recent.filter(p=>/sack|loss|interception|fumble|incomplete/i.test(p.text||'')).length;if(exp>=2)return `${exp} explosive plays have appeared in the last ${Math.min(8,recent.length)} logged snaps.`;if(neg>=3)return `${neg} negative-play events have appeared in the last ${Math.min(8,recent.length)} logged snaps.`;return recent[0]?.text?`Latest leverage play: ${recent[0].text}`:'Verified live feed active.'}
+ function upset65(g){const p=winProb65(g),rank=rankings65();const ar=rank.find(x=>x.t.slug===g.away)?.rank,hr=rank.find(x=>x.t.slug===g.home)?.rank;if(ar&&(!hr||ar<hr)&&p<.38)return `${TEAM[g.home].short} upset chance ${Math.round((1-p)*100)}%`;if(hr&&(!ar||hr<ar)&&p>.62)return `${TEAM[g.away].short} upset chance ${Math.round(p*100)}%`;return''}
+ function redZone65(){return GAMES.filter(g=>liveObj65(g.id)?._realLive).map(g=>({g,L:liveObj65(g.id)})).filter(x=>{const s=String(x.L.spot||x.L.ball||x.L.down||'');return /(?:opponent|opp|at)\s*(?:[1-9]|1\d)\b|\b(?:[1-9]|1\d)\s*yard/i.test(s)}).slice(0,8)}
+ function allPlayers65(){const out=[];for(const [id,d] of Object.entries(RICH_GAMES||{})){for(const cat of ['passing','rushing','receiving'])for(const [team,rows] of Object.entries(d[cat]||{}))for(const r of rows||[])out.push({name:r[0],team,cat,yds:num(r[cat==='passing'?3:2]),td:num(r[cat==='passing'?4:3]),game:id,row:r})}const m=new Map();out.forEach(x=>{const k=x.name+'|'+x.team;const y=m.get(k)||{name:x.name,team:x.team,pass:0,rush:0,rec:0,td:0,games:new Set()};y[x.cat==='passing'?'pass':x.cat==='rushing'?'rush':'rec']+=x.yds;y.td+=x.td;y.games.add(x.game);m.set(k,y)});return [...m.values()].map(x=>({...x,games:x.games.size})).sort((a,b)=>(b.pass+b.rush+b.rec)-(a.pass+a.rush+a.rec))}
+ function driveChart65(id){const d=(PRESTO_V33?.lastSnapshot?.game===id?PRESTO_V33.lastSnapshot.data?.drives:null)||[];if(!d.length)return `<p>No verified drive sequence is available for this game yet.</p>`;return `<div class="v65-drive">${d.slice().reverse().slice(-14).map((x,i)=>{const r=String(x.result||'').toLowerCase();let c=/touchdown|td/.test(r)?'td':/field/.test(r)?'fg':/interception|fumble|downs/.test(r)?'to':'';const h=Math.max(22,Math.min(78,20+num(x.yards)));return `<div class="${c}" style="height:${h}px" title="${esc(x.team||'')} ${esc(x.result||'Drive')} • ${num(x.yards)} yards"><span>${i+1}</span></div>`}).join('')}</div>`}
+ function recap65(g){const b=BOX?.[g.id]||{},a=TEAM[g.away],h=TEAM[g.home];const aw=num(g.awayScore),ho=num(g.homeScore),winner=aw>ho?a:h,loser=aw>ho?h:a,margin=Math.abs(aw-ho);let lead='';const leaders=b.leaders||{};for(const k of ['pass','rush','receive']){const r=(leaders[k]||[])[0];if(r){lead=` ${r[0]} led the ${k==='pass'?'passing':k==='rush'?'rushing':'receiving'} production with ${r[2]} yards.`;break}}return `${winner.short} defeated ${loser.short} ${Math.max(aw,ho)}–${Math.min(aw,ho)}${margin>=21?' in a decisive result':''}.${lead}`}
+ function projectedTop65(){return rankings65().map((x,i)=>`<div class="v65-row"><div class="v65-team"><span class="v65-rank">${i+1}</span>${img65(x.t)}<div><b>${esc(x.t.name)}</b><div class="v65-muted">${x.r.w}-${x.r.l} • ${x.r.pf-x.r.pa>=0?'+':''}${x.r.pf-x.r.pa} point diff</div></div></div><span class="v65-chip rank">${Math.round(x.s)}</span></div>`).join('')}
+ function standings65(conf){const rec=records65();return TEAMS.filter(t=>!conf||t.conference===conf).map(t=>({t,r:rec[t.slug]||{}})).filter(x=>x.r.g).sort((a,b)=>(b.r.w-b.r.l)-(a.r.w-a.r.l)||(b.r.pf-b.r.pa)-(a.r.pf-a.r.pa))}
+ function playoffProb65(x,idx,total){const pct=x.r.g?x.r.w/x.r.g:.5;return Math.round(Math.max(4,Math.min(97,100*(.58*pct+.32*(1-idx/Math.max(1,total-1))+.10))))}
+ function command65(){V65.rankings=rankings65();const lives=GAMES.filter(g=>liveObj65(g.id)?._realLive);const rz=redZone65();const upcoming=GAMES.filter(g=>g.date>=today()&&g.status!=='final').sort((a,b)=>a.date.localeCompare(b.date)||watchScore65(b)-watchScore65(a)).slice(0,8);const finals=finalGames().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);document.getElementById('app').innerHTML=shell(`${ticker65()}<div class="v65-wrap"><section class="v65-hero"><div class="v65-kicker">U SPORTS SATURDAY</div><h1>National Football Command Center</h1><p>Live games, win probability, RedZone situations, upset alerts, projected Top 10, notable plays, drive context and the best games to watch — all generated from the verified feeds and normalized gamebooks already inside this site.</p></section><div class="v65-grid"><section class="v65-card wide"><h3>National RedZone</h3>${rz.length?rz.map(({g,L})=>`<div class="v65-row v65-redzone" onclick="showGameCast('${g.id}')"><div><b>${esc(TEAM[g.away].short)} at ${esc(TEAM[g.home].short)}</b><div class="v65-muted">${esc(L.q||'LIVE')} ${esc(L.clock||'')} • ${esc(L.down||L.spot||'Red zone')}</div></div><span class="v65-score">${L.as??0}–${L.hs??0}</span></div>`).join(''):`<p>No verified live possession is currently inside the opponent's 20. This panel activates automatically from live field-position data.</p>`}</section><section class="v65-card"><h3>Upset Alert</h3>${lives.map(g=>({g,u:upset65(g)})).filter(x=>x.u).map(x=>`<div class="v65-row"><div><b>${esc(x.u)}</b><div class="v65-muted">${esc(TEAM[x.g.away].short)} at ${esc(TEAM[x.g.home].short)}</div></div><span class="v65-chip alert">ALERT</span></div>`).join('')||'<p>No verified upset alert has crossed the model threshold.</p>'}</section><section class="v65-card half"><h3>Games Worth Watching</h3>${upcoming.map(g=>`<div class="v65-row" onclick="showGameCast('${g.id}')"><div><b>${esc(TEAM[g.away].short)} at ${esc(TEAM[g.home].short)}</b><div class="v65-muted">${esc(g.date)} • ${esc(g.time)} • ${esc(g.conference)}</div></div><div><div class="v65-big">${watchScore65(g)}</div><div class="v65-muted">WATCH</div></div></div>`).join('')||'<p>No upcoming games loaded.</p>'}</section><section class="v65-card half"><h3>Projected Top 10</h3>${projectedTop65()||'<p>Rankings appear once completed games are available.</p>'}</section><section class="v65-card half"><h3>Live Win Probability</h3>${lives.length?lives.map(g=>{let p=winProb65(g);return `<div class="v65-play"><b>${esc(TEAM[g.away].short)} at ${esc(TEAM[g.home].short)}</b><div class="v65-probLabels"><span>${Math.round(p*100)}%</span><span>${Math.round((1-p)*100)}%</span></div><div class="v65-meter"><span style="width:${p*100}%;background:${TEAM[g.away].primary}"></span><span style="width:${(1-p)*100}%;background:${TEAM[g.home].primary}"></span></div><div class="v65-muted">${esc(currentInsight65(g))}</div></div>`}).join(''):'<p>Pregame probabilities are available from matchup pages. Live probabilities activate with verified live data.</p>'}</section><section class="v65-card half"><h3>Saturday in Review</h3>${finals.map(g=>`<div class="v65-play" onclick="showGame('${g.id}')"><b>${esc(TEAM[g.away].short)} ${g.awayScore} – ${g.homeScore} ${esc(TEAM[g.home].short)}</b>${esc(recap65(g))}</div>`).join('')||'<p>Completed games will populate automatically.</p>'}</section></div></div>`,'command');location.hash='command'}
+ function rankingsPage65(){const rank=rankings65();document.getElementById('app').innerHTML=shell(`<div class="v65-wrap"><section class="v65-hero"><div class="v65-kicker">TOP 10 TRACKER</div><h1>Projected National Top 10</h1><p>An unofficial results-driven ranking from completed games, scoring margin and normalized gamebook production. It is explicitly not the official U SPORTS coaches/media poll.</p></section><section class="v65-card full">${rank.map(x=>`<div class="v65-row"><div class="v65-team"><span class="v65-rank">${x.rank}</span>${img65(x.t)}<div><b>${esc(x.t.name)}</b><div class="v65-muted">${x.r.w}-${x.r.l} • PF ${x.r.pf} • PA ${x.r.pa}</div></div></div><span class="v65-chip rank">MODEL ${Math.round(x.s)}</span></div>`).join('')}</section></div>`,'rankings');location.hash='rankings'}
+ function playoffs65(conf='OUA'){const rows=standings65(conf);document.getElementById('app').innerHTML=shell(`<div class="v65-wrap"><section class="v65-hero"><div class="v65-kicker">PLAYOFF SIMULATOR</div><h1>Conference Race</h1><p>Live standings and simple probability estimates from current record, scoring margin and remaining schedule strength. Use the conference buttons to switch races.</p></section><div class="v65-tabs">${['OUA','RSEQ','AUS','CW'].map(c=>`<button class="${c===conf?'active':''}" onclick="playoffs65('${c}')">${c}</button>`).join('')}</div><section class="v65-card full"><table class="v65-table"><thead><tr><th>Team</th><th>W</th><th>L</th><th>PF</th><th>PA</th><th>Diff</th><th>Playoff</th></tr></thead><tbody>${rows.map((x,i)=>`<tr><td><div class="v65-team">${img65(x.t)}<b>${esc(x.t.name)}</b></div></td><td>${x.r.w}</td><td>${x.r.l}</td><td>${x.r.pf}</td><td>${x.r.pa}</td><td>${x.r.pf-x.r.pa}</td><td><b>${playoffProb65(x,i,rows.length)}%</b></td></tr>`).join('')}</tbody></table></section></div>`,'playoffs');location.hash='playoffs'}
+ function compare65(a='',b=''){const ps=allPlayers65();V65.playerIndex=ps;const options=ps.slice(0,250).map(p=>`<option value="${esc(p.name+'|'+p.team)}">${esc(p.name)} — ${esc(TEAM[p.team]?.short||p.team)}</option>`).join('');const key=x=>x?ps.find(p=>p.name+'|'+p.team===x):null,A=key(a),B=key(b);const block=(p,label)=>p?`<section class="v65-card half"><div class="v65-profile"><div class="v65-avatar">${img65(TEAM[p.team])}</div><div><div class="v65-kicker">${label}</div><h2 style="margin:4px 0">${esc(p.name)}</h2><div class="v65-muted">${esc(TEAM[p.team]?.name||p.team)} • ${p.games} indexed game${p.games===1?'':'s'}</div></div></div><table class="v65-table" style="margin-top:12px"><tbody><tr><td>Passing yards</td><td><b>${p.pass}</b></td></tr><tr><td>Rushing yards</td><td><b>${p.rush}</b></td></tr><tr><td>Receiving yards</td><td><b>${p.rec}</b></td></tr><tr><td>Indexed TD</td><td><b>${p.td}</b></td></tr></tbody></table></section>`:`<section class="v65-card half"><p>Select a player above.</p></section>`;document.getElementById('app').innerHTML=shell(`<div class="v65-wrap"><section class="v65-hero"><div class="v65-kicker">PLAYER COMPARISON</div><h1>Compare Players</h1><p>Pick two players from the normalized gamebook database and compare their indexed production.</p></section><div class="v65-grid"><section class="v65-card half"><select class="v65-select" onchange="compare65(this.value,document.getElementById('v65b').value)"><option value="">Player A</option>${options}</select></section><section class="v65-card half"><select id="v65b" class="v65-select" onchange="compare65(document.querySelector('.v65-select').value,this.value)"><option value="">Player B</option>${options}</select></section>${block(A,'PLAYER A')}${block(B,'PLAYER B')}</div></div>`,'compare');setTimeout(()=>{const ss=document.querySelectorAll('.v65-select');if(ss[0])ss[0].value=a;if(ss[1])ss[1].value=b},0);location.hash='compare'}
+ function highlights65(){let saved=[];try{saved=JSON.parse(localStorage.getItem('usports_v65_highlights')||'[]')}catch(e){}document.getElementById('app').innerHTML=shell(`<div class="v65-wrap"><section class="v65-hero"><div class="v65-kicker">VIDEO + PLAY TIMELINE</div><h1>Highlights</h1><p>Attach permitted downloaded clips to a game/play. Clips selected from your computer remain local to this browser in this static build; hosted URLs can be saved and opened everywhere.</p></section><section class="v65-card full"><div class="v65-upload"><input id="v65video" type="file" accept="video/*"><input id="v65url" class="v65-select" style="margin:10px auto;max-width:600px" placeholder="or paste a permitted hosted video URL"><select id="v65game" class="v65-select" style="max-width:600px;margin:auto"><option value="">Attach to game…</option>${GAMES.map(g=>`<option value="${g.id}">${g.date} — ${TEAM[g.away].short} at ${TEAM[g.home].short}</option>`).join('')}</select><input id="v65label" class="v65-select" style="max-width:600px;margin:10px auto" placeholder="Play label / timestamp / description"><button class="v65-btn active" onclick="saveHighlight65()">ADD HIGHLIGHT</button></div></section><section class="v65-card full"><h3>Saved Highlight Timeline</h3>${saved.length?saved.map((x,i)=>`<div class="v65-highlight"><div class="v65-thumb">▶</div><div><b>${esc(x.label||'Video clip')}</b><div class="v65-muted">${esc(x.game||'Unattached')} • ${new Date(x.ts).toLocaleString()}</div>${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener" style="color:#f2c94c">OPEN CLIP ↗</a>`:'<span class="v65-muted">Local file selected — available only for this browser session.</span>'}</div></div>`).join(''):'<p>No clips attached yet.</p>'}</section></div>`,'highlights');location.hash='highlights'}
+ window.saveHighlight65=function(){let arr=[];try{arr=JSON.parse(localStorage.getItem('usports_v65_highlights')||'[]')}catch(e){}const f=document.getElementById('v65video')?.files?.[0],url=document.getElementById('v65url')?.value?.trim();arr.unshift({game:document.getElementById('v65game')?.value||'',label:document.getElementById('v65label')?.value||f?.name||'Highlight',url:url||'',fileName:f?.name||'',ts:Date.now()});localStorage.setItem('usports_v65_highlights',JSON.stringify(arr.slice(0,100)));highlights65()}
+ function playerCard65(name,team){const p=allPlayers65().find(x=>x.name===name&&x.team===team);if(!p)return;const el=document.createElement('div');el.style='position:fixed;inset:0;background:#000b;z-index:9999;display:grid;place-items:center;padding:20px';el.onclick=e=>{if(e.target===el)el.remove()};el.innerHTML=`<div class="v65-card" style="width:min(520px,95vw);grid-column:auto"><button class="v65-btn" style="float:right" onclick="this.closest('[style*=fixed]').remove()">✕</button><div class="v65-profile"><div class="v65-avatar">${img65(TEAM[team])}</div><div><div class="v65-kicker">PLAYER GAME CARD</div><h2>${esc(name)}</h2><div class="v65-muted">${esc(TEAM[team]?.name||team)}</div></div></div><table class="v65-table" style="margin-top:14px"><tbody><tr><td>Passing</td><td>${p.pass} yds</td></tr><tr><td>Rushing</td><td>${p.rush} yds</td></tr><tr><td>Receiving</td><td>${p.rec} yds</td></tr><tr><td>Indexed TD</td><td>${p.td}</td></tr><tr><td>Games</td><td>${p.games}</td></tr></tbody></table></div>`;document.body.appendChild(el)}
+ function augmentGame65(id){const g=GAMES.find(x=>x.id===id);if(!g)return;const root=document.querySelector('.gc47-grid,.liveHub,.pregameHub');if(!root||document.getElementById('v65-game-tools'))return;let p=winProb65(g),u=upset65(g);const panel=document.createElement('section');panel.id='v65-game-tools';panel.className='v65-card full';panel.style='margin:14px 0';panel.innerHTML=`<h3>Game Intelligence</h3><div class="v65-grid"><div class="v65-card half"><div class="v65-kicker">WIN PROBABILITY</div><div class="v65-probLabels"><span>${esc(TEAM[g.away].short)} ${Math.round(p*100)}%</span><span>${Math.round((1-p)*100)}% ${esc(TEAM[g.home].short)}</span></div><div class="v65-meter"><span style="width:${p*100}%;background:${TEAM[g.away].primary}"></span><span style="width:${(1-p)*100}%;background:${TEAM[g.home].primary}"></span></div>${u?`<span class="v65-chip alert">${esc(u)}</span>`:''}<div class="v65-insight">${esc(currentInsight65(g))}</div></div><div class="v65-card half"><div class="v65-kicker">DRIVE CHART</div>${driveChart65(id)}</div></div>`;root.appendChild(panel)}
+ const oldShell=window.shell;window.shell=function(content,active='schedule'){return `<div class="shell"><header class="topbar"><button class="brand" onclick="goHome()" style="background:none;border:0;color:inherit;padding:0"><span class="roundel">U</span><span>U SPORTS<small>FOOTBALL</small></span></button><nav class="nav"><button class="${active==='command'?'active':''}" onclick="command65()">Command Center</button><button class="${active==='live'?'active':''}" onclick="openLiveV32()">Live</button><button class="${active==='schedule'?'active':''}" onclick="goHome()">Schedule</button><button class="${active==='rankings'?'active':''}" onclick="rankingsPage65()">Top 10</button><button class="${active==='playoffs'?'active':''}" onclick="playoffs65()">Playoffs</button><button class="${active==='leaders'?'active':''}" onclick="showLeaders()">Leaders</button><button class="${active==='teamstats'?'active':''}" onclick="showTeamStats()">Team Stats</button><button class="${active==='compare'?'active':''}" onclick="compare65()">Compare</button><button class="${active==='highlights'?'active':''}" onclick="highlights65()">Highlights</button><button class="${active==='media'?'active':''}" onclick="showMedia()">Media</button><button onclick="showTeams()">Teams</button></nav></header>${content}<div class="footer">U SPORTS Football Game Centre • V71 • Official Top 10</div></div>`}
+ const oldCast65=window.showGameCast;window.showGameCast=function(id){const r=oldCast65.apply(this,arguments);setTimeout(()=>augmentGame65(id),70);return r}
+ const oldGame65=window.showGame;window.showGame=function(id){const r=oldGame65.apply(this,arguments);Promise.resolve(r).then(()=>setTimeout(()=>{const g=GAMES.find(x=>x.id===id),host=document.querySelector('.v63-final-wrap,.gameView6,.gamePage');if(g&&host&&!document.getElementById('v65-recap')){const x=document.createElement('section');x.id='v65-recap';x.className='v65-card full';x.style='margin-top:14px';x.innerHTML=`<div class="v65-kicker">INSTANT GAME RECAP</div><h3>What happened</h3><p style="font-size:14px;color:var(--text)">${esc(recap65(g))}</p>`;host.appendChild(x)}},80));return r}
+ const oldRoute65=window.route;window.route=function(){const h=location.hash.slice(1);if(h==='command')return command65();if(h==='rankings')return rankingsPage65();if(h.startsWith('playoffs'))return playoffs65();if(h==='compare')return compare65();if(h==='highlights')return highlights65();return oldRoute65()}
+ window.command65=command65;window.rankingsPage65=rankingsPage65;window.playoffs65=playoffs65;window.compare65=compare65;window.highlights65=highlights65;window.playerCard65=playerCard65;
+ // Make leader rows clickable where names exactly match the indexed player database.
+ document.addEventListener('click',e=>{const td=e.target.closest('td');if(!td)return;const name=td.textContent.trim();const hits=allPlayers65().filter(p=>p.name===name);if(hits.length===1){e.preventDefault();playerCard65(hits[0].name,hits[0].team)}});
+})();
+</script>
+
+
+<style id="v69-news-live-style">
+.newsLiveV70{display:inline-flex;align-items:center;gap:7px;margin-left:10px;padding:5px 9px;border:1px solid var(--line);border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.08em;color:var(--muted);vertical-align:middle}
+.newsLiveV70:before{content:'';width:7px;height:7px;border-radius:50%;background:#28d17c;box-shadow:0 0 0 3px rgba(40,209,124,.12)}
+.newsLiveV70.fallback:before{background:#f0b429;box-shadow:0 0 0 3px rgba(240,180,41,.12)}
+</style>
+<script>
+(function(){
+  function stamp69(){
+    if(location.hash.slice(1)!=='media')return;
+    const hero=document.querySelector('.mediaHero h1'); if(!hero)return;
+    let b=document.getElementById('news-live-v69');
+    if(!b){b=document.createElement('span');b.id='news-live-v69';b.className='newsLiveV70';hero.appendChild(b)}
+    const m=window.NEWS_REFRESH_META||{};
+    b.classList.toggle('fallback',m.state!=='live');
+    if(m.state==='live'&&m.generatedAt){
+      const t=new Date(m.generatedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+      b.textContent='LIVE SCRAPER · '+t;
+      b.title='News sources are checked every two minutes while the site is open.';
+    }else b.textContent='SCRAPER CONNECTING';
+  }
+  window.addEventListener('usports-news-refresh',stamp69);
+  window.addEventListener('hashchange',()=>setTimeout(stamp69,50));
+  setInterval(stamp69,5000);
+})();
+</script>
+
+
+<script>
+/* V71 — Official U SPORTS Top 10 (Sept. 9, 2026) */
+(function(){
+  const OFFICIAL_TOP10_71 = [
+    {rank:1, team:'montreal', record:'1-0', media:70, elo:70, total:140, prev:1},
+    {rank:2, team:'laval', record:'1-0', media:53, elo:63, total:116, prev:2},
+    {rank:3, team:'western', record:'1-0', media:47, elo:49, total:96, prev:6},
+    {rank:4, team:'queens', record:'1-0', media:45, elo:35, total:80, prev:5},
+    {rank:5, team:'laurier', record:'1-1', media:10, elo:56, total:66, prev:4},
+    {rank:6, team:'regina', record:'1-0', media:34, elo:28, total:62, prev:7},
+    {rank:7, team:'saint-marys', record:'1-0', media:17, elo:42, total:59, prev:8},
+    {rank:8, team:'saskatchewan', record:'0-1', media:31, elo:14, total:45, prev:3},
+    {rank:9, team:'manitoba', record:'1-0', media:28, elo:7, total:35, prev:11},
+    {rank:10, team:'windsor', record:'1-1', media:13, elo:21, total:34, prev:9}
+  ];
+  window.OFFICIAL_TOP10_71 = OFFICIAL_TOP10_71;
+  function teamObj71(slug){return (window.TEAM&&TEAM[slug]) || (window.TEAMS||[]).find(t=>t.slug===slug) || {slug,name:slug,short:slug,logo:''}}
+  function row71(r){
+    const t=teamObj71(r.team); const delta=(r.prev||99)-r.rank;
+    const move=delta>0?`▲ ${delta}`:delta<0?`▼ ${Math.abs(delta)}`:'—';
+    return `<tr><td><b>${r.rank}</b></td><td><div class="playerCell">${t.logo?`<img class="tinyLogo" src="${t.logo}">`:''}<div><b>${esc(t.name||t.short||r.team)}</b><div class="v65-muted">${esc(r.record)}</div></div></div></td><td>${r.media}</td><td>${r.elo}</td><td><b>${r.total}</b></td><td>${r.prev}</td><td><b>${move}</b></td></tr>`
+  }
+  window.projectedTop65=function(){return OFFICIAL_TOP10_71.map(r=>{const t=teamObj71(r.team);return `<div class="v65-row"><div class="v65-team"><span class="v65-rank">${r.rank}</span>${t.logo?`<img class="tinyLogo" src="${t.logo}">`:''}<div><b>${esc(t.name||t.short||r.team)}</b><div class="v65-muted">${esc(r.record)} • ${r.total} ranking points</div></div></div><span class="v65-chip rank">OFFICIAL</span></div>`}).join('')};
+  window.rankingsPage65=function(){
+    const html=`<div class="v65-wrap"><section class="v65-hero"><div class="v65-kicker">U SPORTS FOOTBALL</div><h1>Official National Top 10</h1><p>Official U SPORTS football rankings released September 8 and published September 9, 2026. The ranking combines the national media poll and U SPORTS Elo rating system, each weighted 50%.</p></section><section class="v65-card full"><div class="dataNote">This is the actual U SPORTS Top 10, not the Game Centre projection.</div><div style="overflow:auto"><table class="leaderTable"><thead><tr><th>Rank</th><th>School</th><th>Media</th><th>ELO</th><th>Total</th><th>Prev</th><th>Move</th></tr></thead><tbody>${OFFICIAL_TOP10_71.map(row71).join('')}</tbody></table></div><a class="sourceBtn" href="https://laurierathletics.com/news/2026/9/9/football-golden-hawks-football-ranked-5-nationally-heading-into-week-3.aspx" target="_blank" rel="noopener">Official ranking source</a></section></div>`;
+    document.getElementById('app').innerHTML=shell(html,'rankings'); location.hash='rankings';
+  };
+  const oldCommand71=window.command65;
+  window.command65=function(){
+    oldCommand71();
+    // Replace the projected ranking wording after the original command center renders.
+    document.querySelectorAll('.v65-card h3').forEach(h=>{if(h.textContent.trim()==='Projected Top 10')h.textContent='Official U SPORTS Top 10'});
+    const hero=document.querySelector('.v65-hero p'); if(hero) hero.innerHTML=hero.innerHTML.replace('projected Top 10','official Top 10');
+  };
+  // keep route bound to newest implementations
+  const oldRoute71=window.route;
+  window.route=function(){const h=location.hash.slice(1);if(h==='rankings')return window.rankingsPage65();if(h==='command')return window.command65();return oldRoute71()};
+})();
+</script>
+
+
+<style id="v72-playoff-matchup-style">
+.v72-cut{border-top:2px solid #f2c94c!important;position:relative}.v72-cut:before{content:'PLAYOFF CUT LINE';position:absolute;left:8px;top:-9px;background:var(--panel);color:#f2c94c;font-size:8px;font-weight:1000;letter-spacing:.09em;padding:0 6px}.v72-status{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:1000;letter-spacing:.05em}.v72-in{background:rgba(50,213,131,.12);color:#67e3a7}.v72-out{background:rgba(255,91,101,.10);color:#ff8d95}.v72-match-grid{display:grid;grid-template-columns:1fr 110px 1fr;gap:14px;align-items:stretch}.v72-team-pick{border:1px solid var(--line);background:#0a1118;border-radius:18px;padding:16px}.v72-team-head{display:flex;align-items:center;gap:12px;margin:14px 0}.v72-team-head img{width:58px;height:58px;object-fit:contain;background:#fff;border-radius:13px;padding:5px}.v72-vs{display:grid;place-items:center;font-size:24px;font-weight:1000;color:var(--muted)}.v72-proj{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;text-align:center;gap:18px;padding:24px 12px}.v72-proj-score{font-size:56px;font-weight:1000;letter-spacing:-.06em}.v72-proj-team{font-size:18px;font-weight:1000}.v72-edge{display:grid;grid-template-columns:120px 1fr 62px 62px;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:11px}.v72-edgebar{height:8px;border-radius:999px;background:#24303e;overflow:hidden;display:flex}.v72-edgebar span{height:100%}.v72-winner{border:1px solid rgba(50,213,131,.35);background:rgba(50,213,131,.08);padding:12px 14px;border-radius:14px}.v72-coverage{font-size:10px;color:var(--muted);margin-top:8px}.v72-venue{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.v72-venue button{border:1px solid var(--line);background:#111a24;color:#cdd6df;border-radius:999px;padding:7px 10px;font-size:10px;font-weight:900}.v72-venue button.active{background:#fff;color:#0b0f14}.v72-note{border:1px solid #34445a;background:#0d1620;border-radius:14px;padding:12px;color:#aebdcb;font-size:11px;line-height:1.5}
+@media(max-width:760px){.v72-match-grid{grid-template-columns:1fr}.v72-vs{min-height:28px}.v72-proj{grid-template-columns:1fr}.v72-proj-score{font-size:46px}.v72-edge{grid-template-columns:90px 1fr 45px 45px}}
+</style>
+<script>
+/* V72 — exact conference playoff fields + Build a Matchup */
+(function(){
+  const PLAYOFF_SPOTS_72={OUA:7,RSEQ:4,CW:4,AUS:3};
+  const OFFICIAL_RANK_72={'montreal':1,'laval':2,'western':3,'queens':4,'laurier':5,'regina':6,'saint-marys':7,'saskatchewan':8,'manitoba':9,'windsor':10};
+  const n72=v=>Number.isFinite(Number(v))?Number(v):0;
+  const date72=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+  function finals72(){return GAMES.filter(g=>(g.status==='final'||g.date<date72())&&Number.isFinite(Number(g.awayScore))&&Number.isFinite(Number(g.homeScore)))}
+  function recs72(){const r={};TEAMS.forEach(t=>r[t.slug]={w:0,l:0,pf:0,pa:0,g:0});finals72().forEach(g=>{if(!r[g.away]||!r[g.home])return;const a=r[g.away],h=r[g.home],as=n72(g.awayScore),hs=n72(g.homeScore);a.g++;h.g++;a.pf+=as;a.pa+=hs;h.pf+=hs;h.pa+=as;if(as>hs){a.w++;h.l++}else if(hs>as){h.w++;a.l++}});return r}
+  function standing72(conf){const r=recs72();return TEAMS.filter(t=>t.conference===conf).map(t=>({t,r:r[t.slug]||{w:0,l:0,pf:0,pa:0,g:0}})).sort((a,b)=>{const ap=a.r.g?a.r.w/a.r.g:0,bp=b.r.g?b.r.w/b.r.g:0;return bp-ap||(b.r.pf-b.r.pa)-(a.r.pf-a.r.pa)||b.r.pf-a.r.pf})}
+  function playoffChance72(row,i,total,spots){const pct=row.r.g?row.r.w/row.r.g:.5,diff=(row.r.pf-row.r.pa)/Math.max(1,row.r.g);const seedBase=1-(i/Math.max(1,total-1));const cutBoost=i<spots?.18:-.10;return Math.round(Math.max(2,Math.min(98,100*(.48*pct+.30*seedBase+.22*(1/(1+Math.exp(-diff/12)))+cutBoost))))}
+  window.playoffs72=function(conf='OUA'){
+    const rows=standing72(conf),spots=PLAYOFF_SPOTS_72[conf]||4;
+    const body=rows.map((x,i)=>`<tr class="${i===spots?'v72-cut':''}"><td><div class="v65-team">${x.t.logo?`<img class="v65-logo" src="${x.t.logo}" onerror="this.style.display='none'">`:''}<div><b>${esc(x.t.name)}</b><div class="v65-muted">Current seed ${i+1}</div></div></div></td><td>${x.r.w}</td><td>${x.r.l}</td><td>${x.r.pf}</td><td>${x.r.pa}</td><td>${x.r.pf-x.r.pa}</td><td><span class="v72-status ${i<spots?'v72-in':'v72-out'}">${i<spots?'IN':'OUT'}</span></td><td><b>${playoffChance72(x,i,rows.length,spots)}%</b></td></tr>`).join('');
+    document.getElementById('app').innerHTML=shell(`<div class="v65-wrap"><section class="v65-hero"><div class="v65-kicker">PLAYOFF RACE</div><h1>${conf} Playoff Picture</h1><p><b>${spots} teams qualify</b> from the ${conf}. The gold cut line shows the final playoff position. Current seed is based on games and scores loaded into the site; the probability is a projection, not an official tiebreak calculation.</p></section><div class="v65-tabs">${['OUA','RSEQ','CW','AUS'].map(c=>`<button class="${c===conf?'active':''}" onclick="playoffs72('${c}')">${c} · ${PLAYOFF_SPOTS_72[c]} spots</button>`).join('')}</div><section class="v65-card full"><table class="v65-table"><thead><tr><th>Team</th><th>W</th><th>L</th><th>PF</th><th>PA</th><th>Diff</th><th>Current</th><th>Playoff %</th></tr></thead><tbody>${body}</tbody></table><div class="v72-note" style="margin-top:14px">Playoff field sizes: OUA 7 of 11, RSEQ 4 of 6, Canada West 4 of 6, AUS 3 of 4.</div></section></div>`,'playoffs');location.hash='playoffs='+conf;
+  };
+  function gamebookStats72(slug){let yds=0,first=0,to=0,g=0;for(const d of Object.values(RICH_GAMES||{})){if(d.away!==slug&&d.home!==slug)continue;const st=d.away===slug?d.awayStats:d.homeStats;if(!st)continue;const total=n72(st.totalYds||st.total||st.yds);if(total||st.first){yds+=total;first+=n72(st.first);to+=n72(st.int)+n72(st.fumLost);g++}}return {yds,first,to,g,ypg:g?yds/g:null}}
+  function profile72(slug){const t=TEAM[slug],r=recs72()[slug]||{w:0,l:0,pf:0,pa:0,g:0};const gb=gamebookStats72(slug);const gp=Math.max(1,r.g),win=r.g?r.w/r.g:.5,ppg=r.pf/gp,papg=r.pa/gp,diff=(r.pf-r.pa)/gp,rank=OFFICIAL_RANK_72[slug]||null;let strength=50+(win-.5)*42+diff*.8+(rank?(11-rank)*1.8:0);if(gb.ypg!=null)strength+=(gb.ypg-350)*.035;return {t,r,gb,win,ppg,papg,diff,rank,strength:Math.max(5,Math.min(95,strength))}}
+  function projection72(aSlug,bSlug,venue='neutral'){
+    const A=profile72(aSlug),B=profile72(bSlug);let edge=A.strength-B.strength;if(venue==='a')edge+=5.5;if(venue==='b')edge-=5.5;const p=1/(1+Math.exp(-edge/10.5));const baseA=A.r.g?A.ppg:24,baseB=B.r.g?B.ppg:24;const defA=A.r.g?A.papg:24,defB=B.r.g?B.papg:24;let ptsA=.56*baseA+.44*defB,ptsB=.56*baseB+.44*defA;const adj=(p-.5)*13;ptsA+=adj;ptsB-=adj;if(venue==='a'){ptsA+=1.5;ptsB-=.5}if(venue==='b'){ptsB+=1.5;ptsA-=.5}ptsA=Math.max(6,Math.round(ptsA));ptsB=Math.max(6,Math.round(ptsB));if(ptsA===ptsB){if(p>=.5)ptsA++;else ptsB++}return {A,B,p,ptsA,ptsB,venue}}
+  function metric72(label,av,bv,fmt=(v)=>v){const max=Math.max(Math.abs(av),Math.abs(bv),1),ap=Math.max(3,Math.abs(av)/max*50),bp=Math.max(3,Math.abs(bv)/max*50);return `<div class="v72-edge"><b>${label}</b><div class="v72-edgebar"><span style="width:${ap}%;margin-left:${50-ap}%;background:var(--v65blue)"></span><span style="width:${bp}%;background:var(--v65gold)"></span></div><span>${fmt(av)}</span><span>${fmt(bv)}</span></div>`}
+  window.matchup72=function(aSlug,bSlug,venue='neutral'){
+    aSlug=aSlug||'western';bSlug=bSlug||'laval';if(aSlug===bSlug){bSlug=TEAMS.find(t=>t.slug!==aSlug)?.slug||bSlug}
+    const P=projection72(aSlug,bSlug,venue),A=P.A,B=P.B,w=P.p>=.5?A:B,prob=Math.round(Math.max(P.p,1-P.p)*100);
+    const opts=TEAMS.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(t=>`<option value="${t.slug}">${esc(t.name)} (${t.conference})</option>`).join('');
+    const card=(X,id)=>`<div class="v72-team-pick"><select id="${id}" class="v65-select" onchange="matchup72(document.getElementById('v72a').value,document.getElementById('v72b').value,'${venue}')">${opts}</select><div class="v72-team-head">${X.t.logo?`<img src="${X.t.logo}" onerror="this.style.display='none'">`:''}<div><h2 style="margin:0">${esc(X.t.short)}</h2><div class="v65-muted">${X.t.conference} · ${X.r.w}-${X.r.l}${X.rank?` · #${X.rank} U SPORTS`:''}</div></div></div><div class="v65-row"><span>Scoring</span><b>${X.ppg.toFixed(1)} PPG</b></div><div class="v65-row"><span>Points allowed</span><b>${X.papg.toFixed(1)} PPG</b></div><div class="v65-row"><span>Point diff</span><b>${X.diff>=0?'+':''}${X.diff.toFixed(1)}/G</b></div><div class="v65-row"><span>Offense</span><b>${X.gb.ypg!=null?X.gb.ypg.toFixed(0)+' YPG':'—'}</b></div><div class="v72-coverage">Normalized offensive gamebooks available: ${X.gb.g}. Score/record model games: ${X.r.g}.</div></div>`;
+    const metrics=[metric72('Win %',A.win*100,B.win*100,v=>v.toFixed(0)+'%'),metric72('PPG',A.ppg,B.ppg,v=>v.toFixed(1)),metric72('Scoring D',-A.papg,-B.papg,v=>Math.abs(v).toFixed(1)),metric72('Point diff',A.diff,B.diff,v=>(v>=0?'+':'')+v.toFixed(1))];if(A.gb.ypg!=null&&B.gb.ypg!=null)metrics.push(metric72('Off YPG',A.gb.ypg,B.gb.ypg,v=>v.toFixed(0)));
+    const venueBtns=`<div class="v72-venue"><button class="${venue==='neutral'?'active':''}" onclick="matchup72('${aSlug}','${bSlug}','neutral')">Neutral</button><button class="${venue==='a'?'active':''}" onclick="matchup72('${aSlug}','${bSlug}','a')">${esc(A.t.short)} home</button><button class="${venue==='b'?'active':''}" onclick="matchup72('${aSlug}','${bSlug}','b')">${esc(B.t.short)} home</button></div>`;
+    document.getElementById('app').innerHTML=shell(`<div class="v65-wrap"><section class="v65-hero"><div class="v65-kicker">BUILD A MATCHUP</div><h1>Who is stronger?</h1><p>Select any two U SPORTS teams. The projection blends verified results, scoring margin, normalized offensive gamebooks when available, the current official Top 10, and a small home-field adjustment. It does not invent missing statistics.</p>${venueBtns}</section><div class="v72-match-grid">${card(A,'v72a')}<div class="v72-vs">VS</div>${card(B,'v72b')}</div><section class="v65-card full" style="margin-top:14px"><div class="v72-proj"><div><div class="v72-proj-team">${esc(A.t.short)}</div><div class="v72-proj-score">${P.ptsA}</div><div class="v65-muted">${Math.round(P.p*100)}% win probability</div></div><div><div class="v65-kicker">PROJECTED</div><b>${venue==='neutral'?'NEUTRAL FIELD':venue==='a'?esc(A.t.short)+' HOME':esc(B.t.short)+' HOME'}</b></div><div><div class="v72-proj-team">${esc(B.t.short)}</div><div class="v72-proj-score">${P.ptsB}</div><div class="v65-muted">${Math.round((1-P.p)*100)}% win probability</div></div></div><div class="v72-winner"><b>${esc(w.t.name)} projects as the stronger team (${prob}%).</b> ${Math.abs(P.p-.5)<.08?'This profiles as a very close matchup.':prob>=70?'The current data shows a meaningful separation between the teams.':'There is an edge, but not enough to call it a mismatch.'}</div></section><section class="v65-card full" style="margin-top:14px"><h3>Matchup edges</h3>${metrics.join('')}<div class="v72-note" style="margin-top:12px">Blue = ${esc(A.t.short)} · Gold = ${esc(B.t.short)}. If one team is missing detailed gamebooks, the model leans more heavily on verified final scores, record and point differential until that statistical feed is filled.</div></section></div>`,'matchup');document.getElementById('v72a').value=aSlug;document.getElementById('v72b').value=bSlug;location.hash=`matchup=${aSlug},${bSlug},${venue}`;
+  };
+  // Make V72 the authoritative playoff page.
+  window.playoffs65=window.playoffs72;
+  const shell71=window.shell;window.shell=function(content,active='schedule'){
+    return `<div class="shell"><header class="topbar"><button class="brand" onclick="goHome()" style="background:none;border:0;color:inherit;padding:0"><span class="roundel">U</span><span>U SPORTS<small>FOOTBALL</small></span></button><nav class="nav"><button class="${active==='command'?'active':''}" onclick="command65()">Command Center</button><button class="${active==='live'?'active':''}" onclick="openLiveV32()">Live</button><button class="${active==='schedule'?'active':''}" onclick="goHome()">Schedule</button><button class="${active==='rankings'?'active':''}" onclick="rankingsPage65()">Top 10</button><button class="${active==='playoffs'?'active':''}" onclick="playoffs72()">Playoffs</button><button class="${active==='matchup'?'active':''}" onclick="matchup72()">Build Matchup</button><button class="${active==='leaders'?'active':''}" onclick="showLeaders()">Leaders</button><button class="${active==='teamstats'?'active':''}" onclick="showTeamStats()">Team Stats</button><button class="${active==='compare'?'active':''}" onclick="compare65()">Players</button><button class="${active==='highlights'?'active':''}" onclick="highlights65()">Highlights</button><button class="${active==='media'?'active':''}" onclick="showMedia()">Media</button><button onclick="showTeams()">Teams</button></nav></header>${content}<div class="footer">U SPORTS Football Game Centre • V72 • Playoff Fields + Matchup Builder</div></div>`
+  };
+  const route71=window.route;window.route=function(){const h=location.hash.slice(1);if(h.startsWith('playoffs')){const c=(h.split('=')[1]||'OUA').toUpperCase();return playoffs72(PLAYOFF_SPOTS_72[c]?c:'OUA')}if(h.startsWith('matchup')){const x=(h.split('=')[1]||'').split(',');return matchup72(x[0]||undefined,x[1]||undefined,x[2]||'neutral')}return route71()};
 })();
 </script>
 </body></html>
@@ -4087,3 +4360,269 @@ body{background:#08111a}
 </script>
 
 <script>/* V59 complete-final fallback + stable OUA logos */</script>
+
+
+<style id="v63-final-style">
+.v63-final-wrap{max-width:1180px;margin:0 auto;padding:18px 0 40px}
+.v63-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;margin-top:14px}
+.v63-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px}
+.v63-card h3{margin:0 0 14px;font-size:17px}
+.v63-leaders{display:grid;gap:10px}
+.v63-leader{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.v63-leader:last-child{border-bottom:0}
+.v63-leader .cat{font-size:10px;font-weight:900;letter-spacing:.08em;color:var(--muted)}
+.v63-leader .name{font-weight:900;margin-top:3px}
+.v63-leader .val{font-size:24px;font-weight:1000}
+.v63-note{color:var(--muted);font-size:12px;line-height:1.55}
+@media(max-width:900px){.v63-grid{grid-template-columns:1fr}.v63-final-wrap{padding:12px 0 28px}}
+</style>
+<script>
+/* V63 — final box-score renderer always consumes the hydrated historical payload.
+   RICH_GAMES/LIMITED_GAMES still use the full V6 renderer; API/BOX fallbacks now get
+   quarter scoring, team comparison and leaders instead of a score-only shell. */
+(function(){
+  function final63(id){
+    const g=GAMES.find(x=>x.id===id); if(!g)return;
+    const rich=(typeof RICH_GAMES!=='undefined'&&RICH_GAMES[id])||null;
+    const lim=(typeof LIMITED_GAMES!=='undefined'&&LIMITED_GAMES[id])||null;
+    if((rich||lim) && typeof showGame6==='function') return showGame6(id);
+    const b=(typeof BOX!=='undefined'&&BOX[id])||null;
+    if(!b) return null;
+    location.hash='game='+id;
+    const a=TEAM[g.away],h=TEAM[g.home];
+    const q=b.quarters||null;
+    const qtbl=q?.away&&q?.home?`<table class="scoreQuarter"><thead><tr><th>Team</th><th>1</th><th>2</th><th>3</th><th>4</th><th>F</th></tr></thead><tbody><tr><td>${esc(a.short)}</td>${q.away.map(x=>`<td>${x??'—'}</td>`).join('')}<td><b>${g.awayScore??'—'}</b></td></tr><tr><td>${esc(h.short)}</td>${q.home.map(x=>`<td>${x??'—'}</td>`).join('')}<td><b>${g.homeScore??'—'}</b></td></tr></tbody></table>`:'';
+    const stats=Array.isArray(b.teamstats)&&b.teamstats.length?`<div class="v63-card"><h3>Team Stats</h3><table class="statsTable"><thead><tr><th>Category</th><th>${esc(a.short)}</th><th>${esc(h.short)}</th></tr></thead><tbody>${b.teamstats.map(r=>`<tr><td>${esc(r[0])}</td><td>${r[1]??'—'}</td><td>${r[2]??'—'}</td></tr>`).join('')}</tbody></table></div>`:'';
+    const cats=[['pass','PASSING'],['rush','RUSHING'],['receive','RECEIVING']];
+    const leaders=b.leaders?cats.map(([k,label])=>{const rows=b.leaders[k]||[];if(!rows.length)return'';return rows.slice(0,2).map(r=>`<div class="v63-leader"><div><div class="cat">${label}</div><div class="name">${esc(r[0])} <span style="color:var(--muted);font-weight:700">${TEAM[r[1]]?.short||''}</span></div></div><div class="val">${r[2]??'—'}</div></div>`).join('')}).join(''):'';
+    const source=b.source||SCORE_SOURCES?.[id]||'';
+    const content=`<div class="v63-final-wrap"><button class="back" onclick="goHome()">← All Scores</button><section class="gameHero6"><div class="gameHeroTop"><span>${cl(g.conference)} • ${fmtDate(g.date)} • ${esc(g.time)}</span><span style="color:var(--green)">FINAL</span></div><div class="match6"><div class="team6">${gcTeamImg(g.away)}<div><h2>${esc(a.name)}</h2><small>${esc(a.city)}</small></div></div><div class="score6">${g.awayScore??'—'}–${g.homeScore??'—'}<small>FINAL</small></div><div class="team6 home"><div><h2>${esc(h.name)}</h2><small>${esc(h.city)}</small></div>${gcTeamImg(g.home)}</div></div></section><div class="v63-grid"><main>${qtbl?`<div class="v63-card"><h3>Scoring by Quarter</h3>${qtbl}</div>`:''}${stats}</main><aside><div class="v63-card"><h3>Game Leaders</h3><div class="v63-leaders">${leaders||'<div class="v63-note">Player leader rows are not available from this completed source.</div>'}</div></div>${source?`<a class="sourceLink6" href="${source}" target="_blank" rel="noopener">OFFICIAL BOX SCORE ↗</a>`:''}</aside></div></div>`;
+    document.getElementById('app').innerHTML=shell(content,'schedule');
+    return true;
+  }
+  const prior63=window.showGame;
+  window.showGame=function(id){
+    const g=GAMES.find(x=>x.id===id);
+    if(!g)return prior63.apply(this,arguments);
+    const hasLocal=(typeof RICH_GAMES!=='undefined'&&RICH_GAMES[id])||(typeof LIMITED_GAMES!=='undefined'&&LIMITED_GAMES[id]);
+    const b=(typeof BOX!=='undefined'&&BOX[id])||null;
+    if(hasLocal || (b && (b.quarters||b.teamstats?.length||b.leaders))) return final63(id);
+    return prior63.apply(this,arguments);
+  };
+})();
+</script>
+
+<!-- V66 LIVE/CURRENT STATS REBUILD: season records + leaders through verified Sep. 6 finals -->
+<script>
+(function(){
+  const SEP6=[
+    {id:'2026-09-06-mcmaster-guelph',date:'2026-09-06',time:'1:00 PM',away:'mcmaster',home:'guelph',conference:'OUA',status:'final',awayScore:20,homeScore:11,venue:'Alumni Stadium'},
+    {id:'2026-09-06-waterloo-carleton',date:'2026-09-06',time:'1:00 PM',away:'waterloo',home:'carleton',conference:'OUA',status:'final',awayScore:31,homeScore:26,venue:'TAAG Park'},
+    {id:'2026-09-06-laurier-windsor',date:'2026-09-06',time:'1:00 PM',away:'laurier',home:'windsor',conference:'OUA',status:'final',awayScore:37,homeScore:48,venue:'Alumni Stadium'},
+    {id:'2026-09-06-york-western',date:'2026-09-06',time:'7:00 PM',away:'york',home:'western',conference:'OUA',status:'final',awayScore:7,homeScore:78,venue:'Western Alumni Stadium'}
+  ];
+  for(const x of SEP6){ if(!GAMES.some(g=>g.id===x.id)) GAMES.push(x); }
+
+  const SEP6BOX={
+    '2026-09-06-mcmaster-guelph':{teamstats:[['First Downs',23,12],['Rushing Yards',47,71],['Passing Yards',281,255],['Total Offense',328,326]],leaders:{pass:[['Lucas Barresi','mcmaster',281],['Tristan Aboud','guelph',255]],rush:[['Micah DuChene','mcmaster',46],['Caleb Sargeant','guelph',84]],receive:[['Nathan Denkers','mcmaster',66],['Ethan Garwe','guelph',119]]}},
+    '2026-09-06-waterloo-carleton':{teamstats:[['First Downs',36,20],['Rushing Yards',205,50],['Passing Yards',352,386],['Total Offense',557,436]],leaders:{pass:[['Nick Orr','waterloo',352],['Elijah Barnes','carleton',386]],rush:[['Ethan Miller','waterloo',85],['Keyshawn Reid','carleton',23]],receive:[['Evan Basalyga','waterloo',112],['Dante Spadaccini','carleton',118]]}},
+    '2026-09-06-laurier-windsor':{teamstats:[['First Downs',19,28],['Rushing Yards',33,457],['Passing Yards',288,267],['Total Offense',321,724]],leaders:{pass:[['Will Russell','laurier',288],['Kareame Cotton','windsor',267]],rush:[['Tayshaun Jackson','laurier',33],['Weagbe Mombo','windsor',211]],receive:[['Ryan Hughes','laurier',143],['Nathan Smith','windsor',102]]}},
+    '2026-09-06-york-western':{teamstats:[['First Downs',14,33],['Rushing Yards',19,317],['Passing Yards',156,510],['Total Offense',175,827]],leaders:{pass:[['Maurice Sodja','york',156],['Jerome Rancourt','western',339]],rush:[['Rex Walker','york',31],['Ethan Dolby','western',97]],receive:[['Zack Smith','york',44],['Nik Shewchuk','western',139]]}}
+  };
+  for(const [id,b] of Object.entries(SEP6BOX)) BOX[id]=Object.assign({},BOX[id]||{},b);
+
+  function currentRecords66(){
+    const out={}; TEAMS.forEach(t=>out[t.slug]={w:0,l:0,pf:0,pa:0,gp:0});
+    for(const g of GAMES){
+      if(g.status!=='final'||!Number.isFinite(Number(g.awayScore))||!Number.isFinite(Number(g.homeScore))) continue;
+      const a=out[g.away],h=out[g.home]; if(!a||!h) continue;
+      const av=Number(g.awayScore),hv=Number(g.homeScore); a.gp++;h.gp++;a.pf+=av;a.pa+=hv;h.pf+=hv;h.pa+=av;
+      if(av>hv){a.w++;h.l++;} else if(hv>av){h.w++;a.l++;}
+    } return out;
+  }
+
+  function currentOffense66(){
+    const out={}; TEAMS.forEach(t=>out[t.slug]={games:0,total:0,rush:0,pass:0});
+    const used=new Set();
+    for(const [id,d] of Object.entries(RICH_GAMES||{})){
+      const g=GAMES.find(x=>x.id===id); if(!g) continue; used.add(id);
+      for(const [slug,st] of [[g.away,d.awayStats],[g.home,d.homeStats]]){ if(!st) continue; const o=out[slug]; o.games++;o.total+=Number(st.totalYds)||0;o.rush+=Number(st.rushYds)||0;o.pass+=Number(st.passYds)||0; }
+    }
+    for(const [id,b] of Object.entries(BOX||{})){
+      if(used.has(id)||!Array.isArray(b.teamstats)) continue; const g=GAMES.find(x=>x.id===id); if(!g) continue;
+      const find=(name)=>b.teamstats.find(r=>String(r[0]).toLowerCase()===name.toLowerCase());
+      const tot=find('Total Offense'),rush=find('Rushing Yards'),pass=find('Passing Yards'); if(!tot) continue;
+      [[g.away,1],[g.home,2]].forEach(([slug,i])=>{const o=out[slug];o.games++;o.total+=Number(tot[i])||0;o.rush+=Number(rush?.[i])||0;o.pass+=Number(pass?.[i])||0;});
+    } return out;
+  }
+
+  function currentLeaders66(){
+    const base={pass:[],rush:[],receive:[]};
+    for(const cat of Object.keys(base)){
+      const map=new Map((LEADERS?.[cat]||[]).map(r=>[`${r.name}|${r.team}`,{...r}]));
+      for(const id of Object.keys(SEP6BOX)){
+        for(const r of SEP6BOX[id].leaders?.[cat]||[]){ const k=`${r[0]}|${r[1]}`; const old=map.get(k); if(old) old.yards=Number(old.yards||0)+Number(r[2]||0); else map.set(k,{name:r[0],team:r[1],yards:Number(r[2]||0)}); }
+      }
+      base[cat]=[...map.values()].sort((a,b)=>b.yards-a.yards);
+    }
+    return base;
+  }
+
+  window.showLeaders=function(cat='pass'){
+    location.hash='leaders'; const all=currentLeaders66(), rows=all[cat]||[],label={pass:'Passing',rush:'Rushing',receive:'Receiving'}[cat];
+    document.getElementById('app').innerHTML=shell(`<section class="statsHero"><div class="kicker">NATIONAL PLAYER DATABASE</div><h1>Individual Leaders</h1><p>Season totals updated through all verified completed games currently loaded, including the September 6 OUA finals.</p></section><div class="dataNote">These are cumulative season totals from the verified game data currently available to the site. No projections or demo values are used.</div><div class="subnav"><button class="${cat==='pass'?'active':''}" onclick="showLeaders('pass')">Passing</button><button class="${cat==='rush'?'active':''}" onclick="showLeaders('rush')">Rushing</button><button class="${cat==='receive'?'active':''}" onclick="showLeaders('receive')">Receiving</button></div><div class="panel"><h2>${label} Yards</h2><table class="leaderTable"><thead><tr><th>#</th><th>Player</th><th>Team</th><th>Yards</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td class="rankNum">${i+1}</td><td><b>${esc(r.name)}</b></td><td><div class="playerCell"><img class="tinyLogo" src="${TEAM[r.team]?.logo||''}"><span>${esc(TEAM[r.team]?.short||r.team)}</span></div></td><td><b>${r.yards}</b></td></tr>`).join('')}</tbody></table></div>`,'leaders');
+  };
+
+  window.showTeamStats=function(){
+    location.hash='teamstats'; const rec=currentRecords66(),off=currentOffense66();
+    let rows=TEAMS.map(t=>({...t,...rec[t.slug],off:off[t.slug]})).sort((a,b)=>b.w-a.w||(a.l-b.l)||((b.pf-b.pa)-(a.pf-a.pa)));
+    document.getElementById('app').innerHTML=shell(`<section class="statsHero"><div class="kicker">NATIONAL TEAM DATABASE</div><h1>Team Stats</h1><p>Records and scoring are rebuilt directly from every verified final currently loaded into the Game Centre.</p></section><div class="dataNote">Updated through September 6 verified finals. Offensive production is shown only where a full verified team-stat table is available.</div><div class="panel"><h2>Results-Based Team Stats</h2><table class="leaderTable"><thead><tr><th>#</th><th>Team</th><th>W-L</th><th>PF</th><th>PA</th><th>Diff</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td class="rankNum">${i+1}</td><td><div class="playerCell"><img class="tinyLogo" src="${r.logo}"><b>${esc(r.short)}</b></div></td><td><b>${r.w}-${r.l}</b></td><td>${r.pf}</td><td>${r.pa}</td><td><b>${r.pf-r.pa>0?'+':''}${r.pf-r.pa}</b></td></tr>`).join('')}</tbody></table></div><div class="panel" style="margin-top:12px"><h2>Verified Offensive Production</h2><table class="leaderTable"><thead><tr><th>Team</th><th>Games</th><th>Total Yds</th><th>Avg</th><th>Rush</th><th>Pass</th></tr></thead><tbody>${rows.filter(r=>r.off.games).sort((a,b)=>(b.off.total/b.off.games)-(a.off.total/a.off.games)).map(r=>`<tr><td><div class="playerCell"><img class="tinyLogo" src="${r.logo}"><b>${esc(r.short)}</b></div></td><td>${r.off.games}</td><td>${r.off.total}</td><td><b>${(r.off.total/r.off.games).toFixed(1)}</b></td><td>${r.off.rush}</td><td>${r.off.pass}</td></tr>`).join('')}</tbody></table></div>`,'teamstats');
+  };
+
+  window.teamLeaderByCat=function(slug,cat){ const row=(currentLeaders66()[cat]||[]).find(x=>x.team===slug); return row?{name:row.name,value:row.yards,label:'yds'}:null; };
+})();
+</script>
+
+<style id="v67-sortable-stats">
+/* V67: click any statistical table heading to sort */
+table[data-v67-sortable="1"] thead th{cursor:pointer;user-select:none;position:relative;padding-right:24px!important;transition:color .15s ease,background .15s ease}
+table[data-v67-sortable="1"] thead th:hover{color:#fff;background:rgba(255,255,255,.055)}
+table[data-v67-sortable="1"] thead th::after{content:'↕';position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;opacity:.3}
+table[data-v67-sortable="1"] thead th[data-sort-dir="desc"]::after{content:'▼';opacity:1}
+table[data-v67-sortable="1"] thead th[data-sort-dir="asc"]::after{content:'▲';opacity:1}
+</style>
+<script id="v67-sortable-stats-script">
+(function(){
+  const TABLE_SELECTOR='table.leaderTable,table.statsTable,table.richTable,table.v65-table';
+
+  function normalizedValue(cell){
+    const raw=(cell?.innerText||cell?.textContent||'').replace(/\u00a0/g,' ').trim();
+    if(!raw) return {type:'empty',value:''};
+    const record=raw.match(/^\s*(\d+)\s*[-–]\s*(\d+)(?:\s*[-–]\s*(\d+))?\s*$/);
+    if(record){
+      const w=Number(record[1]),l=Number(record[2]),t=Number(record[3]||0),games=w+l+t;
+      return {type:'number',value:games ? ((w+.5*t)/games)*1000000 + w*1000 - l : 0};
+    }
+    const cleaned=raw.replace(/,/g,'').replace(/%/g,'').replace(/^\+/,'');
+    if(/^[-+]?\d*\.?\d+$/.test(cleaned)) return {type:'number',value:Number(cleaned)};
+    const leading=cleaned.match(/^[-+]?\d+(?:\.\d+)?/);
+    if(leading && /(?:yd|yards?|pts?|points?|games?|att|cmp|td|int|avg|ypg|%)/i.test(raw)) return {type:'number',value:Number(leading[0])};
+    return {type:'text',value:raw.toLocaleLowerCase()};
+  }
+
+  function renumber(table){
+    const first=table.tHead?.rows?.[0]?.cells?.[0];
+    if(!first || first.textContent.trim()!=='#') return;
+    [...(table.tBodies[0]?.rows||[])].forEach((row,i)=>{
+      if(row.cells[0]) row.cells[0].textContent=String(i+1);
+    });
+  }
+
+  function makeSortable(table){
+    if(!table || table.dataset.v67Sortable==='1' || !table.tHead || !table.tBodies.length) return;
+    table.dataset.v67Sortable='1';
+    const headers=[...table.tHead.rows[0].cells];
+    headers.forEach((th,index)=>{
+      th.title='Click to sort';
+      th.setAttribute('role','button');
+      th.tabIndex=0;
+      const doSort=()=>{
+        const body=table.tBodies[0];
+        const rows=[...body.rows];
+        if(rows.length<2) return;
+        const sample=rows.map(r=>normalizedValue(r.cells[index])).find(v=>v.type!=='empty');
+        const numeric=sample?.type==='number';
+        const previous=th.dataset.sortDir;
+        const dir=previous ? (previous==='desc'?'asc':'desc') : (numeric?'desc':'asc');
+        headers.forEach(h=>{ if(h!==th) delete h.dataset.sortDir; });
+        th.dataset.sortDir=dir;
+        rows.sort((ra,rb)=>{
+          const a=normalizedValue(ra.cells[index]), b=normalizedValue(rb.cells[index]);
+          if(a.type==='empty'&&b.type==='empty') return 0;
+          if(a.type==='empty') return 1;
+          if(b.type==='empty') return -1;
+          let cmp;
+          if(a.type==='number'&&b.type==='number') cmp=a.value-b.value;
+          else cmp=String(a.value).localeCompare(String(b.value),undefined,{numeric:true,sensitivity:'base'});
+          return dir==='asc'?cmp:-cmp;
+        });
+        rows.forEach(r=>body.appendChild(r));
+        renumber(table);
+      };
+      th.addEventListener('click',doSort);
+      th.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();doSort();}});
+    });
+  }
+
+  function scan(root=document){
+    if(root.matches?.(TABLE_SELECTOR)) makeSortable(root);
+    root.querySelectorAll?.(TABLE_SELECTOR).forEach(makeSortable);
+  }
+  scan();
+  new MutationObserver(muts=>muts.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1)scan(n)}))).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+
+
+<!-- V68 COMPLETE WEEK 2 RESULTS: supplemental Sep. 6 finals are now first-class schedule/team data -->
+<script id="v68-complete-week2-results">
+(function(){
+  const verifiedFinals68=[
+    {id:'2026-09-06-mcmaster-guelph',date:'2026-09-06',time:'1:00 PM',away:'mcmaster',home:'guelph',conference:'OUA',status:'final',awayScore:20,homeScore:11,venue:'Alumni Stadium'},
+    {id:'2026-09-06-waterloo-carleton',date:'2026-09-06',time:'1:00 PM',away:'waterloo',home:'carleton',conference:'OUA',status:'final',awayScore:31,homeScore:26,venue:'TAAG Park'},
+    {id:'2026-09-06-laurier-windsor',date:'2026-09-06',time:'1:00 PM',away:'laurier',home:'windsor',conference:'OUA',status:'final',awayScore:37,homeScore:48,venue:'Alumni Stadium'},
+    {id:'2026-09-06-york-western',date:'2026-09-06',time:'7:00 PM',away:'york',home:'western',conference:'OUA',status:'final',awayScore:7,homeScore:78,venue:'Western Alumni Stadium'}
+  ];
+
+  function mergeFinal68(x){
+    const existing=GAMES.find(g=>g.id===x.id);
+    if(existing) Object.assign(existing,x);
+    else GAMES.push({...x});
+  }
+  verifiedFinals68.forEach(mergeFinal68);
+
+  function records68(){
+    const out={};
+    TEAMS.forEach(t=>out[t.slug]={w:0,l:0,t:0,pf:0,pa:0,gp:0});
+    const seen=new Set();
+    GAMES.forEach(g=>{
+      if(g.status!=='final'||seen.has(g.id)) return;
+      const av=Number(g.awayScore), hv=Number(g.homeScore);
+      if(!Number.isFinite(av)||!Number.isFinite(hv)||!out[g.away]||!out[g.home]) return;
+      seen.add(g.id);
+      const a=out[g.away],h=out[g.home];
+      a.gp++;h.gp++;a.pf+=av;a.pa+=hv;h.pf+=hv;h.pa+=av;
+      if(av>hv){a.w++;h.l++;}else if(hv>av){h.w++;a.l++;}else{a.t++;h.t++;}
+    });
+    return out;
+  }
+  window.currentRecords68=records68;
+
+  /* Team pages previously read the old boot-time RECORDS object. Render from GAMES instead. */
+  window.showTeam=function(slug){
+    const t=TEAM[slug]; if(!t)return;
+    location.hash='team='+slug;
+    const r=records68()[slug]||{w:0,l:0,t:0,pf:0,pa:0,gp:0};
+    const tg=GAMES.filter(g=>g.away===slug||g.home===slug).sort((a,b)=>a.date.localeCompare(b.date)||String(a.time).localeCompare(String(b.time)));
+    const sched=tg.map(g=>{
+      const opp=TEAM[g.away===slug?g.home:g.away], home=g.home===slug, fin=g.status==='final';
+      const own=home?g.homeScore:g.awayScore, other=home?g.awayScore:g.homeScore;
+      const result=fin?(Number(own)>Number(other)?'W':Number(own)<Number(other)?'L':'T'):'';
+      return `<div class="sched" ${fin?`onclick="showGame('${g.id}')" style="cursor:pointer"`:''}><div class="schedDate"><b>${new Date(g.date+'T12:00:00').toLocaleDateString('en-CA',{month:'short',day:'numeric'})}</b><span>${esc(g.time)}</span></div><div><div class="opp">${home?'vs':'at'} ${esc(opp?.name||'Opponent')}</div><small>${fin?`Final • ${result} • open box score`:esc(g.venue||'')}</small></div><div class="result">${fin?`${own}–${other}`:'UPCOMING'}</div></div>`;
+    }).join('');
+    document.getElementById('app').innerHTML=shell(`<button class="back" onclick="goHome()">← National schedule</button><section class="teamHero" style="--team:${t.primary};--team2:${t.secondary}"><div style="display:flex;gap:20px;align-items:end;position:relative;z-index:2">${logo(t,true)}<div><div class="kicker">${cl(t.conference)} • ${esc(t.city)}</div><h1>${esc(t.name)}</h1><p>${r.w}-${r.l}${r.t?'-'+r.t:''} • ${r.pf} PF • ${r.pa} PA</p></div></div></section><div class="tabs">${['Overview','Schedule','Results','Roster','Stats','News','Media','Players'].map(x=>`<span class="tab">${x}</span>`).join('')}</div><div class="twoCol"><main class="panel"><h2>2026 Schedule & Results</h2><div class="scheduleList">${sched}</div></main><aside class="panel"><h2>Team Snapshot</h2><div class="teamStatGrid"><div class="statTile"><strong>${r.w}-${r.l}${r.t?'-'+r.t:''}</strong><small>Record</small></div><div class="statTile"><strong>${r.pf}</strong><small>Points For</small></div><div class="statTile"><strong>${r.pa}</strong><small>Points Against</small></div></div></aside></div>`);
+  };
+
+  /* Make sure the currently visible schedule is repainted after supplemental games are merged. */
+  function repaint68(){
+    const hash=location.hash.slice(1);
+    if(hash.startsWith('team=')) return window.showTeam(hash.slice(5));
+    if(hash==='teamstats' && typeof window.showTeamStats==='function') return window.showTeamStats();
+    if(!hash || hash.startsWith('week=')){
+      if(typeof window.updateCal==='function' && document.getElementById('calendarBody')) window.updateCal();
+      else if(typeof window.renderHome==='function') window.renderHome();
+    }
+  }
+  setTimeout(repaint68,0);
+})();
+</script>

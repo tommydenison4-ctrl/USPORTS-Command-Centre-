@@ -34,3 +34,6 @@ V98: Removed the late V97 route wrapper. V93 is again the sole owner of live rou
 
 
 V102 stability rebuild: removed competing V92/V93/V94/V97/V101 front-end live controllers and replaced them with one shared desktop/mobile live controller. One polling loop, one 3D field, DOM-only live patches, session-cached source/snapshot, stable scroll. Player rows now carry an explicit away/home side from Presto team-root order.
+
+
+V104: hard scroll stability for live GameCenter. Live scrolling is persisted per game, restored after hard refresh/pageshow, polling only patches changed HTML, hidden play-by-play is not rebuilt, and live DOM updates never intentionally change scroll position.

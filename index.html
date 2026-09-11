@@ -5320,6 +5320,7 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
   function renderLiveLanding(){const d=today(),games=GAMES.filter(g=>g.date===d&&g.status!=='final');const html=`<div class="liveLanding"><section class="liveLandingHero"><div class="kicker">LIVE</div><h1>Today's Games</h1><p>Verified live feeds take over automatically as soon as the official stats service posts an event.</p></section><div class="v93Scan" id="v93Scan">${location.protocol==='file:'?'Local preview: live APIs activate after deployment to Vercel.':'Scanning official national live-stat feeds every 5 seconds…'}</div>${games.length?`<div class="v93LiveGrid">${games.map(card).join('')}</div>`:'<div class="panel"><h2>No games loaded for today</h2></div>'}</div>`;document.getElementById('app').innerHTML=shell(html,'live');history.replaceState(null,'','#live');}
   window.openLiveV32=renderLiveLanding;window.showLiveHub=renderLiveLanding;
   async function discover(){if(V93.busy||location.protocol==='file:')return;V93.busy=true;try{const h=location.hash.slice(1),selected=h.startsWith('live=')?h.slice(5):'',sg=GAMES.find(g=>g.id===selected),date=sg?.date||today();const r=await fetch(`/api/live-games?date=${ymd(date)}&_=${Date.now()}`,{cache:'no-store'});const j=await r.json();if(!j?.ok)return;let first='';for(const x of (j.games||[])){const g=matchGame(x,date)||matchGame(x,'');if(!g)continue;ensureState(g,x);if(!first)first=g.id;if(selected===g.id)startSelected(g.id)}const scan=document.getElementById('v93Scan');if(scan)scan.textContent=j.games?.length?`${j.games.length} verified live game${j.games.length===1?'':'s'} found • refreshing every 5 seconds`:'Official feeds checked • waiting for a live event';if(h==='live'){if(first){openGame(first);return}renderLiveLanding()}else if(selected&&V93.sources.has(selected))startSelected(selected)}catch(e){const scan=document.getElementById('v93Scan');if(scan)scan.textContent='Live scan retrying…';console.warn('V93 live discover',e)}finally{V93.busy=false}}
+  V93.discover=discover; V93.pollSelected=pollSelected; V93.startSelected=startSelected;
   function start(){clearInterval(V93.poll);discover();V93.poll=setInterval(discover,5000)}
   window.showGameCast=function(id){openGame(id)};
   const prevRoute=window.route;window.route=function(){const h=location.hash.slice(1);if(h==='live'){renderLiveLanding();setTimeout(discover,30);return}if(h.startsWith('live=')){openGame(h.slice(5));setTimeout(discover,30);return}return prevRoute?.()};
@@ -5370,7 +5371,6 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
  function patch(id,d){if(id!==V94.selected||!document.querySelector('.v94-wrap'))return;V94.snap[id]=d;const g=game(id),st=LIVE_STORE?.games?.[id]||{};if(d?.game?.awayScore!=null)st.as=Number(d.game.awayScore);if(d?.game?.homeScore!=null)st.hs=Number(d.game.homeScore);st.q=d?.status?.period||st.q;st.clock=d?.status?.clock||st.clock;const set=(x,v)=>{const e=document.getElementById(x);if(e)e.textContent=v};set('v94-as',d?.game?.awayScore??st.as??0);set('v94-hs',d?.game?.homeScore??st.hs??0);set('v94-status',[d?.status?.period||st.q||'LIVE',d?.status?.clock||st.clock||''].filter(Boolean).join(' • '));set('v94-sit',[downText(d),spotText(d)].filter(Boolean).join(' · '));const ps=possSlug(g,d);set('v94-pos',ps?(TEAM[ps]?.abbr||ps)+' ball':'');const lp=d?.plays?.[0];set('v94-last',lp?.description||'Waiting for the next official play.');set('v94-lasttime',lp?[lp.q,lp.clock].filter(Boolean).join(' • '):'');const t=document.getElementById('v94-teamstats');if(t)t.innerHTML=statRows(d,g);const dr=document.getElementById('v94-drive');if(dr)dr.innerHTML=drive(d);const pbe=document.getElementById('v94-pbp');if(pbe)pbe.innerHTML=pbp(d);for(const side of ['away','home']){const e=document.getElementById(`v94-${side}-table`);if(e)e.innerHTML=tableFor(side,V94.cat[side],d,g)}const wp=prob(g),ap=Math.round(wp*100),hp=100-ap;set('v94-ap',ap+'%');set('v94-hp',hp+'%');set('v94-winner',(wp>=.5?TEAM[g.away]:TEAM[g.home])?.name||'');const ab=document.getElementById('v94-apbar'),hb=document.getElementById('v94-hpbar');if(ab)ab.style.width=ap+'%';if(hb)hb.style.width=hp+'%';}
  async function poll(id){if(location.protocol==='file:')return;const src=liveSource(id),g=game(id);if(!src?.page||!g)return;try{const idsFn=window.V93_LIVE?null:null;const aid=src.awayId||TEAM[g.away]?.abbr||'',hid=src.homeId||TEAM[g.home]?.abbr||'';const u=`/api/presto-live?game=${encodeURIComponent(id)}&page=${encodeURIComponent(src.page)}&awayId=${encodeURIComponent(aid)}&homeId=${encodeURIComponent(hid)}&_=${Date.now()}`;const r=await fetch(u,{cache:'no-store'}),j=await r.json();if(!j?.ok)return;const d=j.data||{};V94.snap[id]=d;const st=LIVE_STORE.games[id]||{};st._realLive=true;st.as=d.game?.awayScore??st.as??0;st.hs=d.game?.homeScore??st.hs??0;st.q=d.status?.period||st.q;st.clock=d.status?.clock||st.clock;LIVE_STORE.games[id]=st;patch(id,d)}catch(e){console.warn('V94 poll',e)}}
  function start(id){clearInterval(V94.poll);V94.selected=id;const existing=V94.snap[id];if(existing)render(id,existing);else{const g=game(id),st=LIVE_STORE?.games?.[id];if(st?._realLive)render(id,{game:{awayScore:st.as,homeScore:st.hs},status:{period:st.q,clock:st.clock},situation:{}});else return fallbackShow?.(id)}poll(id);V94.poll=setInterval(()=>poll(id),5000)}
- window.V94_POLL=poll; window.V94_START=start;
  window.v94Tab=function(tab){V94.tab=tab;document.querySelectorAll('.v94-boxSection').forEach(e=>e.classList.remove('active'));document.getElementById(tab==='box'?'v94-box':'v94-overview')?.classList.add('active');document.querySelectorAll('.v94-tabs button').forEach((b,i)=>b.classList.toggle('active',(tab==='overview'&&i===0)||(tab==='box'&&i===1)))};
  window.v94TogglePbp=function(force){const e=document.getElementById('v94-pbp');if(!e){V94.tab='overview';const d=V94.snap[V94.selected];if(d)render(V94.selected,d);setTimeout(()=>v94TogglePbp(true),0);return}const open=force===true||!e.classList.contains('open');e.classList.toggle('open',open);if(open)e.scrollIntoView({behavior:'smooth',block:'start'})};
  window.v94Scroll=id=>document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'});
@@ -5429,42 +5429,47 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
 })();
 </script>
 
-<script id="v100-mobile-live-resilience">
-/* V100: Mobile Safari-safe live bridge. No feed parser changes.
-   - Restores discovered source from sessionStorage on reload.
-   - Runs a same-origin discovery watchdog independent of viewport size.
-   - Calls the existing V94 in-place poller, so updates never rerender or move scroll.
-   - Resumes immediately after iOS pageshow / foreground / focus / network return. */
+
+<style id="v101-live-stability-style">
+/* V101: never show the retired flat legacy field while the modern live center takes over. */
+.gc47-fieldwrap{display:none!important}
+</style>
+<script id="v101-mobile-resume">
+/* V101 mobile resume bridge. Reuses V93's proven discovery and V94's proven in-place poller.
+   It does not create a second discovery system and does not run on desktop. */
 (()=>{
-  const M={timer:null,busy:false,lastPoll:0,lastSource:'',wakeTimer:null};
-  const pad=n=>String(n).padStart(2,'0');
-  const ymd=s=>String(s||'').replace(/\D/g,'').slice(0,8);
-  const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
-  function selected(){const h=location.hash.slice(1);return h.startsWith('live=')?h.slice(5):''}
-  function game(id){return (GAMES||[]).find(g=>g.id===id)}
-  function teamMatch(slug,label){const t=TEAM?.[slug],q=norm(label);if(!t||!q)return false;return [slug,t.short,t.name,t.abbr].map(norm).filter(Boolean).some(v=>q===v||q.includes(v)||v.includes(q))}
-  function match(x,date){let best=null,score=-999;for(const g of (GAMES||[])){if(g.status==='final')continue;if(date&&g.date!==date)continue;let s=0;if(teamMatch(g.away,x.visitor))s+=100;if(teamMatch(g.home,x.home))s+=100;if(teamMatch(g.away,x.home))s-=60;if(teamMatch(g.home,x.visitor))s-=60;if(s>score){score=s;best=g}}return score>=180?best:null}
-  function cacheKey(id){return 'usports-live-source-v100:'+id}
-  function putSource(id,src){if(!id||!src?.page)return;M.lastSource=src.page;try{sessionStorage.setItem(cacheKey(id),JSON.stringify(src))}catch{};try{window.V93_LIVE?.sources?.set(id,src)}catch{};try{if(typeof DISCOVERED_V46!=='undefined'){DISCOVERED_V46.byInternal[id]=src;if(!DISCOVERED_V46.last.some(z=>z.page===src.page))DISCOVERED_V46.last.push(src)}}catch{};try{if(typeof PRESTO_V33_GAMES!=='undefined')PRESTO_V33_GAMES.add(id)}catch{};const g=game(id);if(g){let st=LIVE_STORE.games[id]||{id,away:g.away,home:g.home};st._realLive=true;if(src.awayScore!=null)st.as=Number(src.awayScore);if(src.homeScore!=null)st.hs=Number(src.homeScore);st.q=src.period||st.q||'LIVE';st.clock=src.clock||st.clock||'';LIVE_STORE.games[id]=st}}
-  function restore(id){if(!id)return null;let src=null;try{src=JSON.parse(sessionStorage.getItem(cacheKey(id))||'null')}catch{};if(src?.page)putSource(id,src);return src}
-  async function discover(id){if(M.busy||!id||location.protocol==='file:')return null;const g=game(id);if(!g)return null;M.busy=true;try{const r=await fetch(`/api/live-games?date=${ymd(g.date)}&_=${Date.now()}`,{cache:'no-store',credentials:'same-origin',headers:{'Accept':'application/json'}});if(!r.ok)return null;const j=await r.json();if(!j?.ok)return null;let src=null;for(const x of (j.games||[])){const m=match(x,g.date)||match(x,'');if(m?.id===id){src=x;break}}if(src){putSource(id,src);return src}return null}catch(e){console.warn('V100 mobile discovery',e);return null}finally{M.busy=false}}
-  async function pulse(force=false){const id=selected();if(!id)return;let src=null;try{src=window.V93_LIVE?.sources?.get(id)||null}catch{};src=src||restore(id)||await discover(id);if(!src?.page)return;
-    // If a fresh mobile load is still on a pregame/legacy screen, upgrade once only.
-    if(!document.querySelector('.v94-wrap')){const y=window.scrollY||0;try{window.showGameCast?.(id)}catch{};requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:y,left:0,behavior:'instant'})));return}
-    // Existing live center: patch in place only. Never route, render, scroll, or touch hash.
-    const now=Date.now();if(force||now-M.lastPoll>=3500){M.lastPoll=now;try{await window.V94_POLL?.(id)}catch(e){console.warn('V100 mobile poll',e)}}
+  const isMobile=()=>matchMedia('(max-width: 900px)').matches || matchMedia('(pointer: coarse)').matches;
+  let wakeTimer=null, busy=false;
+  const selected=()=>{const h=location.hash.slice(1);return h.startsWith('live=')?h.slice(5):''};
+  async function wake(){
+    if(!isMobile()||busy||document.visibilityState==='hidden')return;
+    const id=selected();if(!id)return;
+    busy=true;
+    try{
+      // Use the SAME discovery routine that desktop already uses.
+      try{await window.V93_LIVE?.discover?.()}catch(e){console.warn('V101 V93 discover',e)}
+      // Give discovery a beat to attach the source, then use the SAME DOM patch poller.
+      await new Promise(r=>setTimeout(r,120));
+      if(document.querySelector('.v94-wrap')){
+        try{await window.V94_POLL?.(id)}catch(e){console.warn('V101 V94 poll',e)}
+      }else{
+        const st=window.LIVE_STORE?.games?.[id] || (typeof LIVE_STORE!=='undefined'?LIVE_STORE.games?.[id]:null);
+        if(st?._realLive){
+          const y=window.scrollY||0;
+          try{window.V94_START?.(id)}catch(e){console.warn('V101 V94 start',e)}
+          requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,y)));
+        }
+      }
+    }finally{busy=false}
   }
-  function loop(){clearTimeout(M.timer);const run=async()=>{await pulse(false);M.timer=setTimeout(run,4000)};run()}
-  function wake(){clearTimeout(M.wakeTimer);M.wakeTimer=setTimeout(()=>{pulse(true);loop()},40)}
-  window.addEventListener('pageshow',wake);
-  window.addEventListener('focus',wake);
-  window.addEventListener('online',wake);
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')wake()});
-  window.addEventListener('hashchange',wake);
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wake,{once:true});else wake();
-  // Build label only.
-  const oldShell=window.shell;if(typeof oldShell==='function')window.shell=function(content,active='schedule'){return oldShell(content,active).replace(/V98 • Stable Live Feed \+ 3D Center/g,'V100 • Mobile-Safe Live + 3D Center')};
+  function queue(){clearTimeout(wakeTimer);wakeTimer=setTimeout(wake,80)}
+  window.addEventListener('pageshow',queue);
+  window.addEventListener('focus',queue);
+  window.addEventListener('online',queue);
+  window.addEventListener('hashchange',queue);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')queue()});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',queue,{once:true});else queue();
+  const oldShell=window.shell;if(typeof oldShell==='function')window.shell=function(content,active='schedule'){return oldShell(content,active).replace(/V98 • Stable Live Feed \+ 3D Center|V99[^<]*/g,'V101 • Unified Live Feed + Stable Mobile')};
 })();
 </script>
-
 </body></html>

@@ -24,9 +24,10 @@ V94: redesigned live GameCenter, projection at top, methodology banners removed,
 
 V98: Removed the late V97 route wrapper. V93 is again the sole owner of live routing, preventing a selected live game from falling back to pregame before discovery attaches the feed. No live API files changed.
 
-V100 mobile-live resilience
-- Added a viewport-independent live watchdog for iPhone/iPad Safari.
-- Live source is cached in sessionStorage after discovery and restored immediately on refresh.
-- Mobile foreground/pageshow/focus/online lifecycle events force an immediate live refresh.
-- Existing V94 polling is exposed and reused so score/stats updates patch in place without route changes or scroll jumps.
-- No changes to api/live-games.js or api/presto-live.js feed/discovery/parser behavior from V99.
+
+## V101
+- Reverted the V100 second discovery/watchdog layer that interfered with desktop live behavior.
+- Mobile resume now calls the exact same V93 discovery routine used by desktop.
+- Mobile live updates use the existing V94 DOM patch poller only; no route/hash/page rebuild during normal polling.
+- Retired flat V47 field is forcibly hidden; only the tilted 3D V97 field is shown in the modern live center.
+- V99 player-stat parser retained unchanged.

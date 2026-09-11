@@ -45,3 +45,9 @@ V104: hard scroll stability for live GameCenter. Live scrolling is persisted per
 - Live DOM patches preserve the visible viewport anchor when rows above it change.
 - Retired live UI/field painters are quarantined while V105 GameCenter is mounted.
 - Player-stat play-by-play fallback propagates possession across adjacent Presto rows and uses broader passing/rushing/receiving patterns.
+
+## V106 live stability fixes
+- Removed all programmatic scroll compensation from the live polling path. Live polls never call `scrollTo`, `scrollBy`, or rerender the GameCenter while mounted.
+- Live 3D field now moves the football, line of scrimmage, and first-down marker from the current official spot/possession/distance.
+- National out-of-town rail polls the same verified live discovery endpoint and patches scores in place.
+- Presto individual-stat extraction now reads nested player category/stat objects rather than requiring flat scalar player rows.

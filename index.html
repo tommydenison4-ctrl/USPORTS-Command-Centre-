@@ -5203,7 +5203,7 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
   if(typeof priorShellV90==='function'){
     window.shell=function(content,active='schedule'){
       convertAllV90();
-      return priorShellV90(content,active).replace(/V89 • Full Navigation \+ Team-Branded News/g,'V91 • All Kickoffs in EDT');
+      return priorShellV90(content,active).replace(/V89 • Full Navigation \+ Team-Branded News/g,'V106 • Smooth Live GameCenter');
     };
   }
 
@@ -5214,7 +5214,7 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
 
 
 <style id="v102-live-style">
-/* V105 — single live controller, deterministic live probability, viewport-anchored updates. */
+/* V106 — single live controller, no viewport manipulation, live field + national rail. */
 .gc47-fieldwrap{display:none!important}
 .v102-live{max-width:1180px;margin:0 auto;padding:16px 18px 60px;color:var(--text);overflow-anchor:auto}
 .v102-live button{font:inherit}
@@ -5316,7 +5316,7 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
   function img(t,cls=''){return t?.logo?`<img class="${cls}" src="${esc2(t.logo)}" alt="" onerror="this.style.display='none'">`:''}
   function possSlug(g,d){const p=norm(d?.situation?.possession);if(!p)return'';if(aliases(g.away).some(v=>p===v||p.includes(v)||v.includes(p)))return g.away;if(aliases(g.home).some(v=>p===v||p.includes(v)||v.includes(p)))return g.home;return''}
   function downText(d){const x=d?.situation||{};const n=Number(x.down);if(!n)return'';return `${n}${n===1?'st':n===2?'nd':n===3?'rd':'th'} & ${x.distance??''}`}
-  function rail(id){const d=game(id)?.date||today();return `<div class="v102-other">${(GAMES||[]).filter(x=>x.date===d&&x.id!==id).slice(0,10).map(x=>{const s=LIVE_STORE?.games?.[x.id],live=s?._realLive;return `<button onclick="V102_LIVE.open('${x.id}')"><small><span>${esc2(x.conference||'')}</span><span>${live?esc2([s.q,s.clock].filter(Boolean).join(' ')):esc2(x.time||'')}</span></small><b>${esc2(team(x.away).abbr||x.away)} ${live?s.as??0:''} · ${esc2(team(x.home).abbr||x.home)} ${live?s.hs??0:''}</b></button>`}).join('')}</div>`}
+  function rail(id){const d=game(id)?.date||today();return `<div class="v102-other" id="v102-national-rail">${(GAMES||[]).filter(x=>x.date===d&&x.id!==id).slice(0,10).map(x=>{const s=LIVE_STORE?.games?.[x.id],live=s?._realLive;return `<button onclick="V102_LIVE.open('${x.id}')"><small><span>${esc2(x.conference||'')}</span><span>${live?esc2([s.q,s.clock].filter(Boolean).join(' ')):esc2(x.time||'')}</span></small><b>${esc2(team(x.away).abbr||x.away)} ${live?s.as??0:''} · ${esc2(team(x.home).abbr||x.home)} ${live?s.hs??0:''}</b></button>`}).join('')}</div>`}
   function value(v){const m=String(v??'').match(/-?\d+(?:\.\d+)?/);return m?Number(m[0]):0}
   function statRows(d,g){const rows=d?.statComparison||[];if(!rows.length)return '<div class="v102-empty">Live team statistics are waiting on the official gamebook.</div>';return `<div class="v102-statrows">${rows.map(r=>{const av=value(r.away),hv=value(r.home),mx=Math.max(1,Math.abs(av),Math.abs(hv));return `<div class="v102-statrow"><div class="val">${esc2(r.away??'—')}</div><div class="v102-meter"><i style="width:${Math.max(4,Math.abs(av)/mx*100)}%;background:${team(g.away).primary||'#c79b2e'}"></i></div><div class="lab">${esc2(r.label)}</div><div class="v102-meter"><i style="width:${Math.max(4,Math.abs(hv)/mx*100)}%;background:${team(g.home).primary||'#cf1742'}"></i></div><div class="val r">${esc2(r.home??'—')}</div></div>`}).join('')}</div>`}
   function pcat(p){const z=(String(p.path||'')+' '+Object.keys(p.stats||{}).join(' ')).toLowerCase();if(/pass|cmp|comp|attempt/.test(z))return'passing';if(/rush|carr|car\b/.test(z))return'rushing';if(/receiv|\brec\b/.test(z))return'receiving';if(/tack|tkl|sack|def|intercept/.test(z))return'defense';return'other'}
@@ -5363,17 +5363,35 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
   function content(id,d){const g=game(id),a=team(g.away),h=team(g.home),st=LIVE_STORE?.games?.[id]||{},p=prob(g,d),ap=Math.round(p*100),hp=100-ap,w=p>=.5?a:h,as=d?.game?.awayScore??st.as??0,hs=d?.game?.homeScore??st.hs??0,q=d?.status?.period||st.q||'LIVE',clock=d?.status?.clock||st.clock||'',poss=possSlug(g,d),spot=String(d?.situation?.spot||st.spot||'').replace(/\s+/g,'').toUpperCase();return `<div class="v102-live" style="--away:${a.primary||'#b58b2a'};--home:${h.primary||'#ca173f'}">${rail(id)}<div class="v102-crumb"><span>Live › <b>${esc2(a.short||a.name||g.away)} at ${esc2(h.short||h.name||g.home)}</b></span><span>${esc2(g.conference||'')} · ${esc2(g.date||'')}</span></div><section class="v102-predict"><div class="v102-team">${img(a)}<div><h2>${esc2(a.name||g.away)}</h2><small>${esc2(a.record||'')}</small></div></div><div class="v102-prob"><div class="v102-prob-title">Win Probability</div><div class="v102-prob-row"><strong id="v102-ap">${ap}%</strong><div class="v102-probbar"><i id="v102-ab" style="width:${ap}%;background:${a.primary||'#c49a31'}"></i><i id="v102-hb" style="width:${hp}%;background:${h.primary||'#cd1740'}"></i></div><strong id="v102-hp">${hp}%</strong></div><div class="v102-winner">Projected Winner<b id="v102-winner">${esc2(w.name||'')}</b></div></div><div class="v102-team home"><div><h2>${esc2(h.name||g.home)}</h2><small>${esc2(h.record||'')}</small></div>${img(h)}</div></section><section class="v102-score"><div class="v102-score-side">${img(a)}<span>${esc2(a.abbr||'')}</span><span class="v102-num" id="v102-as">${as}</span></div><div class="v102-score-center"><div class="v102-status" id="v102-status">${esc2([q,clock].filter(Boolean).join(' • '))}</div><div class="v102-sit" id="v102-sit">${esc2([downText(d),spot].filter(Boolean).join(' · '))}</div><div class="v102-pos" id="v102-pos">${poss?esc2((team(poss).abbr||poss)+' ball'):''}</div></div><div class="v102-score-side home"><span class="v102-num" id="v102-hs">${hs}</span><span>${esc2(h.abbr||'')}</span>${img(h)}</div></section><div class="v102-tabs"><button class="active" onclick="V102_LIVE.view('overview',this)">Overview</button><button onclick="V102_LIVE.view('box',this)">Box Score</button><button onclick="V102_LIVE.scroll('v102-teamstats')">Team Stats</button><button onclick="V102_LIVE.scroll('v102-playergrid')">Player Stats</button><button onclick="V102_LIVE.view('box',this)">Drives</button><button onclick="V102_LIVE.togglePbp()">Play-by-Play</button></div><div id="v102-overview"><div class="v102-grid2"><section class="v102-card"><h3>Last Play</h3><div class="v102-last" id="v102-last">${esc2(d?.plays?.[0]?.description||'Waiting for the next official play.')}</div><div class="v102-sub" id="v102-lasttime">${esc2([d?.plays?.[0]?.q,d?.plays?.[0]?.clock].filter(Boolean).join(' • '))}</div></section><section class="v102-card"><h3>Current Drive</h3><div id="v102-drive">${drive(d)}</div></section></div>${field(g)}<section class="v102-card"><h3>Team Stats</h3><div id="v102-teamstats">${statRows(d,g)}</div></section><div class="v102-playergrid" id="v102-playergrid">${pcard('away',d,g)}${pcard('home',d,g)}</div><button class="v102-action" onclick="V102_LIVE.view('box')">▣ View Full Box Score ›</button><section class="v102-card"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><div><h3 style="margin-bottom:3px">Play-by-Play</h3><div class="v102-sub">Show full play-by-play feed</div></div><button class="v102-action" style="width:auto;margin:0;padding:10px 14px" onclick="V102_LIVE.togglePbp()">Show Play-by-Play</button></div><div class="v102-pbp" id="v102-pbp">${plays(d)}</div></section></div><div id="v102-box" style="display:none"><section class="v102-card"><h3>Full Team Box Score</h3><div id="v102-boxstats">${statRows(d,g)}</div></section><div class="v102-playergrid">${pcard('away',d,g)}${pcard('home',d,g)}</div><section class="v102-card"><h3>Drives</h3><div id="v102-drives">${(d?.drives||[]).map(x=>`<div class="v102-play"><div class="v102-playtime">${esc2(x.team||'')}</div><div class="v102-playtext">${esc2(x.plays??'—')} plays • ${esc2(x.yards??'—')} yards ${x.time?`• ${esc2(x.time)}`:''} ${x.result?`• ${esc2(x.result)}`:''}</div></div>`).join('')||'<div class="v102-empty">No drive rows yet.</div>'}</div></section></div></div>`}
   function render(){if(!L.selected)return;const g=game(L.selected);if(!g)return;const d=L.snap||readSession(snapKey(L.selected))||{game:{awayScore:LIVE_STORE?.games?.[L.selected]?.as||0,homeScore:LIVE_STORE?.games?.[L.selected]?.hs||0},status:{period:LIVE_STORE?.games?.[L.selected]?.q||'LIVE',clock:LIVE_STORE?.games?.[L.selected]?.clock||''},situation:{},plays:[],drives:[],statComparison:[],playerStats:[]};L.snap=d;document.getElementById('app').innerHTML=shell(content(L.selected,d),'live');L.rendered=true;patchField()}
   function patchText(id,v){const e=document.getElementById(id);if(e)e.textContent=v??''}
-  function patchField(){if(!L.snap)return;const x=L.snap.situation||{};patchText('v102-fieldstate',[downText(L.snap),String(x.spot||'').replace(/\s+/g,'')].filter(Boolean).join(' • '))}
-  function viewportAnchor(){
-    const nodes=[...document.querySelectorAll('.v102-live .v102-card,.v102-live .v102-field,.v102-live .v102-score,.v102-live .v102-tabs')];
-    const y=Math.max(8,Math.min(innerHeight-8,innerHeight*.42));
-    let best=null,dist=Infinity;
-    for(const el of nodes){const r=el.getBoundingClientRect();if(r.bottom<0||r.top>innerHeight)continue;const d=Math.abs(r.top-y);if(d<dist){dist=d;best={el,top:r.top}}}
-    return best;
+  function patchField(){
+    if(!L.snap||!L.selected)return;
+    const g=game(L.selected),x=L.snap.situation||{},gm=L.snap.game||{};
+    const spot=String(x.spot||L.snap?.plays?.[0]?.spot||'').toUpperCase().replace(/\s+/g,'').replace(/-/g,'');
+    patchText('v102-fieldstate',[downText(L.snap),spot].filter(Boolean).join(' • '));
+    const hud=document.getElementById('fieldHudV9');
+    const poss=possSlug(g,L.snap);
+    if(hud)hud.textContent=[poss?(team(poss).abbr||poss).toUpperCase()+' BALL':'',downText(L.snap),spot].filter(Boolean).join(' • ')||'LIVE';
+    const m=spot.match(/^([A-Z]{2,8})(\d{1,3})$/); if(!m)return;
+    const code=m[1],yd=Math.max(0,Math.min(55,Number(m[2]))); if(!Number.isFinite(yd))return;
+    const awayCodes=[team(g.away).abbr,g.away,gm.awayId].map(v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,''));
+    const homeCodes=[team(g.home).abbr,g.home,gm.homeId].map(v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,''));
+    let coord=null;
+    if(awayCodes.some(v=>v&&code===v))coord=yd;
+    else if(homeCodes.some(v=>v&&code===v))coord=110-yd;
+    if(coord==null)return;
+    const pct=c=>13.333+(Math.max(0,Math.min(110,c))/110)*73.334;
+    const bx=pct(coord),ball=document.getElementById('fieldBallV9'),los=document.getElementById('losLineV9'),first=document.getElementById('firstLineV9');
+    if(ball){ball.style.display='block';ball.style.left=bx+'%'}
+    if(los){los.style.display='block';los.style.left=bx+'%'}
+    let dir=0;if(poss===g.away)dir=1;else if(poss===g.home)dir=-1;
+    const dist=Number(x.distance);
+    if(first){if(dir&&Number.isFinite(dist)&&dist>0){first.style.display='block';first.style.left=pct(coord+dir*dist)+'%'}else first.style.display='none'}
   }
+  // V106: never programmatically move the viewport during live polling.
+  // Browser scroll anchoring is allowed to do its native job; polling only patches data nodes.
   function patch(){
     if(!L.rendered||!document.querySelector('.v102-live')||!L.snap)return;
-    const anchor=viewportAnchor(); const d=L.snap,g=game(L.selected),st=LIVE_STORE?.games?.[L.selected]||{};
+    const d=L.snap,g=game(L.selected),st=LIVE_STORE?.games?.[L.selected]||{};
     patchText('v102-as',d?.game?.awayScore??st.as??0);patchText('v102-hs',d?.game?.homeScore??st.hs??0);
     patchText('v102-status',[d?.status?.period||st.q||'LIVE',d?.status?.clock||st.clock||''].filter(Boolean).join(' • '));
     patchText('v102-sit',[downText(d),String(d?.situation?.spot||st.spot||'').replace(/\s+/g,'').toUpperCase()].filter(Boolean).join(' · '));
@@ -5385,13 +5403,26 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
     const pr=prob(g,d),ap=Math.round(pr*100),hp=100-ap;patchText('v102-ap',ap+'%');patchText('v102-hp',hp+'%');
     const ab=document.getElementById('v102-ab'),hb=document.getElementById('v102-hb');if(ab)ab.style.width=ap+'%';if(hb)hb.style.width=hp+'%';
     patchText('v102-winner',(pr>=.5?team(g.away):team(g.home)).name||'');patchField();
-    // Hold the same visible content in the same physical spot if rows above it grew/shrank.
-    // Never do this while the user is touching/scrolling.
-    if(anchor&&anchor.el?.isConnected&&Date.now()-L.lastUserScroll>900){const top=anchor.el.getBoundingClientRect().top;const delta=top-anchor.top;if(Math.abs(delta)>1&&Math.abs(delta)<innerHeight*.75)window.scrollBy(0,delta)}
+    // No scrollBy / scrollTo / automatic viewport correction here. Ever.
   }
-  async function tick(){if(L.inflight||!L.selected||document.visibilityState==='hidden')return;L.inflight=true;try{const d=await fetchSnap();if(d){if(!L.rendered||!document.querySelector('.v102-live'))render();else patch()}else{if(now()-L.lastDiscover>8000)discover(true);/* keep the last good snapshot on screen */}}finally{L.inflight=false}}
+  async function pollNational(force=false){
+    if(!L.selected||document.visibilityState==='hidden')return;
+    if(!force&&now()-(L.lastNational||0)<9000)return; L.lastNational=now();
+    const gsel=game(L.selected),date=gsel?.date||today();
+    try{
+      const r=await fetch(`/api/live-games?date=${ymd(date)}&_=${now()}`,{cache:'no-store'}); const j=await r.json();
+      if(!j?.ok)return;
+      for(const x of (j.games||[])){
+        const g=matchSource(x,date); if(!g)continue;
+        const st=LIVE_STORE.games[g.id]||(LIVE_STORE.games[g.id]={id:g.id,away:g.away,home:g.home});
+        st._realLive=true;st.as=Number(x.awayScore??st.as??0);st.hs=Number(x.homeScore??st.hs??0);st.q=x.period||st.q||'LIVE';st.clock=x.clock||st.clock||'';
+      }
+      const el=document.getElementById('v102-national-rail'); if(el){const fresh=rail(L.selected);const box=document.createElement('div');box.innerHTML=fresh;const next=box.firstElementChild;if(next&&el.innerHTML!==next.innerHTML)el.innerHTML=next.innerHTML}
+    }catch(e){console.warn('V106 national rail',e)}
+  }
+  async function tick(){if(L.inflight||!L.selected||document.visibilityState==='hidden')return;L.inflight=true;try{const d=await fetchSnap();if(d){if(!L.rendered||!document.querySelector('.v102-live'))render();else patch()}else{if(now()-L.lastDiscover>8000)discover(true);/* keep the last good snapshot on screen */}pollNational()}finally{L.inflight=false}}
   function startTimer(){clearInterval(L.timer);L.timer=setInterval(tick,4000)}
-  function open(id,push=true){const g=game(id);if(!g)return;const same=L.selected===id&&document.querySelector('.v102-live');if(same){if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);tick();startTimer();return}L.selected=id;L.source=readSession(sourceKey(id));L.snap=readSession(snapKey(id));L.rendered=false;LIVE_STORE.selected=id;if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);render();tick();startTimer()}
+  function open(id,push=true){const g=game(id);if(!g)return;const same=L.selected===id&&document.querySelector('.v102-live');if(same){if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);tick();startTimer();return}L.selected=id;L.source=readSession(sourceKey(id));L.snap=readSession(snapKey(id));L.rendered=false;LIVE_STORE.selected=id;if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);render();tick();pollNational(true);startTimer()}
   L.open=open;L.tick=tick;L.discover=discover;
   L.cat=(side,cat)=>{L.cat[side]=cat;const e=document.getElementById(`v102-${side}-players`);if(e&&L.snap)e.innerHTML=playerTable(side,cat,L.snap,game(L.selected));document.querySelectorAll(`.v102-playergrid .v102-card:nth-child(${side==='away'?1:2}) .v102-ptabs button`).forEach(b=>b.classList.toggle('active',b.textContent.trim().toLowerCase()===cat))};
   L.scroll=id=>document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'});

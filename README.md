@@ -26,3 +26,9 @@ V80: Added persistent national GameCenter scoreboard, clickable other-game score
 
 
 V82 mobile navigation fix: all top-level links remain visible and horizontally swipeable on phones; header stacks into brand + scrollable nav row.
+
+
+V83: Added embedded At The 55 podcast hub with in-site YouTube playback, featured video 98rPz2OqKok, automatic recent-channel discovery via /api/podcasts, and mobile-scrollable Podcasts navigation. No Supabase required.
+
+
+V84: At The 55 podcast/video hub plays YouTube episodes directly in-site, including featured episode 98rPz2OqKok and automatic recent-channel discovery through /api/podcasts. Added official Instagram profile cards for @the55podcast and @prsvre_. Instagram profile pages open externally because Instagram does not reliably allow whole-profile iframe embedding; YouTube playback remains fully in-site.

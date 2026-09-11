@@ -4955,3 +4955,75 @@ table[data-v67-sortable="1"] thead th[data-sort-dir="asc"]::after{content:'▲';
   setTimeout(repaint68,0);
 })();
 </script>
+
+<style id="v83-podcast-styles">
+.pod83Hero{padding:34px 0 18px}.pod83Hero h1{font-size:clamp(42px,6vw,72px);line-height:.92;letter-spacing:-.055em;margin:7px 0 12px}.pod83Hero p{max-width:760px;color:var(--muted)}
+.pod83Feature{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,.8fr);gap:18px;align-items:stretch}.pod83Player,.pod83Info,.pod83Card{border:1px solid var(--line);background:#0a1016;border-radius:20px;overflow:hidden}.pod83Frame{position:relative;aspect-ratio:16/9;background:#05080c}.pod83Frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.pod83Info{padding:18px}.pod83Info h2{margin:4px 0 8px;font-size:27px}.pod83Tag{display:inline-flex;border:1px solid #524719;background:#181509;color:var(--gold);border-radius:999px;padding:5px 8px;font-size:10px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}.pod83Grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}.pod83Card{cursor:pointer;transition:.18s transform,.18s border-color}.pod83Card:hover{transform:translateY(-2px);border-color:#354254}.pod83Thumb{aspect-ratio:16/9;width:100%;object-fit:cover;background:#111}.pod83Body{padding:12px}.pod83Body b{display:block;font-size:14px;line-height:1.25}.pod83Body small{display:block;color:var(--muted);margin-top:6px}.pod83Controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.pod83Btn{border:1px solid var(--line);background:#101822;color:#fff;border-radius:12px;padding:9px 12px;font-weight:850;font-size:12px}.pod83Btn.primary{background:#fff;color:#06090d}.pod83Status{margin-top:12px;color:var(--muted);font-size:11px}.pod83Section{margin-top:24px}.pod83SectionHead{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:10px}.pod83SectionHead h2{margin:0}.pod83Loading{padding:22px;border:1px dashed var(--line);border-radius:18px;color:var(--muted)}
+@media(max-width:800px){.pod83Feature{grid-template-columns:1fr}.pod83Grid{grid-template-columns:1fr 1fr}.pod83Hero{padding-top:22px}}
+@media(max-width:520px){.pod83Grid{grid-template-columns:1fr}.pod83Info h2{font-size:22px}}
+.pod84Social{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.pod84SocialCard{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 16px;border:1px solid var(--line);background:#0a1016;border-radius:16px;color:#fff;text-decoration:none;transition:.18s transform,.18s border-color}
+.pod84SocialCard:hover{transform:translateY(-2px);border-color:#354254}.pod84SocialText b{display:block;font-size:15px}.pod84SocialText small{display:block;color:var(--muted);margin-top:4px}.pod84SocialArrow{color:var(--gold);font-size:20px;font-weight:900}
+@media(max-width:620px){.pod84Social{grid-template-columns:1fr}}
+
+.pod85LocalFrame>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.42}.pod85LocalShade{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:28px;background:linear-gradient(90deg,rgba(5,8,12,.94),rgba(5,8,12,.55))}.pod85LocalShade>div{max-width:520px}.pod85LocalShade h3{font-size:clamp(23px,3vw,36px);margin:10px 0 8px}.pod85LocalShade p{color:#b9c3cf;line-height:1.5;margin:0 0 16px}.pod85LocalShade a{display:inline-flex;text-decoration:none}
+</style>
+<script id="v83-podcasts">
+/* V83 — At The 55 in-site podcast/video hub. No Supabase required. */
+const POD83_FEATURED={
+  id:'98rPz2OqKok',
+  title:'The 55 Podcast — @atthe55podcast',
+  published:'Featured episode',
+  channel:'@atthe55podcast',
+  description:'The 55 Podcast from the official @atthe55podcast YouTube channel.'
+};
+let POD83_EPISODES=[POD83_FEATURED];
+let POD83_SELECTED=POD83_FEATURED.id;
+function pod83Esc(s){return String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]||c))}
+function pod83Thumb(id){return `https://i.ytimg.com/vi/${encodeURIComponent(id)}/hqdefault.jpg`}
+function pod83Player(id){
+ const safe=encodeURIComponent(id);
+ const watch=`https://www.youtube.com/watch?v=${safe}`;
+ if(location.protocol==='file:'){
+  return `<div class="pod83Frame pod85LocalFrame"><img src="${pod83Thumb(id)}" alt="At The 55 episode thumbnail"><div class="pod85LocalShade"><div><span class="pod83Tag">LOCAL PREVIEW</span><h3>Player activates on the deployed site</h3><p>YouTube requires an HTTP referrer for embedded playback. A file:// preview cannot provide one.</p><a class="pod83Btn primary" href="${watch}" target="_blank" rel="noopener">Open episode on YouTube</a></div></div></div>`;
+ }
+ const origin=encodeURIComponent(location.origin);
+ return `<div class="pod83Frame"><iframe src="https://www.youtube.com/embed/${safe}?rel=0&modestbranding=1&playsinline=1&origin=${origin}" title="At The 55 podcast player" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`
+}
+function pod83Card(ep){return `<article class="pod83Card" onclick="pod83Select('${pod83Esc(ep.id)}')"><img class="pod83Thumb" src="${pod83Thumb(ep.id)}" alt=""><div class="pod83Body"><b>${pod83Esc(ep.title||'At The 55')}</b><small>${pod83Esc(ep.published||'')}</small></div></article>`}
+function pod83Selected(){return POD83_EPISODES.find(e=>e.id===POD83_SELECTED)||POD83_EPISODES[0]||POD83_FEATURED}
+function pod83Render(){
+ const ep=pod83Selected();
+ const grid=POD83_EPISODES.filter(e=>e.id!==ep.id).slice(0,12);
+ const html=`<section class="pod83Hero"><div class="kicker">U SPORTS FOOTBALL MEDIA</div><h1>Podcasts.</h1><p>Play The 55 Podcast directly inside the Game Centre. Episodes are pulled from the official @atthe55podcast YouTube channel.</p></section>
+ <section class="pod83Feature"><div class="pod83Player">${pod83Player(ep.id)}</div><div class="pod83Info"><span class="pod83Tag">@atthe55podcast</span><h2>${pod83Esc(ep.title||'The 55 Podcast')}</h2><p>${pod83Esc(ep.description||'The 55 Podcast on YouTube.')}</p><div class="pod83Status">${pod83Esc(ep.published||'')}</div><div class="pod83Controls"><button class="pod83Btn primary" onclick="event.stopPropagation();pod83Select('${pod83Esc(ep.id)}')">Play here</button><button class="pod83Btn" onclick="event.stopPropagation();showMedia()">News feed</button></div></div></section>
+ <section class="pod83Section"><div class="pod83SectionHead"><div><div class="kicker">LATEST EPISODES</div><h2>The 55 Podcast</h2></div><div class="pod83Status" id="pod83Status">Checking channel…</div></div><div id="pod83Grid" class="pod83Grid">${grid.length?grid.map(pod83Card).join(''):'<div class="pod83Loading">Loading recent episodes…</div>'}</div></section>
+ <section class="pod83Section"><div class="pod83SectionHead"><div><div class="kicker">SOCIAL</div><h2>Follow the conversation</h2></div></div><div class="pod84Social">
+ <a class="pod84SocialCard" href="https://www.instagram.com/the55podcast/?hl=en" target="_blank" rel="noopener"><div class="pod84SocialText"><b>@the55podcast</b><small>The 55 Podcast on Instagram</small></div><span class="pod84SocialArrow">↗</span></a>
+ <a class="pod84SocialCard" href="https://www.instagram.com/prsvre_/?hl=en" target="_blank" rel="noopener"><div class="pod84SocialText"><b>@prsvre_</b><small>PRSVRE on Instagram</small></div><span class="pod84SocialArrow">↗</span></a>
+ </div></section>`;
+ document.getElementById('app').innerHTML=shell(html,'podcasts');
+ location.hash='podcasts';
+ setTimeout(pod83Load,0);
+}
+function podcasts83(){pod83Render()}
+function pod83Select(id){POD83_SELECTED=id;pod83Render();window.scrollTo({top:0,behavior:'smooth'})}
+async function pod83Load(){
+ try{
+  const r=await fetch('/api/podcasts?channel=@atthe55podcast',{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status);
+  const j=await r.json(); const rows=Array.isArray(j.episodes)?j.episodes:[];
+  const m=new Map([[POD83_FEATURED.id,POD83_FEATURED]]); rows.forEach(e=>{if(e?.id&&!m.has(e.id))m.set(e.id,e)});
+  POD83_EPISODES=[...m.values()];
+  const grid=document.getElementById('pod83Grid'); if(grid) grid.innerHTML=POD83_EPISODES.filter(e=>e.id!==POD83_SELECTED).slice(0,12).map(pod83Card).join('')||'<div class="pod83Loading">Featured episode is ready to play.</div>';
+  const st=document.getElementById('pod83Status'); if(st) st.textContent=rows.length?`${rows.length} recent channel videos loaded`:'Featured episode loaded';
+ }catch(e){const st=document.getElementById('pod83Status');if(st)st.textContent='Featured episode ready • live channel refresh unavailable';}
+}
+/* Final shell override adds Podcasts as a first-class nav item while preserving V82 mobile scrolling. */
+const shellBefore83=window.shell;
+window.shell=function(content,active='schedule'){
+ const html=shellBefore83(content,active);
+ return html.replace(`<button class="${active==='media'?'active':''}" onclick="showMedia()">Media</button>`,`<button class="${active==='media'?'active':''}" onclick="showMedia()">Media</button><button class="${active==='podcasts'?'active':''}" onclick="podcasts83()">Podcasts</button>`).replace(/V78 • Official Top 10 \+ Opponent-Adjusted Predictions|V71 • Official Top 10|V32 • verified-data build/g,'V86 • The 55 Podcast Source Fix');
+};
+const routeBefore83=window.route;
+window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();return}return routeBefore83()};
+</script>

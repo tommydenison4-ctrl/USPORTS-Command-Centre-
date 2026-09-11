@@ -4118,6 +4118,104 @@ window.addEventListener('online',()=>refreshNewsV61(true));
   // Keep model ranking helpers internal to predictions; public UI always uses official poll.
 })();
 </script>
+
+<style id="v80-national-gamecenter">
+/* V80 national GameCenter scoreboard + big-play alerts */
+.v80ScoreStrip{margin:0 0 14px;border:1px solid rgba(255,255,255,.09);border-radius:18px;background:linear-gradient(180deg,#0a1420,#08111b);overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.16)}
+.v80ScoreHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px;border-bottom:1px solid rgba(255,255,255,.07)}
+.v80ScoreHeader>div:first-child{display:flex;align-items:center;gap:8px;min-width:0}.v80ScoreHeader b{font-size:11px;letter-spacing:.12em}.v80ScoreHeader small{font-size:10px;color:#8392a5;white-space:nowrap}.v80ScoreDate{font-size:10px;color:#8fa0b4;font-weight:900;text-transform:uppercase;letter-spacing:.07em}
+.v80Pulse{width:7px;height:7px;border-radius:50%;background:#ff4d65;box-shadow:0 0 0 5px rgba(255,77,101,.08);animation:v80pulse 1.5s infinite}@keyframes v80pulse{50%{box-shadow:0 0 0 8px rgba(255,77,101,0)}}
+.v80ScoreScroller{display:flex;gap:8px;overflow-x:auto;padding:9px;scrollbar-width:thin}.v80ScoreScroller::-webkit-scrollbar{height:6px}.v80ScoreScroller::-webkit-scrollbar-thumb{background:#26394d;border-radius:999px}
+.v80ScoreCard{appearance:none;border:1px solid rgba(255,255,255,.08);background:#0b1622;color:#fff;border-radius:13px;padding:8px 9px;min-width:170px;flex:0 0 170px;text-align:left;cursor:pointer;transition:.16s ease}.v80ScoreCard:hover{transform:translateY(-1px);background:#101d2c}.v80ScoreCard.selected{border-color:rgba(91,174,255,.55);box-shadow:0 0 0 1px rgba(91,174,255,.12) inset}.v80ScoreCard.live{border-color:rgba(255,77,101,.22)}
+.v80ScoreTop,.v80RailMeta{display:flex;justify-content:space-between;gap:8px;align-items:center;color:#8292a6;font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}.v80ScoreCard.live .v80ScoreTop b,.v80RailGame.live .v80RailMeta span{color:#ff7c8f}.v80ScoreCard.final .v80ScoreTop b{color:#b8c4d2}
+.v80ScoreTeam,.v80RailTeam{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:7px;align-items:center;font-size:11px;font-weight:850}.v80ScoreTeam+.v80ScoreTeam,.v80RailTeam+.v80RailTeam{margin-top:4px}.v80ScoreTeam span:nth-child(2),.v80RailTeam span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.v80ScoreTeam strong,.v80RailTeam strong{font-size:14px}
+.v80MiniLogo{width:21px;height:21px;display:inline-grid;place-items:center}.v80MiniLogo img{width:100%;height:100%;object-fit:contain}.v80MiniLogo>span{width:21px;height:21px;border-radius:5px;place-items:center;font-size:7px;font-weight:1000}
+.v80EmptyScores,.v80RailEmpty{padding:12px;color:#8392a5;font-size:11px}
+.v80RailGame{padding:11px 10px;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer;transition:.15s}.v80RailGame:hover{background:rgba(255,255,255,.035)}.v80RailGame:last-child{border-bottom:0}.v80RailMeta{margin-bottom:7px}.v80RailTeam{grid-template-columns:23px minmax(0,1fr) auto;font-size:11px}
+.v80NationalAlert{position:fixed;left:50%;bottom:26px;z-index:99999;width:min(520px,calc(100vw - 28px));transform:translate(-50%,24px) scale(.98);opacity:0;pointer-events:none;background:rgba(5,10,16,.96);color:#fff;border:1px solid rgba(255,255,255,.16);box-shadow:0 22px 80px rgba(0,0,0,.5);border-radius:18px;padding:14px 18px;text-align:left;backdrop-filter:blur(18px);transition:.22s ease;cursor:pointer}.v80NationalAlert.show{opacity:1;transform:translate(-50%,0) scale(1);pointer-events:auto}.v80AlertType{font-size:9px;letter-spacing:.18em;color:#ffcf56;font-weight:1000}.v80AlertTitle{font-size:21px;line-height:1.05;font-weight:1000;letter-spacing:-.03em;margin-top:3px}.v80AlertSub{font-size:11px;color:#b9c6d5;font-weight:750;margin-top:5px;line-height:1.35}.v80AlertCTA{position:absolute;right:16px;top:15px;font-size:9px;color:#91a5bb;font-weight:900;letter-spacing:.06em}
+@media(max-width:760px){.v80ScoreHeader small{display:none}.v80ScoreCard{min-width:154px;flex-basis:154px}.v80AlertCTA{position:static;margin-top:7px}.v80NationalAlert{bottom:14px}.v80ScoreHeader{padding:9px 10px}}
+
+</style>
+<script id="v80-national-gamecenter-script">
+(function(){
+  const V80={poll:null,last:new Map(),alertTimer:null};
+  window.V80_NATIONAL=V80;
+
+  function todayLocal(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+  function ymd(s){return String(s||'').replace(/-/g,'')}
+  function norm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim()}
+  function safeTeam(slug){return (window.TEAM&&TEAM[slug])||{short:slug||'Team',name:slug||'Team',abbr:String(slug||'T').slice(0,3).toUpperCase(),primary:'#64748b',secondary:'#fff',logo:''}}
+  function teamSlugFromName(name){
+    const n=norm(name); if(!n||!window.TEAMS)return null;
+    let best=null,bestScore=0;
+    for(const t of TEAMS){
+      const vals=[t.name,t.short,t.abbr,t.slug].map(norm).filter(Boolean);
+      for(const v of vals){
+        let score=0;if(n===v)score=100;else if(n.includes(v)||v.includes(n))score=Math.min(n.length,v.length);else{const a=new Set(n.split(' ')),b=v.split(' ');score=b.filter(x=>x.length>2&&a.has(x)).length*4;}
+        if(score>bestScore){bestScore=score;best=t.slug;}
+      }
+    }
+    return bestScore>=4?best:null;
+  }
+  function gameForApi(x){
+    const a=teamSlugFromName(x.visitor),h=teamSlugFromName(x.home);
+    if(!a||!h)return null;
+    return (GAMES||[]).find(g=>g.away===a&&g.home===h&&(!V80.gameDate||g.date===V80.gameDate))||(GAMES||[]).find(g=>g.away===a&&g.home===h)||null;
+  }
+  function selectedGameId(){try{return LIVE_STORE?.selected||String(location.hash||'').replace(/^#live=/,'')}catch{return String(location.hash||'').replace(/^#live=/,'')}}
+  function selectedDef(){const id=selectedGameId();return (GAMES||[]).find(g=>g.id===id)||null}
+  function relevantDate(){const g=selectedDef();return g?.date||todayLocal()}
+  function liveForGame(g){try{return LIVE_STORE?.games?.[g.id]||null}catch{return null}}
+  function statusOf(g){const l=liveForGame(g);if(l?._realLive)return {kind:'live',label:[l.q,l.clock].filter(Boolean).join(' • ')||'LIVE',as:Number(l.as)||0,hs:Number(l.hs)||0};if(g.status==='final')return {kind:'final',label:'FINAL',as:Number(g.awayScore)||0,hs:Number(g.homeScore)||0};return {kind:'pre',label:g.time||'UPCOMING',as:null,hs:null}}
+  function miniLogo(t){if(!t)return '';return `<span class="v80MiniLogo">${t.logo?`<img src="${t.logo}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">`:''}<span style="display:${t.logo?'none':'grid'};background:${t.primary};color:${t.secondary}">${t.abbr||String(t.short).slice(0,3).toUpperCase()}</span></span>`}
+  function scoreCard(g){const a=safeTeam(g.away),h=safeTeam(g.home),s=statusOf(g),sel=g.id===selectedGameId();return `<button class="v80ScoreCard ${s.kind} ${sel?'selected':''}" onclick="${s.kind==='final'?`showGame('${g.id}')`:`showGameCast('${g.id}')`}"><div class="v80ScoreTop"><span>${g.conference||''}</span><b>${s.label}</b></div><div class="v80ScoreTeam">${miniLogo(a)}<span>${esc(a.short)}</span><strong>${s.as==null?'':s.as}</strong></div><div class="v80ScoreTeam">${miniLogo(h)}<span>${esc(h.short)}</span><strong>${s.hs==null?'':s.hs}</strong></div></button>`}
+  function dayGames(){const date=relevantDate();return (GAMES||[]).filter(g=>g.date===date).sort((a,b)=>{const sa=statusOf(a),sb=statusOf(b),rank={live:0,pre:1,final:2};return rank[sa.kind]-rank[sb.kind]||String(a.time).localeCompare(String(b.time))})}
+  function renderScoreStrip(){
+    const host=document.querySelector('.gc47')||document.querySelector('.pregameHub')||document.querySelector('.liveHub');if(!host)return;
+    let strip=document.getElementById('v80NationalScores');if(!strip){strip=document.createElement('section');strip.id='v80NationalScores';strip.className='v80ScoreStrip';host.prepend(strip)}
+    const games=dayGames();strip.innerHTML=`<div class="v80ScoreHeader"><div><span class="v80Pulse"></span><b>AROUND U SPORTS</b><small>National scoreboard • click any game to switch</small></div><div class="v80ScoreDate">${new Date(relevantDate()+'T12:00:00').toLocaleDateString('en-CA',{weekday:'short',month:'short',day:'numeric'})}</div></div><div class="v80ScoreScroller">${games.length?games.map(scoreCard).join(''):'<div class="v80EmptyScores">No other games loaded for this date.</div>'}</div>`;
+    renderSideRail();
+  }
+  function renderSideRail(){
+    const rail=document.getElementById('otherGames');if(!rail)return;
+    const rows=dayGames().filter(g=>g.id!==selectedGameId());
+    rail.innerHTML=rows.length?rows.map(g=>{const a=safeTeam(g.away),h=safeTeam(g.home),s=statusOf(g);return `<div class="v80RailGame ${s.kind}" onclick="${s.kind==='final'?`showGame('${g.id}')`:`showGameCast('${g.id}')`}"><div class="v80RailMeta"><span>${s.label}</span><b>${g.conference||''}</b></div><div class="v80RailTeam">${miniLogo(a)}<span>${esc(a.short)}</span><strong>${s.as==null?'':s.as}</strong></div><div class="v80RailTeam">${miniLogo(h)}<span>${esc(h.short)}</span><strong>${s.hs==null?'':s.hs}</strong></div></div>`}).join(''):'<div class="v80RailEmpty">No other games on this slate.</div>';
+  }
+  function showNationalAlert(game,title,sub,type='BIG PLAY'){
+    if(!game||game.id===selectedGameId())return;
+    let el=document.getElementById('v80NationalAlert');if(!el){el=document.createElement('button');el.id='v80NationalAlert';el.className='v80NationalAlert';document.body.appendChild(el)}
+    const a=safeTeam(game.away),h=safeTeam(game.home),s=statusOf(game);
+    el.onclick=()=>showGameCast(game.id);
+    el.innerHTML=`<div class="v80AlertType">${esc(type)} • ELSEWHERE</div><div class="v80AlertTitle">${esc(title)}</div><div class="v80AlertSub">${esc(sub||`${a.short} ${s.as??''} • ${h.short} ${s.hs??''}`)}</div><div class="v80AlertCTA">OPEN GAMECAST →</div>`;
+    el.classList.add('show');clearTimeout(V80.alertTimer);V80.alertTimer=setTimeout(()=>el.classList.remove('show'),5000);
+  }
+  function yardsFrom(text){const m=String(text||'').match(/\b(\d{2,3})\s*(?:yard|yards|yd|yds)\b/i);return m?Number(m[1]):0}
+  function importantType(e){const t=String(e?.type||'').toUpperCase(),d=String(e?.play?.description||e?.subtitle||e?.title||'');if(/TOUCHDOWN|PICK SIX/.test(t)||/touchdown|pick[- ]?six/i.test(d))return 'TOUCHDOWN';if(/INTERCEPTION|FUMBLE|TURNOVER/.test(t)||/intercept|fumble|turnover/i.test(d))return 'TURNOVER';if(/BLOCKED/.test(t)||/blocked (?:punt|kick|field goal)/i.test(d))return 'BLOCKED KICK';if(/SAFETY/.test(t)||/\bsafety\b/i.test(d))return 'SAFETY';if(/FIELD GOAL/.test(t)||/field goal/i.test(d))return 'FIELD GOAL';if(yardsFrom(d)>=20)return 'EXPLOSIVE';if(/SACK/.test(t)&&/3rd|4th|third|fourth/i.test(d))return 'IMPACT SACK';return ''}
+  function selectedExplosiveRibbon(e){
+    if(e?.game_id!==selectedGameId())return;const kind=importantType(e);if(kind!=='EXPLOSIVE'&&kind!=='IMPACT SACK')return;
+    const g=(GAMES||[]).find(x=>x.id===e.game_id),ts=e.team||e.scoring_team||liveForGame(g)?.pos,team=safeTeam(ts);
+    if(typeof showRibbonEvent==='function')showRibbonEvent({type:kind,title:kind==='EXPLOSIVE'?`${yardsFrom(e.play?.description||e.subtitle||'')}+ YARD PLAY`:'BIG THIRD/FOURTH DOWN SACK',subtitle:e.play?.description||e.subtitle||e.title||'',color:team.primary,player_name:e.player_name||'',player_image:e.player_image||'',team_slug:ts,team_short:team.short});
+  }
+  function hookRealtime(){
+    if(typeof window.applyRealtimeEvent!=='function'||window.applyRealtimeEvent._v80)return;
+    const old=window.applyRealtimeEvent;const wrapped=function(e){const before=e?.game_id?liveForGame((GAMES||[]).find(g=>g.id===e.game_id))?.as+':'+liveForGame((GAMES||[]).find(g=>g.id===e.game_id))?.hs:'';const out=old.apply(this,arguments);try{selectedExplosiveRibbon(e);if(e?.game_id&&e.game_id!==selectedGameId()){const g=(GAMES||[]).find(x=>x.id===e.game_id);const kind=importantType(e);if(g&&kind)showNationalAlert(g,e.title||kind,e.play?.description||e.subtitle||'',kind);else if(g){const after=liveForGame(g)?.as+':'+liveForGame(g)?.hs;if(after!==before)showNationalAlert(g,'SCORE CHANGE',`${safeTeam(g.away).short} ${liveForGame(g)?.as??0} – ${liveForGame(g)?.hs??0} ${safeTeam(g.home).short}`,'SCORE');}}renderScoreStrip();}catch{}return out};wrapped._v80=true;window.applyRealtimeEvent=wrapped;
+  }
+  async function pollNational(){
+    const date=relevantDate();V80.gameDate=date;try{const r=await fetch(`/api/live-games?date=${ymd(date)}`,{cache:'no-store'});if(!r.ok)return;const j=await r.json();for(const x of (j.games||[])){const g=gameForApi(x);if(!g)continue;let l=LIVE_STORE?.games?.[g.id];if(!l&&window.LIVE_STORE){LIVE_STORE.games[g.id]={id:g.id,away:g.away,home:g.home,as:x.awayScore||0,hs:x.homeScore||0,q:x.period||'LIVE',clock:x.clock||'',_realLive:true};l=LIVE_STORE.games[g.id]}else if(l){l.as=Number(x.awayScore)||0;l.hs=Number(x.homeScore)||0;l.q=x.period||l.q||'LIVE';l.clock=x.clock||l.clock||'';l._realLive=true;}
+      const prev=V80.last.get(g.id),now={as:Number(x.awayScore)||0,hs:Number(x.homeScore)||0,period:x.period||'',clock:x.clock||''};
+      if(prev&&g.id!==selectedGameId()&&(now.as!==prev.as||now.hs!==prev.hs)){const scoring=now.as>prev.as?safeTeam(g.away):safeTeam(g.home);const delta=Math.max(now.as-prev.as,now.hs-prev.hs);showNationalAlert(g,delta>=6?`TOUCHDOWN ${scoring.short.toUpperCase()}`:`SCORE ${scoring.short.toUpperCase()}`,`${safeTeam(g.away).short} ${now.as} – ${now.hs} ${safeTeam(g.home).short} • ${now.period} ${now.clock}`,'SCORE');}
+      V80.last.set(g.id,now);
+    }renderScoreStrip();}catch{}
+  }
+  function start(){hookRealtime();renderScoreStrip();clearInterval(V80.poll);pollNational();V80.poll=setInterval(pollNational,12000)}
+  function stopIfAway(){if(!/^#live=/.test(location.hash)&&!document.querySelector('.pregameHub')&&!document.querySelector('.gc47')){clearInterval(V80.poll);V80.poll=null}}
+  function wrapGameCast(){if(typeof window.showGameCast!=='function'||window.showGameCast._v80)return;const old=window.showGameCast;const w=function(id){const out=old.apply(this,arguments);setTimeout(start,100);return out};w._v80=true;window.showGameCast=w}
+  wrapGameCast();hookRealtime();
+  window.addEventListener('hashchange',()=>setTimeout(()=>{if(/^#live=/.test(location.hash)||document.querySelector('.pregameHub')||document.querySelector('.gc47'))start();else stopIfAway()},80));
+  if(/^#live=/.test(location.hash))setTimeout(start,150);
+})();
+
+</script>
 </body></html>
 
 <style>

@@ -20,3 +20,6 @@ V77: Replaced raw PF/PA-heavy prediction with opponent-adjusted power. Model use
 
 
 V79 deployment hardening: root index is mirrored to public/index.html and Vercel explicitly rewrites / to /index.html so either a root-static or public-output project configuration resolves the application instead of returning NOT_FOUND.
+
+
+V80: Added persistent national GameCenter scoreboard, clickable other-game scores, automatic 20+ yard explosive/impact-sack ribbons, and cross-game scoring/big-play alerts with click-through to the other GameCast. National live polling runs every 12 seconds while GameCenter is open.

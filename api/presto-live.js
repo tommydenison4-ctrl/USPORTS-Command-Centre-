@@ -287,7 +287,7 @@ function teamAndPlayerStats(data){
   const scalarStats=(o)=>{const stats={}; for(const [k,v] of Object.entries(o||{})){ if(!['string','number'].includes(typeof v)) continue; if(/(?:^|_)(?:yds?|yards?|att|attempts?|cmp|comp|completions?|td|touchdowns?|int|interceptions?|rec|receptions?|car|carries?|rush|pass|tkl|tackles?|sack|fg|xp|punt|avg|long)(?:$|_)/i.test(k) || /^(?:pass|rush|receiv|def|tack|sack|kick|punt)/i.test(k)) stats[k]=v; } return stats; };
   const playerName=(o)=> text(o?.name||o?.player||o?.fullname||o?.full_name||o?.displayName||o?.display_name||o?.athlete||o?.playerName||o?.player_name||([o?.firstName||o?.first_name,o?.lastName||o?.last_name].filter(Boolean).join(' '))).trim();
   const teamId=(o,fallback='')=>text(o?.id||o?.teamId||o?.team_id||o?.code||o?.abbr||o?.team||fallback).trim();
-  function scan(root,tid,path){
+  function scan(root,tid,path,side=''){
     walk(root,(o,p)=>{
       if(Array.isArray(o)||!o||typeof o!=='object') return;
       const stats=scalarStats(o); if(!Object.keys(stats).length) return;
@@ -295,14 +295,14 @@ function teamAndPlayerStats(data){
       // player rows are often nested under category arrays and inherit the team id from their parent team object.
       if(nm && nm.toUpperCase()!==id.toUpperCase() && !/^(TEAM|TOTALS?|OFFENSE|DEFENSE)$/i.test(nm)){
         const key=id+'|'+nm+'|'+p; if(seen.has(key)) return; seen.add(key);
-        playerStats.push({team:id,name:nm,stats,path:`${path}${p.replace(/^\$/,'')}`});
+        playerStats.push({team:id,side,name:nm,stats,path:`${path}${p.replace(/^\$/,'')}`});
       } else if(id){
         teamStats.push({team:id,stats,path:`${path}${p.replace(/^\$/,'')}`});
       }
     });
   }
   if(roots.length){
-    roots.forEach((r,i)=>scan(r,teamId(r),`$.team[${i}]`));
+    roots.forEach((r,i)=>scan(r,teamId(r),`$.team[${i}]`,i===0?'away':i===1?'home':''));
   } else {
     // Some Presto hosts expose the player tables outside data.team. Scan the payload as a fallback,
     // and infer the team from explicit fields/path when available.

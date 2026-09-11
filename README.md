@@ -1,4 +1,4 @@
-V87 changes:
+V89 changes:
 - Full top navigation is present on the first render, not only after changing pages.
 - Homepage news cards use team colors, team logos, and team-specific badges.
 - Multi-team stories show both team marks.
@@ -37,3 +37,12 @@ V83: Added embedded At The 55 podcast hub with in-site YouTube playback, feature
 
 
 V84: At The 55 podcast/video hub plays YouTube episodes directly in-site, including featured episode 98rPz2OqKok and automatic recent-channel discovery through /api/podcasts. Added official Instagram profile cards for @the55podcast and @prsvre_. Instagram profile pages open externally because Instagram does not reliably allow whole-profile iframe embedding; YouTube playback remains fully in-site.
+
+
+V89: Kickoff times remain in each game's local venue time. No Eastern-time normalization is applied.
+
+
+V90: All schedule and GameCenter kickoff times are normalized from venue-local time to Eastern Daylight Time (EDT). Canada West and AUS conversions are applied by home-team venue; OUA and RSEQ remain unchanged but are labeled EDT. Kickoff handoff uses an explicit -04:00 instant.
+
+
+V91: Fixed EDT normalization against lexical global GAMES (top-level const), so kickoff times actually convert before rendering.

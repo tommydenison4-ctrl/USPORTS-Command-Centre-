@@ -5029,32 +5029,32 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
 </script>
 
 
-<style id="v87-home-news-and-nav">
-/* V87: team-branded home news cards + authoritative full first-load navigation */
-.v20Story.v87Story{
+<style id="v89-home-news-and-nav">
+/* V89: team-branded home news cards + authoritative full first-load navigation */
+.v20Story.v89Story{
   position:relative;overflow:hidden;padding:14px 15px 14px 16px;
   border:1px solid color-mix(in srgb,var(--story-primary,#64748b) 45%, #263241);
   border-left:4px solid var(--story-primary,#64748b);
   background:linear-gradient(120deg,color-mix(in srgb,var(--story-primary,#64748b) 16%,#0b1118) 0%,#0b1118 48%,color-mix(in srgb,var(--story-secondary,#fff) 5%,#0b1118) 100%);
   transition:transform .16s ease,border-color .16s ease,background .16s ease;
 }
-.v20Story.v87Story:hover{transform:translateY(-1px);border-color:var(--story-primary,#64748b);background:linear-gradient(120deg,color-mix(in srgb,var(--story-primary,#64748b) 23%,#0b1118),#101821 55%)}
-.v87StoryTop{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.v87StoryIdentity{display:flex;align-items:center;gap:10px;min-width:0}
-.v87StoryLogos{display:flex;align-items:center;flex:0 0 auto}
-.v87StoryLogos .teamLogoBox{width:38px;height:38px;border-radius:10px;background:#fff;padding:4px;border:1px solid rgba(255,255,255,.16);box-shadow:0 3px 10px rgba(0,0,0,.25)}
-.v87StoryLogos .teamLogoBox+.teamLogoBox{margin-left:-8px}
-.v87StorySource{font-size:9px;font-weight:950;letter-spacing:.07em;text-transform:uppercase;color:#dbe4ee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.v87StoryDate{font-size:9px;font-weight:900;color:var(--muted);white-space:nowrap}
-.v20Story.v87Story .v20StoryTitle{font-size:16px;line-height:1.28;margin-top:11px}
-.v87StoryTags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-.v87TeamTag{display:inline-flex;align-items:center;gap:5px;border:1px solid color-mix(in srgb,var(--tag-primary,#64748b) 58%,#2a3745);background:color-mix(in srgb,var(--tag-primary,#64748b) 13%,transparent);border-radius:999px;padding:4px 8px;font-size:8px;font-weight:900;color:#dce5ef}
-.v87TeamDot{width:6px;height:6px;border-radius:50%;background:var(--tag-primary,#64748b)}
+.v20Story.v89Story:hover{transform:translateY(-1px);border-color:var(--story-primary,#64748b);background:linear-gradient(120deg,color-mix(in srgb,var(--story-primary,#64748b) 23%,#0b1118),#101821 55%)}
+.v89StoryTop{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.v89StoryIdentity{display:flex;align-items:center;gap:10px;min-width:0}
+.v89StoryLogos{display:flex;align-items:center;flex:0 0 auto}
+.v89StoryLogos .teamLogoBox{width:38px;height:38px;border-radius:10px;background:#fff;padding:4px;border:1px solid rgba(255,255,255,.16);box-shadow:0 3px 10px rgba(0,0,0,.25)}
+.v89StoryLogos .teamLogoBox+.teamLogoBox{margin-left:-8px}
+.v89StorySource{font-size:9px;font-weight:950;letter-spacing:.07em;text-transform:uppercase;color:#dbe4ee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v89StoryDate{font-size:9px;font-weight:900;color:var(--muted);white-space:nowrap}
+.v20Story.v89Story .v20StoryTitle{font-size:16px;line-height:1.28;margin-top:11px}
+.v89StoryTags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.v89TeamTag{display:inline-flex;align-items:center;gap:5px;border:1px solid color-mix(in srgb,var(--tag-primary,#64748b) 58%,#2a3745);background:color-mix(in srgb,var(--tag-primary,#64748b) 13%,transparent);border-radius:999px;padding:4px 8px;font-size:8px;font-weight:900;color:#dce5ef}
+.v89TeamDot{width:6px;height:6px;border-radius:50%;background:var(--tag-primary,#64748b)}
 @media(max-width:760px){
-  .v87StoryLogos .teamLogoBox{width:34px;height:34px}.v20Story.v87Story .v20StoryTitle{font-size:15px}
+  .v89StoryLogos .teamLogoBox{width:34px;height:34px}.v20Story.v89Story .v20StoryTitle{font-size:15px}
 }
 </style>
-<script id="v87-final-shell-and-news">
+<script id="v89-final-shell-and-news">
 (function(){
   function safeTeam87(slug){return (window.TEAM&&TEAM[slug])||{slug:slug||'team',short:slug||'Team',name:slug||'Team',abbr:String(slug||'T').slice(0,3).toUpperCase(),primary:'#64748b',secondary:'#ffffff',logo:''}}
   function storyLogo87(slug){
@@ -5068,8 +5068,8 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
     const slugs=Array.isArray(n&&n.teams)?n.teams.filter(Boolean):[];
     const primary=safeTeam87(slugs[0]);
     const logos=slugs.slice(0,2).map(storyLogo87).join('');
-    const tags=slugs.map(s=>{const t=safeTeam87(s);return `<span class="v87TeamTag" style="--tag-primary:${t.primary}"><i class="v87TeamDot"></i>${esc(t.short||s)}</span>`}).join('');
-    return `<a class="v20Story v87Story" style="--story-primary:${primary.primary};--story-secondary:${primary.secondary}" href="${n.url}" target="_blank" rel="noopener"><div class="v87StoryTop"><div class="v87StoryIdentity"><div class="v87StoryLogos">${logos||storyLogo87(slugs[0])}</div><div class="v87StorySource">${esc(n.source||primary.short||'U SPORTS')}</div></div><div class="v87StoryDate">${esc(n.date||'')}</div></div><div class="v20StoryTitle">${esc(n.title||'')}</div><div class="v87StoryTags">${tags}</div></a>`;
+    const tags=slugs.map(s=>{const t=safeTeam87(s);return `<span class="v89TeamTag" style="--tag-primary:${t.primary}"><i class="v89TeamDot"></i>${esc(t.short||s)}</span>`}).join('');
+    return `<a class="v20Story v89Story" style="--story-primary:${primary.primary};--story-secondary:${primary.secondary}" href="${n.url}" target="_blank" rel="noopener"><div class="v89StoryTop"><div class="v89StoryIdentity"><div class="v89StoryLogos">${logos||storyLogo87(slugs[0])}</div><div class="v89StorySource">${esc(n.source||primary.short||'U SPORTS')}</div></div><div class="v89StoryDate">${esc(n.date||'')}</div></div><div class="v20StoryTitle">${esc(n.title||'')}</div><div class="v89StoryTags">${tags}</div></a>`;
   };
 
   function navButton87(key,label,handler,active){return `<button class="${active===key?'active':''}" onclick="${handler}">${label}</button>`}
@@ -5091,7 +5091,7 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
       navButton87('teams','Teams','showTeams()',active),
       navButton87('conferences','Conferences','showConferences()',active)
     ].join('');
-    return `<div class="shell"><header class="topbar"><button class="brand" onclick="goHome()" style="background:none;border:0;color:inherit;padding:0"><span class="roundel">U</span><span>U SPORTS<small>FOOTBALL</small></span></button><nav class="nav" aria-label="Primary navigation">${nav}</nav></header>${content}<div class="footer">U SPORTS Football Game Centre • V87 • Full Navigation + Team-Branded News</div></div>`;
+    return `<div class="shell"><header class="topbar"><button class="brand" onclick="goHome()" style="background:none;border:0;color:inherit;padding:0"><span class="roundel">U</span><span>U SPORTS<small>FOOTBALL</small></span></button><nav class="nav" aria-label="Primary navigation">${nav}</nav></header>${content}<div class="footer">U SPORTS Football Game Centre • V89 • Full Navigation + Team-Branded News</div></div>`;
   };
 
   function refreshHomeNews87(){
@@ -5105,10 +5105,110 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
       if(!h){ if(typeof renderHome==='function') renderHome(); refreshHomeNews87(); return; }
       if(h==='podcasts'&&typeof podcasts83==='function'){podcasts83();return}
       if(typeof route==='function') route();
-    }catch(e){console.warn('V87 initial rerender',e)}
+    }catch(e){console.warn('V89 initial rerender',e)}
   }
   /* Earlier code rendered the homepage before the final shell existed. Render once more now. */
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(rerenderFirstView87,0),{once:true});
   else setTimeout(rerenderFirstView87,0);
+})();
+</script>
+
+<style id="v90-eastern-time-style">
+.v90-tz-note{color:var(--gold);font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+</style>
+<script id="v90-eastern-times">
+/* V91 — normalize every displayed scheduled kickoff to Eastern Daylight Time (EDT).
+   Source schedule times are venue-local. 2026 regular season ends Oct 31, while Toronto is still on EDT (UTC-4). */
+(function(){
+  const EASTERN_OFFSETS_V90={
+    /* OUA + RSEQ are already Eastern */
+    carleton:0,guelph:0,mcmaster:0,ottawa:0,queens:0,toronto:0,waterloo:0,western:0,windsor:0,laurier:0,york:0,
+    bishops:0,concordia:0,laval:0,mcgill:0,montreal:0,sherbrooke:0,
+    /* AUS schedule is Atlantic Daylight Time: EDT is one hour earlier */
+    acadia:-1,'mount-allison':-1,'saint-marys':-1,stfx:-1,
+    /* Canada West venue-local conversions to EDT */
+    ubc:3,                 // PDT -> EDT
+    alberta:2,calgary:2,   // MDT -> EDT
+    regina:2,saskatchewan:2, // Saskatchewan CST -> EDT in Sep/Oct
+    manitoba:1             // CDT -> EDT
+  };
+  function parseClockV90(value){
+    const m=String(value||'').match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if(!m)return null;
+    let h=Number(m[1])%12; if(m[3].toUpperCase()==='PM')h+=12;
+    return {h,m:Number(m[2])};
+  }
+  function fmtClockV90(total){
+    total=((total%1440)+1440)%1440;
+    const h24=Math.floor(total/60), mm=total%60, ap=h24>=12?'PM':'AM', h=(h24%12)||12;
+    return `${h}:${String(mm).padStart(2,'0')} ${ap} EDT`;
+  }
+  function toEasternV90(g){
+    if(!g||g._v90Eastern)return g;
+    const p=parseClockV90(g.time); if(!p)return g;
+    const offset=EASTERN_OFFSETS_V90[g.home];
+    /* Unknown venues are left unchanged rather than guessed. */
+    if(typeof offset!=='number')return g;
+    g._localTimeV90=g.time;
+    g._venueOffsetToEasternV90=offset;
+    g.time=fmtClockV90(p.h*60+p.m+offset*60);
+    g._v90Eastern=true;
+    return g;
+  }
+  function convertAllV90(){
+    if(typeof GAMES!=='undefined' && Array.isArray(GAMES)) GAMES.forEach(toEasternV90);
+  }
+  window.toEasternV90=toEasternV90;
+  window.convertAllV90=convertAllV90;
+  convertAllV90();
+  // GAMES is declared with top-level const, so it is a lexical global rather than window.GAMES.
+
+  /* Any games discovered/merged after initial load are normalized before rendering. */
+  if(typeof GAMES!=='undefined' && Array.isArray(GAMES)){
+    const nativePush=GAMES.push.bind(GAMES);
+    GAMES.push=function(...items){ items.forEach(toEasternV90); return nativePush(...items); };
+  }
+
+  /* Kickoff handoff must use the Eastern instant, not the browser's own local zone. */
+  window.gameStartDateV26=function(g){
+    if(!g)return null;
+    toEasternV90(g);
+    const m=String(g.time||'').match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i); if(!m)return null;
+    let hh=Number(m[1])%12; if(m[3].toUpperCase()==='PM')hh+=12;
+    return new Date(`${g.date}T${String(hh).padStart(2,'0')}:${m[2]}:00-04:00`);
+  };
+
+  /* Repaint whichever first view was rendered before this final normalization layer ran. */
+  function repaintV90(){
+    convertAllV90();
+    const h=location.hash.slice(1);
+    try{
+      if(h.startsWith('team=')&&typeof showTeam==='function') return showTeam(h.slice(5));
+      if(h.startsWith('live=')&&typeof showGameCast==='function') return showGameCast(h.slice(5));
+      if(h.startsWith('game=')&&typeof showGame==='function') return showGame(h.slice(5));
+      if(h==='podcasts'&&typeof podcasts83==='function') return podcasts83();
+      if(h==='command'&&typeof command65==='function') return command65();
+      if(h==='rankings'&&typeof rankingsPage65==='function') return rankingsPage65();
+      if(h==='playoffs'&&typeof playoffs72==='function') return playoffs72();
+      if(h==='matchup'&&typeof matchup72==='function') return matchup72();
+      if(h==='leaders'&&typeof showLeaders==='function') return showLeaders();
+      if(h==='teamstats'&&typeof showTeamStats==='function') return showTeamStats();
+      if(h==='teams'&&typeof showTeams==='function') return showTeams();
+      if(h==='conferences'&&typeof showConferences==='function') return showConferences();
+      if(typeof renderHome==='function') return renderHome();
+    }catch(e){console.warn('V90 EDT repaint',e)}
+  }
+
+  /* Keep the visible build label honest. */
+  const priorShellV90=window.shell;
+  if(typeof priorShellV90==='function'){
+    window.shell=function(content,active='schedule'){
+      convertAllV90();
+      return priorShellV90(content,active).replace(/V89 • Full Navigation \+ Team-Branded News/g,'V91 • All Kickoffs in EDT');
+    };
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(repaintV90,0),{once:true});
+  else setTimeout(repaintV90,0);
 })();
 </script>

@@ -4216,6 +4216,92 @@ window.addEventListener('online',()=>refreshNewsV61(true));
 })();
 
 </script>
+
+<style id="v82-mobile-nav-fix">
+/* V82: real mobile navigation. Keep every top-level link reachable by touch. */
+@media (max-width:760px){
+  html,body{max-width:100%;overflow-x:hidden}
+  .shell{padding-left:12px!important;padding-right:12px!important}
+  .topbar{
+    height:auto!important;
+    min-height:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    justify-content:flex-start!important;
+    gap:7px!important;
+    padding:8px 0 7px!important;
+    overflow:visible!important;
+    background:rgba(7,9,13,.97)!important;
+  }
+  .topbar .brand{
+    align-self:flex-start!important;
+    flex:0 0 auto!important;
+    transform:scale(.92);
+    transform-origin:left center;
+  }
+  .topbar .nav{
+    display:flex!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    flex:0 0 auto!important;
+    flex-wrap:nowrap!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    gap:7px!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    -webkit-overflow-scrolling:touch!important;
+    overscroll-behavior-x:contain;
+    touch-action:pan-x!important;
+    scrollbar-width:none!important;
+    padding:2px 2px 7px!important;
+    margin:0!important;
+    scroll-snap-type:x proximity;
+    mask-image:linear-gradient(to right,transparent 0,#000 10px,#000 calc(100% - 18px),transparent 100%);
+    -webkit-mask-image:linear-gradient(to right,transparent 0,#000 10px,#000 calc(100% - 18px),transparent 100%);
+  }
+  .topbar .nav::-webkit-scrollbar{display:none!important}
+  .topbar .nav button,
+  .topbar .nav button:nth-child(n){
+    display:inline-flex!important;
+    flex:0 0 auto!important;
+    width:auto!important;
+    min-width:max-content!important;
+    white-space:nowrap!important;
+    padding:9px 12px!important;
+    font-size:12px!important;
+    line-height:1!important;
+    touch-action:manipulation!important;
+    scroll-snap-align:start;
+  }
+  .topbar .nav button.active{order:0}
+  .hero{padding-top:22px!important}
+}
+@media (max-width:420px){
+  .topbar .brand{transform:scale(.86)}
+  .topbar .nav button,.topbar .nav button:nth-child(n){padding:9px 11px!important;font-size:11.5px!important}
+}
+</style>
+<script id="v82-mobile-nav-script">
+(function(){
+  function prepareMobileNav(){
+    const nav=document.querySelector('.topbar .nav');
+    if(!nav) return;
+    nav.setAttribute('aria-label','Primary navigation');
+    // Keep the selected destination visible after every page render.
+    const active=nav.querySelector('button.active');
+    if(active && window.innerWidth<=760){
+      requestAnimationFrame(()=>active.scrollIntoView({behavior:'auto',block:'nearest',inline:'center'}));
+    }
+  }
+  prepareMobileNav();
+  new MutationObserver(()=>prepareMobileNav()).observe(document.getElementById('app'),{childList:true,subtree:true});
+  window.addEventListener('resize',prepareMobileNav,{passive:true});
+})();
+</script>
+
 </body></html>
 
 <style>

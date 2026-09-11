@@ -23,3 +23,6 @@ V79 deployment hardening: root index is mirrored to public/index.html and Vercel
 
 
 V80: Added persistent national GameCenter scoreboard, clickable other-game scores, automatic 20+ yard explosive/impact-sack ribbons, and cross-game scoring/big-play alerts with click-through to the other GameCast. National live polling runs every 12 seconds while GameCenter is open.
+
+
+V82 mobile navigation fix: all top-level links remain visible and horizontally swipeable on phones; header stacks into brand + scrollable nav row.

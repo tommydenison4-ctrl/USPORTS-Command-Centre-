@@ -37,3 +37,11 @@ V102 stability rebuild: removed competing V92/V93/V94/V97/V101 front-end live co
 
 
 V104: hard scroll stability for live GameCenter. Live scrolling is persisted per game, restored after hard refresh/pageshow, polling only patches changed HTML, hidden play-by-play is not rebuilt, and live DOM updates never intentionally change scroll position.
+
+## V105 live smoothness fixes
+- Deterministic live win probability from score + game clock, identical on desktop/mobile for identical game state.
+- Removed custom scroll restoration that caused iOS Safari/control-center resumes to jump to the top.
+- Same-game route resumes no longer rerender the whole GameCenter.
+- Live DOM patches preserve the visible viewport anchor when rows above it change.
+- Retired live UI/field painters are quarantined while V105 GameCenter is mounted.
+- Player-stat play-by-play fallback propagates possession across adjacent Presto rows and uses broader passing/rushing/receiving patterns.

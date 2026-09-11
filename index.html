@@ -5214,9 +5214,9 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
 
 
 <style id="v102-live-style">
-/* V104 — resilient single live controller, persistent source, no transient blanking. */
+/* V105 — single live controller, deterministic live probability, viewport-anchored updates. */
 .gc47-fieldwrap{display:none!important}
-.v102-live{max-width:1180px;margin:0 auto;padding:16px 18px 60px;color:var(--text)}
+.v102-live{max-width:1180px;margin:0 auto;padding:16px 18px 60px;color:var(--text);overflow-anchor:auto}
 .v102-live button{font:inherit}
 .v102-other{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 0 16px}.v102-other::-webkit-scrollbar{display:none}
 .v102-other button{min-width:180px;border:1px solid #26394c;background:#0b1621;color:#fff;border-radius:13px;padding:10px;text-align:left;cursor:pointer}.v102-other small{display:flex;justify-content:space-between;color:#90a0b3;font-size:10px}.v102-other b{display:block;margin-top:5px;font-size:12px}
@@ -5237,7 +5237,7 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
 (()=>{
   const L={selected:'',source:null,snap:null,cat:{away:'passing',home:'passing'},tab:'overview',pbp:false,inflight:false,timer:null,lastDiscover:0,rendered:false,lastUserScroll:0,scrollRAF:0};
   window.V102_LIVE=L;
-  try{if('scrollRestoration' in history)history.scrollRestoration='manual'}catch{}
+  try{if('scrollRestoration' in history)history.scrollRestoration='auto'}catch{}
   const esc2=v=>esc(v==null?'':String(v));
   const now=()=>Date.now();
   const game=id=>(GAMES||[]).find(g=>g.id===id);
@@ -5247,9 +5247,9 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
   const tm=(slug,label)=>{const q=norm(label);return q&&aliases(slug).some(v=>q===v||q.includes(v)||v.includes(q))};
   function sourceKey(id){return 'usports:v102:source:'+id} function snapKey(id){return 'usports:v102:snap:'+id} function scrollKey(id){return 'usports:v104:scroll:'+id}
   function readSession(k){for(const st of [localStorage,sessionStorage]){try{const raw=st.getItem(k);if(raw)return JSON.parse(raw)}catch{}}return null} function saveSession(k,v){for(const st of [localStorage,sessionStorage]){try{st.setItem(k,JSON.stringify(v))}catch{}}}
-  function saveScroll(){if(!L.selected||!location.hash.slice(1).startsWith('live='))return;try{sessionStorage.setItem(scrollKey(L.selected),String(Math.max(0,window.scrollY||0)))}catch{}}
-  function savedScroll(id){try{const n=Number(sessionStorage.getItem(scrollKey(id)));return Number.isFinite(n)&&n>=0?n:0}catch{return 0}}
-  function restoreScroll(y){const target=Math.max(0,Number(y)||0);requestAnimationFrame(()=>requestAnimationFrame(()=>{const max=Math.max(0,document.documentElement.scrollHeight-window.innerHeight);window.scrollTo({top:Math.min(target,max),left:0,behavior:'auto'})}))}
+  function saveScroll(){}
+  function savedScroll(){return window.scrollY||0}
+  function restoreScroll(){}
   function htmlIfChanged(el,html){if(el&&el.innerHTML!==html)el.innerHTML=html}
   function today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
   function ymd(s){return String(s||'').replace(/\D/g,'').slice(0,8)}
@@ -5297,17 +5297,21 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
     L.snap=j.data||{}; saveSession(snapKey(L.selected),L.snap); setLiveState(L.selected,L.snap); return L.snap;
   }
   function prob(g,d=L.snap){
-    let pre=.5;try{pre=winProb65(g)}catch{try{pre=expected65(g)}catch{}}
-    const as=Number(d?.game?.awayScore),hs=Number(d?.game?.homeScore); if(!Number.isFinite(as)||!Number.isFinite(hs))return pre;
-    const qtxt=String(d?.status?.period||'').toUpperCase(),qm=qtxt.match(/(\d+)/),q=qm?Number(qm[1]):1;
-    const cm=String(d?.status?.clock||'').match(/(\d+):(\d+)/),sec=cm?Number(cm[1])*60+Number(cm[2]):900;
-    const elapsed=Math.max(0,Math.min(3600,(q-1)*900+(900-sec))),remain=Math.max(60,3600-elapsed);
-    // Score matters progressively more as the game advances; pregame strength fades smoothly.
-    const scoreEdge=(as-hs)/Math.max(7,Math.sqrt(remain/60)*3.25);
-    const priorLog=Math.log(Math.max(.03,Math.min(.97,pre))/(1-Math.max(.03,Math.min(.97,pre))));
-    const weight=Math.min(.95,.22+.73*(elapsed/3600));
-    const logit=(1-weight)*priorLog + weight*scoreEdge;
-    return Math.max(.01,Math.min(.99,1/(1+Math.exp(-logit))));
+    const as=Number(d?.game?.awayScore),hs=Number(d?.game?.homeScore);
+    if(!Number.isFinite(as)||!Number.isFinite(hs)) return .5;
+    const qtxt=String(d?.status?.period||'').toUpperCase();
+    const qm=qtxt.match(/(?:Q|QUARTER\s*)?(\d+)/i); const q=qm?Math.max(1,Math.min(4,Number(qm[1]))):0;
+    const cm=String(d?.status?.clock||'').match(/(\d+):(\d+)/); const sec=cm?Math.max(0,Math.min(900,Number(cm[1])*60+Number(cm[2]))):900;
+    // Before the feed reports an actual quarter, stay neutral rather than showing device-specific cached priors.
+    if(!q) return .5;
+    const remain=Math.max(1,(4-q)*900+sec);
+    const homeMargin=hs-as;
+    // Same score + same clock = exactly the same probability on every device.
+    // Margin gains leverage as time expires; a 17-point halftime lead is roughly a 90% proposition.
+    const scale=10*Math.sqrt(remain/3600 + .15);
+    const logit=homeMargin/Math.max(3.25,scale);
+    const home=Math.max(.01,Math.min(.99,1/(1+Math.exp(-logit))));
+    return 1-home; // existing UI expects AWAY probability
   }
   function img(t,cls=''){return t?.logo?`<img class="${cls}" src="${esc2(t.logo)}" alt="" onerror="this.style.display='none'">`:''}
   function possSlug(g,d){const p=norm(d?.situation?.possession);if(!p)return'';if(aliases(g.away).some(v=>p===v||p.includes(v)||v.includes(p)))return g.away;if(aliases(g.home).some(v=>p===v||p.includes(v)||v.includes(p)))return g.home;return''}
@@ -5322,20 +5326,72 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
   function playSide(p,g,d){const q=norm(p?.possession);if(!q)return'';if(aliases(g.away).some(v=>q===v||q.includes(v)||v.includes(q)))return'away';if(aliases(g.home).some(v=>q===v||q.includes(v)||v.includes(q)))return'home';const src=sideSourceLabels();if(src.away&&q.includes(norm(src.away)))return'away';if(src.home&&q.includes(norm(src.home)))return'home';return''}
   function sideSourceLabels(){return {away:L.source?.visitor||'',home:L.source?.home||''}}
   function add(map,name,patch){name=String(name||'').trim().replace(/\s+/g,' ');if(!name||/^team$/i.test(name))return;const r=map.get(name)||{name,att:0,cmp:0,yds:0,td:0,int:0,rec:0,tkl:0,sack:0};for(const [k,v] of Object.entries(patch))r[k]=(r[k]||0)+(Number(v)||0);map.set(name,r)}
-  function derivedRows(side,cat,d,g){const m=new Map();for(const p of (d?.plays||[])){if(playSide(p,g,d)!==side)continue;const t=String(p.description||'');let x;if(cat==='passing'){x=t.match(/^(.+?) pass (complete|incomplete)(?: to .+?)?(?: for (-?\d+) yards?)?/i);if(x){add(m,x[1],{att:1,cmp:/^complete$/i.test(x[2])?1:0,yds:/^complete$/i.test(x[2])?Number(x[3]||0):0,td:/touchdown/i.test(t)?1:0,int:/intercept/i.test(t)?1:0});continue}}if(cat==='rushing'){x=t.match(/^(.+?) (?:rush|run)s? for (-?\d+) yards?/i);if(x){add(m,x[1],{att:1,yds:Number(x[2]||0),td:/touchdown/i.test(t)?1:0});continue}}if(cat==='receiving'){x=t.match(/^.+? pass complete to (.+?)(?: for (-?\d+) yards?)?(?:,|\(|$)/i);if(x){add(m,x[1],{rec:1,yds:Number(x[2]||0),td:/touchdown/i.test(t)?1:0});continue}}if(cat==='defense'){const par=[...t.matchAll(/\(([^)]+)\)/g)].pop();if(par)par[1].split(/;|,/).map(z=>z.trim()).filter(Boolean).forEach(n=>add(m,n,{tkl:1,sack:/sack/i.test(t)?1:0}))}}return [...m.values()]}
+  function derivedRows(side,cat,d,g){
+    const plays=(d?.plays||[]).map(p=>({...p,_side:playSide(p,g,d)}));
+    // Presto does not stamp team/possession on every row. Propagate the nearest known possession
+    // through adjacent PBP rows so individual totals can still populate from the official feed.
+    let carry=''; for(let i=plays.length-1;i>=0;i--){if(plays[i]._side)carry=plays[i]._side;else if(carry)plays[i]._side=carry}
+    carry=''; for(let i=0;i<plays.length;i++){if(plays[i]._side)carry=plays[i]._side;else if(carry)plays[i]._side=carry}
+    const m=new Map();
+    for(const p of plays){if(p._side!==side)continue;const t=String(p.description||'').trim();let x;
+      if(cat==='passing'){
+        x=t.match(/^(.+?)\s+pass(?:es)?\s+(complete|incomplete)(?:\s+to\s+.+?)?(?:\s+for\s+(-?\d+)\s+yards?)?/i)
+          ||t.match(/^(.+?)\s+pass\s+to\s+.+?\s+(complete|incomplete)(?:\s+for\s+(-?\d+)\s+yards?)?/i);
+        if(x){const complete=/^complete$/i.test(x[2]);add(m,x[1],{att:1,cmp:complete?1:0,yds:complete?Number(x[3]||0):0,td:/touchdown/i.test(t)?1:0,int:/intercept/i.test(t)?1:0});continue}
+        if(/intercept/i.test(t)){x=t.match(/^(.+?)\s+pass/i);if(x){add(m,x[1],{att:1,int:1});continue}}
+      }
+      if(cat==='rushing'){
+        x=t.match(/^(.+?)\s+(?:rush(?:es)?|run(?:s)?)\s+for\s+(-?\d+)\s+yards?/i);
+        if(x){add(m,x[1],{att:1,yds:Number(x[2]||0),td:/touchdown/i.test(t)?1:0});continue}
+      }
+      if(cat==='receiving'){
+        x=t.match(/^.+?\s+pass(?:es)?\s+complete\s+to\s+(.+?)(?:\s+for\s+(-?\d+)\s+yards?)?(?:,|\(|$)/i);
+        if(x){add(m,x[1],{rec:1,yds:Number(x[2]||0),td:/touchdown/i.test(t)?1:0});continue}
+      }
+      if(cat==='defense'){
+        const par=[...t.matchAll(/\(([^)]+)\)/g)].pop();
+        if(par)par[1].split(/;|,/).map(z=>z.trim()).filter(Boolean).forEach(n=>add(m,n,{tkl:1,sack:/sack/i.test(t)?1:0,int:/intercept/i.test(t)&&/return/i.test(t)?1:0}))
+      }
+    }
+    return [...m.values()]
+  }
   function playerTable(side,cat,d,g){const rows=officialRows(side,cat,d,g);let cols;if(cat==='passing')cols=[['cmp','C'],['att','ATT'],['yds','YDS'],['td','TD'],['int','INT']];else if(cat==='rushing')cols=[['att','ATT'],['yds','YDS'],['td','TD']];else if(cat==='receiving')cols=[['rec','REC'],['yds','YDS'],['td','TD']];else cols=[['tkl','TKL'],['sack','SACK'],['int','INT']];let data=[],derived=false;if(rows.length){data=rows.map(p=>{const s=p.stats||{};return {name:p.name,cmp:statPick(s,['cmp','comp','completions']),att:statPick(s,['att','attempts','pass_att','rush_att','carries','car']),yds:statPick(s,['yds','yards','pass_yds','rush_yds','rec_yds']),td:statPick(s,['td','touchdowns','pass_td','rush_td','rec_td']),int:statPick(s,['int','interceptions']),rec:statPick(s,['rec','receptions']),tkl:statPick(s,['tkl','tackles','total_tackles']),sack:statPick(s,['sack','sacks'])}})}else{data=derivedRows(side,cat,d,g);derived=true}if(!data.length)return '<div class="v102-empty">No individual totals posted yet.</div>';return `<table class="v102-table"><thead><tr><th>Player</th>${cols.map(c=>`<th>${c[1]}</th>`).join('')}</tr></thead><tbody>${data.slice(0,24).map(r=>`<tr><td>${esc2(r.name)}</td>${cols.map(c=>`<td>${esc2(r[c[0]]??0)}</td>`).join('')}</tr>`).join('')}</tbody></table>${derived?'<div class="v102-derived">Live totals derived from the official play-by-play until the official individual table posts.</div>':''}`}
   function pcard(side,d,g){const slug=side==='away'?g.away:g.home,t=team(slug),cat=L.cat[side];return `<section class="v102-card"><div class="v102-phead">${img(t)}<div><b>${esc2(t.name||slug)} — Individual Stats</b><div class="v102-sub">Live official box score</div></div></div><div class="v102-ptabs">${['passing','rushing','receiving','defense'].map(c=>`<button class="${cat===c?'active':''}" onclick="V102_LIVE.cat('${side}','${c}')">${c[0].toUpperCase()+c.slice(1)}</button>`).join('')}</div><div id="v102-${side}-players">${playerTable(side,cat,d,g)}</div></section>`}
   function drive(d){const x=d?.drives?.[0];if(!x)return '<div class="v102-empty">Drive information is waiting on the live gamebook.</div>';return `<div class="v102-drive">${esc2(x.plays??'—')} plays • ${esc2(x.yards??'—')} yards${x.time?` • ${esc2(x.time)}`:''}<small>${esc2(x.result||x.team||'Current drive')}</small></div>`}
   function plays(d){return (d?.plays||[]).map(p=>`<div class="v102-play"><div class="v102-playtime">${esc2([p.q,p.clock].filter(Boolean).join(' '))}</div><div class="v102-playtext">${esc2(p.description)}</div></div>`).join('')||'<div class="v102-empty">Waiting for the first official play.</div>'}
   function field(g){return `<section class="v102-field" id="v102-field"><div class="v102-fieldhead"><span>LIVE FIELD</span><span id="v102-fieldstate"></span></div>${buildField(team(g.away),team(g.home))}</section>`}
   function content(id,d){const g=game(id),a=team(g.away),h=team(g.home),st=LIVE_STORE?.games?.[id]||{},p=prob(g,d),ap=Math.round(p*100),hp=100-ap,w=p>=.5?a:h,as=d?.game?.awayScore??st.as??0,hs=d?.game?.homeScore??st.hs??0,q=d?.status?.period||st.q||'LIVE',clock=d?.status?.clock||st.clock||'',poss=possSlug(g,d),spot=String(d?.situation?.spot||st.spot||'').replace(/\s+/g,'').toUpperCase();return `<div class="v102-live" style="--away:${a.primary||'#b58b2a'};--home:${h.primary||'#ca173f'}">${rail(id)}<div class="v102-crumb"><span>Live › <b>${esc2(a.short||a.name||g.away)} at ${esc2(h.short||h.name||g.home)}</b></span><span>${esc2(g.conference||'')} · ${esc2(g.date||'')}</span></div><section class="v102-predict"><div class="v102-team">${img(a)}<div><h2>${esc2(a.name||g.away)}</h2><small>${esc2(a.record||'')}</small></div></div><div class="v102-prob"><div class="v102-prob-title">Win Probability</div><div class="v102-prob-row"><strong id="v102-ap">${ap}%</strong><div class="v102-probbar"><i id="v102-ab" style="width:${ap}%;background:${a.primary||'#c49a31'}"></i><i id="v102-hb" style="width:${hp}%;background:${h.primary||'#cd1740'}"></i></div><strong id="v102-hp">${hp}%</strong></div><div class="v102-winner">Projected Winner<b id="v102-winner">${esc2(w.name||'')}</b></div></div><div class="v102-team home"><div><h2>${esc2(h.name||g.home)}</h2><small>${esc2(h.record||'')}</small></div>${img(h)}</div></section><section class="v102-score"><div class="v102-score-side">${img(a)}<span>${esc2(a.abbr||'')}</span><span class="v102-num" id="v102-as">${as}</span></div><div class="v102-score-center"><div class="v102-status" id="v102-status">${esc2([q,clock].filter(Boolean).join(' • '))}</div><div class="v102-sit" id="v102-sit">${esc2([downText(d),spot].filter(Boolean).join(' · '))}</div><div class="v102-pos" id="v102-pos">${poss?esc2((team(poss).abbr||poss)+' ball'):''}</div></div><div class="v102-score-side home"><span class="v102-num" id="v102-hs">${hs}</span><span>${esc2(h.abbr||'')}</span>${img(h)}</div></section><div class="v102-tabs"><button class="active" onclick="V102_LIVE.view('overview',this)">Overview</button><button onclick="V102_LIVE.view('box',this)">Box Score</button><button onclick="V102_LIVE.scroll('v102-teamstats')">Team Stats</button><button onclick="V102_LIVE.scroll('v102-playergrid')">Player Stats</button><button onclick="V102_LIVE.view('box',this)">Drives</button><button onclick="V102_LIVE.togglePbp()">Play-by-Play</button></div><div id="v102-overview"><div class="v102-grid2"><section class="v102-card"><h3>Last Play</h3><div class="v102-last" id="v102-last">${esc2(d?.plays?.[0]?.description||'Waiting for the next official play.')}</div><div class="v102-sub" id="v102-lasttime">${esc2([d?.plays?.[0]?.q,d?.plays?.[0]?.clock].filter(Boolean).join(' • '))}</div></section><section class="v102-card"><h3>Current Drive</h3><div id="v102-drive">${drive(d)}</div></section></div>${field(g)}<section class="v102-card"><h3>Team Stats</h3><div id="v102-teamstats">${statRows(d,g)}</div></section><div class="v102-playergrid" id="v102-playergrid">${pcard('away',d,g)}${pcard('home',d,g)}</div><button class="v102-action" onclick="V102_LIVE.view('box')">▣ View Full Box Score ›</button><section class="v102-card"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><div><h3 style="margin-bottom:3px">Play-by-Play</h3><div class="v102-sub">Show full play-by-play feed</div></div><button class="v102-action" style="width:auto;margin:0;padding:10px 14px" onclick="V102_LIVE.togglePbp()">Show Play-by-Play</button></div><div class="v102-pbp" id="v102-pbp">${plays(d)}</div></section></div><div id="v102-box" style="display:none"><section class="v102-card"><h3>Full Team Box Score</h3><div id="v102-boxstats">${statRows(d,g)}</div></section><div class="v102-playergrid">${pcard('away',d,g)}${pcard('home',d,g)}</div><section class="v102-card"><h3>Drives</h3><div id="v102-drives">${(d?.drives||[]).map(x=>`<div class="v102-play"><div class="v102-playtime">${esc2(x.team||'')}</div><div class="v102-playtext">${esc2(x.plays??'—')} plays • ${esc2(x.yards??'—')} yards ${x.time?`• ${esc2(x.time)}`:''} ${x.result?`• ${esc2(x.result)}`:''}</div></div>`).join('')||'<div class="v102-empty">No drive rows yet.</div>'}</div></section></div></div>`}
-  function render(){if(!L.selected)return;const g=game(L.selected);if(!g)return;const keep=L.rendered?(window.scrollY||0):savedScroll(L.selected);const d=L.snap||readSession(snapKey(L.selected))||{game:{awayScore:LIVE_STORE?.games?.[L.selected]?.as||0,homeScore:LIVE_STORE?.games?.[L.selected]?.hs||0},status:{period:LIVE_STORE?.games?.[L.selected]?.q||'LIVE',clock:LIVE_STORE?.games?.[L.selected]?.clock||''},situation:{},plays:[],drives:[],statComparison:[],playerStats:[]};L.snap=d;document.getElementById('app').innerHTML=shell(content(L.selected,d),'live');L.rendered=true;patchField();restoreScroll(keep)}
+  function render(){if(!L.selected)return;const g=game(L.selected);if(!g)return;const d=L.snap||readSession(snapKey(L.selected))||{game:{awayScore:LIVE_STORE?.games?.[L.selected]?.as||0,homeScore:LIVE_STORE?.games?.[L.selected]?.hs||0},status:{period:LIVE_STORE?.games?.[L.selected]?.q||'LIVE',clock:LIVE_STORE?.games?.[L.selected]?.clock||''},situation:{},plays:[],drives:[],statComparison:[],playerStats:[]};L.snap=d;document.getElementById('app').innerHTML=shell(content(L.selected,d),'live');L.rendered=true;patchField()}
   function patchText(id,v){const e=document.getElementById(id);if(e)e.textContent=v??''}
-  function patchField(){if(!L.snap)return;const x=L.snap.situation||{};patchText('v102-fieldstate',[downText(L.snap),String(x.spot||'').replace(/\s+/g,'')].filter(Boolean).join(' • '));try{updateSelectedUI()}catch{}}
-  function patch(){if(!L.rendered||!document.querySelector('.v102-live')||!L.snap)return;const beforeY=window.scrollY||0;const d=L.snap,g=game(L.selected),st=LIVE_STORE?.games?.[L.selected]||{};patchText('v102-as',d?.game?.awayScore??st.as??0);patchText('v102-hs',d?.game?.homeScore??st.hs??0);patchText('v102-status',[d?.status?.period||st.q||'LIVE',d?.status?.clock||st.clock||''].filter(Boolean).join(' • '));patchText('v102-sit',[downText(d),String(d?.situation?.spot||st.spot||'').replace(/\s+/g,'').toUpperCase()].filter(Boolean).join(' · '));const ps=possSlug(g,d);patchText('v102-pos',ps?(team(ps).abbr||ps)+' ball':'');patchText('v102-last',d?.plays?.[0]?.description||'Waiting for the next official play.');patchText('v102-lasttime',[d?.plays?.[0]?.q,d?.plays?.[0]?.clock].filter(Boolean).join(' • '));htmlIfChanged(document.getElementById('v102-teamstats'),statRows(d,g));htmlIfChanged(document.getElementById('v102-boxstats'),statRows(d,g));htmlIfChanged(document.getElementById('v102-drive'),drive(d));if(L.pbp)htmlIfChanged(document.getElementById('v102-pbp'),plays(d));for(const side of ['away','home']){htmlIfChanged(document.getElementById(`v102-${side}-players`),playerTable(side,L.cat[side],d,g))}const pr=prob(g,d),ap=Math.round(pr*100),hp=100-ap;patchText('v102-ap',ap+'%');patchText('v102-hp',hp+'%');const ab=document.getElementById('v102-ab'),hb=document.getElementById('v102-hb');if(ab)ab.style.width=ap+'%';if(hb)hb.style.width=hp+'%';patchText('v102-winner',(pr>=.5?team(g.away):team(g.home)).name||'');patchField();const afterY=window.scrollY||0;if(Math.abs(afterY-beforeY)>2&&Date.now()-L.lastUserScroll>220)window.scrollTo({top:beforeY,left:0,behavior:'auto'})}
+  function patchField(){if(!L.snap)return;const x=L.snap.situation||{};patchText('v102-fieldstate',[downText(L.snap),String(x.spot||'').replace(/\s+/g,'')].filter(Boolean).join(' • '))}
+  function viewportAnchor(){
+    const nodes=[...document.querySelectorAll('.v102-live .v102-card,.v102-live .v102-field,.v102-live .v102-score,.v102-live .v102-tabs')];
+    const y=Math.max(8,Math.min(innerHeight-8,innerHeight*.42));
+    let best=null,dist=Infinity;
+    for(const el of nodes){const r=el.getBoundingClientRect();if(r.bottom<0||r.top>innerHeight)continue;const d=Math.abs(r.top-y);if(d<dist){dist=d;best={el,top:r.top}}}
+    return best;
+  }
+  function patch(){
+    if(!L.rendered||!document.querySelector('.v102-live')||!L.snap)return;
+    const anchor=viewportAnchor(); const d=L.snap,g=game(L.selected),st=LIVE_STORE?.games?.[L.selected]||{};
+    patchText('v102-as',d?.game?.awayScore??st.as??0);patchText('v102-hs',d?.game?.homeScore??st.hs??0);
+    patchText('v102-status',[d?.status?.period||st.q||'LIVE',d?.status?.clock||st.clock||''].filter(Boolean).join(' • '));
+    patchText('v102-sit',[downText(d),String(d?.situation?.spot||st.spot||'').replace(/\s+/g,'').toUpperCase()].filter(Boolean).join(' · '));
+    const ps=possSlug(g,d);patchText('v102-pos',ps?(team(ps).abbr||ps)+' ball':'');
+    patchText('v102-last',d?.plays?.[0]?.description||'Waiting for the next official play.');patchText('v102-lasttime',[d?.plays?.[0]?.q,d?.plays?.[0]?.clock].filter(Boolean).join(' • '));
+    htmlIfChanged(document.getElementById('v102-teamstats'),statRows(d,g));htmlIfChanged(document.getElementById('v102-boxstats'),statRows(d,g));htmlIfChanged(document.getElementById('v102-drive'),drive(d));
+    if(L.pbp)htmlIfChanged(document.getElementById('v102-pbp'),plays(d));
+    for(const side of ['away','home'])htmlIfChanged(document.getElementById(`v102-${side}-players`),playerTable(side,L.cat[side],d,g));
+    const pr=prob(g,d),ap=Math.round(pr*100),hp=100-ap;patchText('v102-ap',ap+'%');patchText('v102-hp',hp+'%');
+    const ab=document.getElementById('v102-ab'),hb=document.getElementById('v102-hb');if(ab)ab.style.width=ap+'%';if(hb)hb.style.width=hp+'%';
+    patchText('v102-winner',(pr>=.5?team(g.away):team(g.home)).name||'');patchField();
+    // Hold the same visible content in the same physical spot if rows above it grew/shrank.
+    // Never do this while the user is touching/scrolling.
+    if(anchor&&anchor.el?.isConnected&&Date.now()-L.lastUserScroll>900){const top=anchor.el.getBoundingClientRect().top;const delta=top-anchor.top;if(Math.abs(delta)>1&&Math.abs(delta)<innerHeight*.75)window.scrollBy(0,delta)}
+  }
   async function tick(){if(L.inflight||!L.selected||document.visibilityState==='hidden')return;L.inflight=true;try{const d=await fetchSnap();if(d){if(!L.rendered||!document.querySelector('.v102-live'))render();else patch()}else{if(now()-L.lastDiscover>8000)discover(true);/* keep the last good snapshot on screen */}}finally{L.inflight=false}}
   function startTimer(){clearInterval(L.timer);L.timer=setInterval(tick,4000)}
-  function open(id,push=true){const g=game(id);if(!g)return;if(L.selected&&L.selected!==id)saveScroll();L.selected=id;L.source=readSession(sourceKey(id));L.snap=readSession(snapKey(id));L.rendered=false;LIVE_STORE.selected=id;if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);render();tick();startTimer()}
+  function open(id,push=true){const g=game(id);if(!g)return;const same=L.selected===id&&document.querySelector('.v102-live');if(same){if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);tick();startTimer();return}L.selected=id;L.source=readSession(sourceKey(id));L.snap=readSession(snapKey(id));L.rendered=false;LIVE_STORE.selected=id;if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);render();tick();startTimer()}
   L.open=open;L.tick=tick;L.discover=discover;
   L.cat=(side,cat)=>{L.cat[side]=cat;const e=document.getElementById(`v102-${side}-players`);if(e&&L.snap)e.innerHTML=playerTable(side,cat,L.snap,game(L.selected));document.querySelectorAll(`.v102-playergrid .v102-card:nth-child(${side==='away'?1:2}) .v102-ptabs button`).forEach(b=>b.classList.toggle('active',b.textContent.trim().toLowerCase()===cat))};
   L.scroll=id=>document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'});
@@ -5344,17 +5400,28 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
   // This is the only live renderer after V102. Earlier generic schedule/game functions stay intact.
   window.showGameCast=(id)=>open(id,true);
   window.openLiveV32=()=>{const todayGames=(GAMES||[]).filter(g=>g.date===today()&&g.status!=='final');const html=`<div style="max-width:1180px;margin:auto;padding:18px"><h2>Live</h2><div class="v102-other">${todayGames.map(g=>`<button onclick="V102_LIVE.open('${g.id}')"><small><span>${esc2(g.conference||'')}</span><span>${esc2(g.time||'')}</span></small><b>${esc2(team(g.away).abbr||g.away)} · ${esc2(team(g.home).abbr||g.home)}</b></button>`).join('')}</div></div>`;document.getElementById('app').innerHTML=shell(html,'live')};
-  const routeBefore=window.route;window.route=function(){const h=location.hash.slice(1);if(h==='live'){openLiveV32();return}if(h.startsWith('live=')){open(h.slice(5),false);return}return routeBefore?.()};
-  window.addEventListener('hashchange',()=>{saveScroll();window.route()});
-  window.addEventListener('scroll',()=>{L.lastUserScroll=Date.now();if(L.scrollRAF)return;L.scrollRAF=requestAnimationFrame(()=>{L.scrollRAF=0;saveScroll()})},{passive:true});
-  window.addEventListener('pagehide',saveScroll);
-  window.addEventListener('beforeunload',saveScroll);
-  window.addEventListener('pageshow',()=>{if(location.hash.slice(1).startsWith('live=')){const id=location.hash.slice(6);if(id)restoreScroll(savedScroll(id));tick();startTimer()}});
+  const routeBefore=window.route;window.route=function(){const h=location.hash.slice(1);if(h==='live'){openLiveV32();return}if(h.startsWith('live=')){const id=h.slice(5);if(L.selected===id&&document.querySelector('.v102-live')){tick();startTimer();return}open(id,false);return}return routeBefore?.()};
+  window.addEventListener('hashchange',()=>window.route());
+  window.addEventListener('scroll',()=>{if(document.visibilityState==='visible')L.lastUserScroll=Date.now()},{passive:true});
+  window.addEventListener('touchstart',()=>{L.lastUserScroll=Date.now()},{passive:true});
+  window.addEventListener('touchmove',()=>{L.lastUserScroll=Date.now()},{passive:true});
+  window.addEventListener('pageshow',()=>{if(location.hash.slice(1).startsWith('live=')){tick();startTimer()}});
   window.addEventListener('online',tick);
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&location.hash.slice(1).startsWith('live=')){tick();startTimer()}});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&location.hash.slice(1).startsWith('live=')){L.lastUserScroll=Date.now();tick();startTimer()}});
   // Render the final route once after all older boot scripts have completed.
   const boot=()=>setTimeout(()=>{if(location.hash.slice(1).startsWith('live'))window.route()},0);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
+</script>
+
+<script id="v105-legacy-live-quarantine">
+(()=>{
+  // Older pollers may still be alive elsewhere in this single-file app. They can update data,
+  // but they are never allowed to repaint the V105 GameCenter or swap in a retired field.
+  const guard=(name)=>{try{const old=window[name];if(typeof old!=='function'||old._v105guard)return;const fn=function(){if(document.querySelector('.v102-live'))return;return old.apply(this,arguments)};fn._v105guard=true;window[name]=fn}catch{}};
+  ['updateSelectedUI','renderPrestoDetailsV33','patchSnapshotV45','renderGC47','rail47'].forEach(guard);
+  // V105 owns the selected game's polling. Stop the obsolete generic Presto interval if it exists.
+  try{if(typeof PRESTO_V33!=='undefined'&&PRESTO_V33?.timer){clearInterval(PRESTO_V33.timer);PRESTO_V33.timer=null}}catch{}
 })();
 </script>
 

@@ -15,3 +15,9 @@ V93: authoritative current-date live discovery, direct SMU Presto source coverag
 
 
 V94: redesigned live GameCenter, projection at top, methodology banners removed, play-by-play collapsed by default, live individual/team box score views, and DOM-only polling to preserve scroll position during refreshes.
+
+
+## V95
+- Fixes live feed regression from V94 by moving the live-center renderer after the V93 AUS discovery controller.
+- Saint Mary's/Mount Allison continues using the verified Presto source while V94-style UI patches in place.
+- Live refreshes no longer replace the page or reset scroll position.

@@ -4302,6 +4302,78 @@ window.addEventListener('online',()=>refreshNewsV61(true));
 })();
 </script>
 
+
+<style id="v92-aus-live-style">
+.v92-live-source{display:inline-flex;align-items:center;gap:6px;color:#72e6a4;font-size:10px;font-weight:950;letter-spacing:.06em;text-transform:uppercase}
+.v92-live-source:before{content:"";width:7px;height:7px;border-radius:50%;background:#3ee98a;box-shadow:0 0 12px rgba(62,233,138,.75)}
+</style>
+<script id="v92-aus-live-bootstrap">
+/* V92 — national live discovery includes AUS and can activate GameCast from the Live landing page. */
+(function(){
+  const V92={sources:new Map(),poll:null,selectedPoll:null,lastDate:''};
+  function today92(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+  function ymd92(s){return String(s||'').replace(/-/g,'')}
+  function norm92(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim()}
+  function teamMatches92(slug,label){
+    const t=TEAM?.[slug]; if(!t)return false; const x=norm92(label);
+    const vals=[slug,t.short,t.name,t.abbr,t.city].map(norm92).filter(Boolean);
+    return vals.some(v=>x===v||x.includes(v)||v.includes(x));
+  }
+  function internal92(x){
+    let best=null,score=-999;
+    for(const g of (GAMES||[])){
+      if(g.status==='final')continue;
+      let s=0;if(teamMatches92(g.away,x.visitor))s+=100;if(teamMatches92(g.home,x.home))s+=100;
+      if(teamMatches92(g.away,x.home))s-=60;if(teamMatches92(g.home,x.visitor))s-=60;
+      if(s>score){score=s;best=g}
+    }
+    return score>=180?best:null;
+  }
+  function setLive92(g,x){
+    if(!g||!window.LIVE_STORE)return;
+    const st=LIVE_STORE.games[g.id]||(LIVE_STORE.games[g.id]={id:g.id,away:g.away,home:g.home,as:0,hs:0,q:'LIVE',clock:'',pos:null,down:'',yard:null,first:null,event:'LIVE'});
+    st._realLive=true;st.as=Number(x.awayScore)||0;st.hs=Number(x.homeScore)||0;st.q=x.period||st.q||'LIVE';st.clock=x.clock||st.clock||'';
+    V92.sources.set(g.id,x);
+  }
+  function sourceIds92(g){return {awayId:String(TEAM?.[g?.away]?.abbr||'').toUpperCase(),homeId:String(TEAM?.[g?.home]?.abbr||'').toUpperCase()}}
+  async function pollSelected92(id){
+    const src=V92.sources.get(id),g=(GAMES||[]).find(x=>x.id===id);if(!src?.page||!g)return;
+    try{
+      const ids=sourceIds92(g);
+      const u=`/api/presto-live?game=${encodeURIComponent(id)}&page=${encodeURIComponent(src.page)}&awayId=${encodeURIComponent(ids.awayId)}&homeId=${encodeURIComponent(ids.homeId)}&_=${Date.now()}`;
+      const r=await fetch(u,{cache:'no-store',headers:{Accept:'application/json'}}),j=await r.json();
+      if(!j?.ok)return;
+      const d=j.data||{},st=LIVE_STORE.games[id]||(LIVE_STORE.games[id]={id,away:g.away,home:g.home});
+      st._realLive=true;if(d.game?.awayScore!=null)st.as=Number(d.game.awayScore);if(d.game?.homeScore!=null)st.hs=Number(d.game.homeScore);st.q=d.status?.period||st.q||'LIVE';st.clock=d.status?.clock||st.clock||'';
+      st.pos=d.situation?.possession||st.pos; if(d.situation?.down)st.down=`${d.situation.down}${d.situation.down===1?'st':d.situation.down===2?'nd':d.situation.down===3?'rd':'th'} & ${d.situation.distance??''}`;
+      try{ if(typeof applyPrestoSnapshotV33==='function')applyPrestoSnapshotV33(j); }catch(e){}
+      try{ if(typeof patchSnapshotV45==='function')patchSnapshotV45(d); }catch(e){}
+      try{ if(typeof renderScoreStrip==='function')renderScoreStrip(); }catch(e){}
+    }catch(e){console.warn('V92 selected live poll',e)}
+  }
+  function startSelected92(id){clearInterval(V92.selectedPoll);pollSelected92(id);V92.selectedPoll=setInterval(()=>pollSelected92(id),5000)}
+  async function discover92(){
+    const h=location.hash.slice(1),selected=h.startsWith('live=')?h.slice(5):'';
+    const sg=(GAMES||[]).find(g=>g.id===selected),date=sg?.date||today92();V92.lastDate=date;
+    try{
+      const r=await fetch(`/api/live-games?date=${ymd92(date)}&_=${Date.now()}`,{cache:'no-store'}),j=await r.json();if(!j?.ok)return;
+      let first='';
+      for(const x of (j.games||[])){const g=internal92(x);if(!g)continue;setLive92(g,x);if(!first)first=g.id;if(selected===g.id)startSelected92(g.id)}
+      if(first && (h==='live'||(!h&&document.querySelector('.liveLanding')))){
+        LIVE_STORE.selected=first;showGameCast(first);startSelected92(first);return;
+      }
+      if(first && h.startsWith('live=') && V92.sources.has(selected)) startSelected92(selected);
+      if(h==='live'&&typeof openLiveV32==='function')openLiveV32();
+    }catch(e){console.warn('V92 national live discovery',e)}
+  }
+  const oldShow92=window.showGameCast;
+  if(typeof oldShow92==='function')window.showGameCast=function(id){const out=oldShow92.apply(this,arguments);setTimeout(()=>{if(V92.sources.has(id))startSelected92(id);discover92()},80);return out};
+  window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(!h.startsWith('live=')){clearInterval(V92.selectedPoll);V92.selectedPoll=null}setTimeout(discover92,80)});
+  function start92(){clearInterval(V92.poll);discover92();V92.poll=setInterval(discover92,5000)}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(start92,150),{once:true});else setTimeout(start92,150);
+  const priorShell92=window.shell;if(typeof priorShell92==='function')window.shell=function(content,active='schedule'){return priorShell92(content,active).replace(/V91 • All Kickoffs in EDT/g,'V92 • EDT + National Live AUS Discovery')};
+})();
+</script>
 </body></html>
 
 <style>
@@ -5210,5 +5282,48 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(repaintV90,0),{once:true});
   else setTimeout(repaintV90,0);
+})();
+</script>
+
+<style id="v93-live-authoritative-style">
+.liveLandingCard,.gameCard,.gc47-livecard,.otherGameV45,.nav button,.back,.v65-btn{pointer-events:auto!important}
+.liveLandingCard{cursor:pointer;position:relative;z-index:2}
+.v93LiveCard{display:block;width:100%;text-align:left;color:inherit;font:inherit;border:1px solid var(--line);background:#0a1016;border-radius:18px;padding:16px;cursor:pointer;position:relative;z-index:2}
+.v93LiveCard:hover{border-color:#485a70;background:#0d151f}
+.v93LiveGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.v93LiveTop{display:flex;justify-content:space-between;gap:10px;align-items:center;color:var(--muted);font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px}
+.v93Teams{display:grid;gap:10px}.v93Team{display:flex;align-items:center;gap:10px;font-weight:900}.v93Team .teamLogoBox{flex:0 0 auto}
+.v93Status{border:1px solid #5a4c18;background:#171407;color:var(--gold);border-radius:999px;padding:5px 8px}.v93Status.live{border-color:#21643e;background:#092318;color:#6ff0a1}
+.v93Scan{margin:14px 0;border:1px solid #1f4b65;background:#071a27;color:#b8d7e8;border-radius:12px;padding:10px 12px;font-size:11px}
+@media(max-width:900px){.v93LiveGrid{grid-template-columns:1fr 1fr}}@media(max-width:620px){.v93LiveGrid{grid-template-columns:1fr}}
+</style>
+<script id="v93-live-authoritative">
+/* V93: final live authority. Runs AFTER all historical V45/V46/V47 wrappers. */
+(function(){
+  const V93={sources:new Map(),poll:null,selectedPoll:null,busy:false};
+  window.V93_LIVE=V93;
+  const baseShow=window.showGameCast;
+  const pad=n=>String(n).padStart(2,'0');
+  const today=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+  const ymd=s=>String(s||'').replace(/\D/g,'').slice(0,8);
+  const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+  function tm(slug,label){const t=TEAM?.[slug];if(!t)return false;const q=norm(label);if(!q)return false;const vals=[slug,t.short,t.name,t.abbr].map(norm).filter(Boolean);return vals.some(v=>q===v||q.includes(v)||v.includes(q));}
+  function matchGame(x,date){let best=null,score=-999;for(const g of (GAMES||[])){if(g.status==='final')continue;if(date&&g.date!==date)continue;let s=0;if(tm(g.away,x.visitor))s+=100;if(tm(g.home,x.home))s+=100;if(tm(g.away,x.home))s-=60;if(tm(g.home,x.visitor))s-=60;if(s>score){score=s;best=g}}return score>=180?best:null}
+  function ensureState(g,x){if(!g)return null;let st=LIVE_STORE.games[g.id];if(!st)st=LIVE_STORE.games[g.id]={id:g.id,away:g.away,home:g.home,as:0,hs:0,q:'LIVE',clock:'',pos:null,down:'',yard:null,first:null,event:'LIVE'};st._realLive=true;st.as=Number(x.awayScore)||0;st.hs=Number(x.homeScore)||0;st.q=x.period||st.q||'LIVE';st.clock=x.clock||st.clock||'';V93.sources.set(g.id,x);try{if(typeof DISCOVERED_V46!=='undefined'){DISCOVERED_V46.byInternal[g.id]=x;if(!DISCOVERED_V46.last.some(z=>z.boxId===x.boxId))DISCOVERED_V46.last.push(x)}}catch{}try{if(typeof PRESTO_V33_GAMES!=='undefined')PRESTO_V33_GAMES.add(g.id)}catch{}return st}
+  function ids(g){return {awayId:String(TEAM?.[g.away]?.abbr||'').toUpperCase(),homeId:String(TEAM?.[g.home]?.abbr||'').toUpperCase()}}
+  async function pollSelected(id){const src=V93.sources.get(id),g=GAMES.find(z=>z.id===id);if(!src?.page||!g||location.protocol==='file:')return;try{const ab=ids(g);const u=`/api/presto-live?game=${encodeURIComponent(id)}&page=${encodeURIComponent(src.page)}&awayId=${encodeURIComponent(ab.awayId)}&homeId=${encodeURIComponent(ab.homeId)}&_=${Date.now()}`;const r=await fetch(u,{cache:'no-store'});const j=await r.json();if(!j?.ok)return;const d=j.data||{},st=ensureState(g,src);if(d.game?.awayScore!=null)st.as=Number(d.game.awayScore);if(d.game?.homeScore!=null)st.hs=Number(d.game.homeScore);st.q=d.status?.period||st.q;st.clock=d.status?.clock||st.clock;st.pos=d.situation?.possession||st.pos;if(d.situation?.down)st.down=`${d.situation.down}${d.situation.down===1?'st':d.situation.down===2?'nd':d.situation.down===3?'rd':'th'} & ${d.situation.distance??''}`;try{applyPrestoSnapshotV33?.(j)}catch{}try{patchSnapshotV45?.(d)}catch{}try{renderScoreStrip?.()}catch{}}catch(e){console.warn('V93 selected poll',e)}}
+  function startSelected(id){clearInterval(V93.selectedPoll);pollSelected(id);V93.selectedPoll=setInterval(()=>pollSelected(id),5000)}
+  function openGame(id){if(typeof baseShow!=='function')return;LIVE_STORE.selected=id;location.hash='live='+id;baseShow(id);if(V93.sources.has(id))startSelected(id)}
+  window.openLiveGameV93=openGame;
+  function card(g){const a=TEAM[g.away],h=TEAM[g.home],st=LIVE_STORE.games[g.id],live=!!st?._realLive;return `<button type="button" class="v93LiveCard" onclick="openLiveGameV93('${g.id}')"><div class="v93LiveTop"><span>${esc(cl(g.conference))} • ${esc(g.time||'')}</span><span class="v93Status ${live?'live':''}">${live?'● LIVE':'PREGAME'}</span></div><div class="v93Teams"><div class="v93Team">${teamLogoV29(a,'sm')}<span>${esc(a.name)}</span>${live?`<b style="margin-left:auto">${st.as??0}</b>`:''}</div><div class="v93Team">${teamLogoV29(h,'sm')}<span>${esc(h.name)}</span>${live?`<b style="margin-left:auto">${st.hs??0}</b>`:''}</div></div><div style="margin-top:12px;color:var(--muted);font-size:11px">${live?esc([st.q,st.clock].filter(Boolean).join(' • ')):esc(g.venue||'Venue not loaded')}</div></button>`}
+  function renderLiveLanding(){const d=today(),games=GAMES.filter(g=>g.date===d&&g.status!=='final');const html=`<div class="liveLanding"><section class="liveLandingHero"><div class="kicker">LIVE</div><h1>Today's Games</h1><p>Verified live feeds take over automatically as soon as the official stats service posts an event.</p></section><div class="v93Scan" id="v93Scan">${location.protocol==='file:'?'Local preview: live APIs activate after deployment to Vercel.':'Scanning official national live-stat feeds every 5 seconds…'}</div>${games.length?`<div class="v93LiveGrid">${games.map(card).join('')}</div>`:'<div class="panel"><h2>No games loaded for today</h2></div>'}</div>`;document.getElementById('app').innerHTML=shell(html,'live');location.hash='live';}
+  window.openLiveV32=renderLiveLanding;window.showLiveHub=renderLiveLanding;
+  async function discover(){if(V93.busy||location.protocol==='file:')return;V93.busy=true;try{const h=location.hash.slice(1),selected=h.startsWith('live=')?h.slice(5):'',sg=GAMES.find(g=>g.id===selected),date=sg?.date||today();const r=await fetch(`/api/live-games?date=${ymd(date)}&_=${Date.now()}`,{cache:'no-store'});const j=await r.json();if(!j?.ok)return;let first='';for(const x of (j.games||[])){const g=matchGame(x,date)||matchGame(x,'');if(!g)continue;ensureState(g,x);if(!first)first=g.id;if(selected===g.id)startSelected(g.id)}const scan=document.getElementById('v93Scan');if(scan)scan.textContent=j.games?.length?`${j.games.length} verified live game${j.games.length===1?'':'s'} found • refreshing every 5 seconds`:'Official feeds checked • waiting for a live event';if(h==='live'){if(first){openGame(first);return}renderLiveLanding()}else if(selected&&V93.sources.has(selected))startSelected(selected)}catch(e){const scan=document.getElementById('v93Scan');if(scan)scan.textContent='Live scan retrying…';console.warn('V93 live discover',e)}finally{V93.busy=false}}
+  function start(){clearInterval(V93.poll);discover();V93.poll=setInterval(discover,5000)}
+  window.showGameCast=function(id){openGame(id)};
+  const prevRoute=window.route;window.route=function(){const h=location.hash.slice(1);if(h==='live'){renderLiveLanding();setTimeout(discover,30);return}if(h.startsWith('live=')){openGame(h.slice(5));setTimeout(discover,30);return}return prevRoute?.()};
+  window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(!h.startsWith('live=')){clearInterval(V93.selectedPoll);V93.selectedPoll=null}if(h==='live'||h.startsWith('live='))setTimeout(discover,30)});
+  const oldShell=window.shell;window.shell=function(content,active='schedule'){return oldShell(content,active).replace(/V92 • EDT \+ National Live AUS Discovery|V91 • All Kickoffs in EDT|V89 • Full Navigation \+ Team-Branded News/g,'V93 • EDT + Live AUS Direct Feed')};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(start,100),{once:true});else setTimeout(start,100);
 })();
 </script>

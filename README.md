@@ -1,3 +1,8 @@
+V87 changes:
+- Full top navigation is present on the first render, not only after changing pages.
+- Homepage news cards use team colors, team logos, and team-specific badges.
+- Multi-team stories show both team marks.
+
 # U SPORTS Football Game Centre V72
 
 V72 adds:

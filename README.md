@@ -21,3 +21,5 @@ V94: redesigned live GameCenter, projection at top, methodology banners removed,
 - Fixes live feed regression from V94 by moving the live-center renderer after the V93 AUS discovery controller.
 - Saint Mary's/Mount Allison continues using the verified Presto source while V94-style UI patches in place.
 - Live refreshes no longer replace the page or reset scroll position.
+
+V98: Removed the late V97 route wrapper. V93 is again the sole owner of live routing, preventing a selected live game from falling back to pregame before discovery attaches the feed. No live API files changed.

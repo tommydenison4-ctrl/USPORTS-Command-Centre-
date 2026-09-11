@@ -5421,9 +5421,10 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
  function patchFieldLabel(){const {g,d}=current();if(!g||!d)return;const el=document.getElementById('v97-field-state');if(el){const x=d.situation||{};const suf=x.down===1?'st':x.down===2?'nd':x.down===3?'rd':x.down===4?'th':'';el.textContent=[x.down?`${x.down}${suf} & ${x.distance??''}`:'',String(x.spot||'').replace(/\s+/g,'')].filter(Boolean).join(' • ')}try{updateSelectedUI()}catch{}}
  function enhance(){if(!document.querySelector('.v94-wrap'))return;field();playerFallback();patchFieldLabel()}
  const mo=new MutationObserver(()=>requestAnimationFrame(enhance));mo.observe(document.getElementById('app'),{childList:true,subtree:true});setInterval(enhance,1200);setTimeout(enhance,100);
- // On hard refresh, keep #live=<game> intact and let the existing V93 discovery attach the feed.
- const oldRoute=window.route;window.route=function(){const h=location.hash.slice(1);if(h.startsWith('live=')){const id=h.slice(5);if(typeof window.openLiveGameV93==='function'){window.openLiveGameV93(id);return}if(typeof window.showGameCast==='function'){window.showGameCast(id);return}}return oldRoute?.()};
- const oldShell=window.shell;window.shell=function(content,active='schedule'){return oldShell(content,active).replace(/V95 • Live Feed \+ Stable Box Score/g,'V97 • Stable Feed + 3D Live Center')};
+ // V98: do NOT wrap route here. V93 owns #live / #live=<game> routing.
+ // The V97 route wrapper could call the pregame fallback before discovery had attached
+ // the live source, which changed the hash and prevented the live feed from taking over.
+ const oldShell=window.shell;window.shell=function(content,active='schedule'){return oldShell(content,active).replace(/V95 • Live Feed \+ Stable Box Score/g,'V98 • Stable Live Feed + 3D Center')};
 })();
 </script>
 

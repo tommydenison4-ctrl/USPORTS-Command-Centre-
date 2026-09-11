@@ -1,3 +1,4 @@
+const LIVE_SOURCE_CACHE=globalThis.__LIVE_SOURCE_CACHE||(globalThis.__LIVE_SOURCE_CACHE=new Map());
 const HEADERS={
   'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36',
   'Accept-Language':'en-CA,en;q=0.9','Cache-Control':'no-cache','Pragma':'no-cache'
@@ -71,8 +72,19 @@ module.exports=async function handler(req,res){
   ];
   let pages=[];for(const u of scheduleUrls){try{pages.push(...await scanSchedule(u,date));}catch{}}
   pages=[...new Set(pages)].slice(0,20);
+  const candidates=[];
   const games=(await Promise.all(pages.map(async page=>{
-    try{const b=await getText(page);if(!b.ok)return null;const meta=metaFromHtml(b.text,page);if(!meta.event||!meta.hash||meta.pregame||meta.final)return null;const live=await fetchLive(meta,b.cookie);if(!live?.json||live.json.error||!isActuallyLive(meta,live.json))return null;const sc=lastScore(live.json);return {boxId:(page.match(/\/([^/]+)\.xml$/)||[])[1]||'',page,visitor:meta.visitor||'Away',home:meta.home||'Home',visitorLogo:meta.visitorLogo,homeLogo:meta.homeLogo,awayScore:sc.away,homeScore:sc.home,period:period(live.json),clock:String(live.json?.status?.clock||''),lastUpdated:String(live.json?.network?.lastUpdated||'')};}catch{return null;}
+    try{
+      const b=await getText(page);if(!b.ok)return null;const meta=metaFromHtml(b.text,page);if(!meta.event||!meta.hash)return null;
+      const candidate={boxId:(page.match(/\/([^/]+)\.xml$/)||[])[1]||'',page,visitor:meta.visitor||'Away',home:meta.home||'Home',visitorLogo:meta.visitorLogo,homeLogo:meta.homeLogo};
+      candidates.push(candidate);
+      LIVE_SOURCE_CACHE.set([date,String(meta.visitor).toLowerCase(),String(meta.home).toLowerCase()].join('|'),{t:Date.now(),v:candidate});
+      if(meta.final)return null;
+      const live=await fetchLive(meta,b.cookie);if(!live?.json||live.json.error||!isActuallyLive(meta,live.json))return null;const sc=lastScore(live.json);return {...candidate,awayScore:sc.away,homeScore:sc.home,period:period(live.json),clock:String(live.json?.status?.clock||''),lastUpdated:String(live.json?.network?.lastUpdated||'')};
+    }catch{return null;}
   }))).filter(Boolean);
-  send(res,200,{ok:true,date,count:games.length,games});
+  // Warm-instance fallback: if upstream schedule discovery flickers, keep returning the
+  // last proven source candidates instead of making clients forget a working page.
+  if(!candidates.length){for(const [k,o] of LIVE_SOURCE_CACHE){if(k.startsWith(date+'|')&&Date.now()-o.t<6*60*60*1000)candidates.push(o.v)}}
+  send(res,200,{ok:true,date,count:games.length,games,candidates:[...new Map(candidates.map(x=>[x.page,x])).values()]});
 };

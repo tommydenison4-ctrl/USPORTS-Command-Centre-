@@ -443,6 +443,33 @@ async function fetchLive(source,creds,cookie=''){
   return {status:r.status,ok:r.ok,json,body:body.slice(0,240),url:u.toString()};
 }
 
+
+const DISCOVERY_CACHE = globalThis.__USPORTS_DISCOVERY_CACHE || (globalThis.__USPORTS_DISCOVERY_CACHE=new Map());
+function normName(v=''){return String(v).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/saint/g,'st').replace(/[^a-z0-9]+/g,' ').trim();}
+function slugTokens(v=''){return normName(v).split(/\s+/).filter(Boolean);}
+function namesMatch(a,b){const A=slugTokens(a),B=slugTokens(b);if(!A.length||!B.length)return false;const sa=A.join(' '),sb=B.join(' ');if(sa===sb||sa.includes(sb)||sb.includes(sa))return true;const hit=A.filter(x=>B.includes(x)).length;return hit>=Math.min(2,Math.min(A.length,B.length));}
+async function getHtml(url){try{const r=await fetch(url,{redirect:'follow',headers:{...BASE_HEADERS,'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'}});return r.ok?await r.text():''}catch{return ''}}
+async function discoverSourcePage(date,awayName,homeName){
+  const ck=[date,normName(awayName),normName(homeName)].join('|'); const cached=DISCOVERY_CACHE.get(ck); if(cached&&Date.now()-cached.t<6*60*60*1000)return cached.v;
+  const urls=[
+    'https://smu.prestosports.com/sports/fball/2026-27/schedule','https://smu.prestosports.com/sports/fball/index',
+    'https://www.smuhuskies.ca/sports/fball/2026-27/schedule','https://smuhuskies.ca/sports/fball/2026-27/schedule',
+    'https://mountiepriderefresh2023.prestosports.com/sports/fball/2026-27/schedule','https://mountiepriderefresh2023.prestosports.com/sports/fball/index',
+    'https://www.atlanticuniversitysport.com/sports/fball/2026-27/schedule','https://atlanticuniversitysport.com/sports/fball/2026-27/schedule',
+    'https://aus.prestosports.com/sports/fball/2026-27/schedule','https://en.usports.ca/sports/fball/2026-27/schedule','https://oua.ca/sports/fball/2026-27/schedule'
+  ];
+  const pages=new Set();
+  const reAbs=new RegExp(`https?:\\/\\/[^\"'<>\\s]+\\/sports\\/fball\\/[^\"'<>\\s]+\\/boxscores\\/${date}_[A-Za-z0-9_-]+\\.xml`,'gi');
+  const reRel=new RegExp(`(?:href|data-url|data-link)=[\"']([^\"']*boxscores\\/${date}_[A-Za-z0-9_-]+\\.xml[^\"']*)[\"']`,'gi');
+  const docs=await Promise.all(urls.map(async u=>[u,htmlDecode(await getHtml(u))]));
+  for(const [u,html] of docs){if(!html)continue;const origin=new URL(u).origin;for(const m of html.matchAll(reAbs))pages.add(m[0]);for(const m of html.matchAll(reRel)){try{pages.add(new URL(m[1],origin).href)}catch{}}}
+  let fallback='';
+  for(const page of pages){
+    try{const html=htmlDecode(await getHtml(page));if(!html)continue;fallback ||= page;const vm=html.match(/conf\.visitor\s*=\s*[\"']([^\"']*)[\"']/i);const hm=html.match(/conf\.home\s*=\s*[\"']([^\"']*)[\"']/i);const v=vm?.[1]||'',h=hm?.[1]||'';if(namesMatch(v,awayName)&&namesMatch(h,homeName)){DISCOVERY_CACHE.set(ck,{t:Date.now(),v:page});return page}}catch{}
+  }
+  if(fallback){DISCOVERY_CACHE.set(ck,{t:Date.now(),v:fallback});return fallback}return '';
+}
+
 module.exports=async function handler(req,res){
   if(req.method==='OPTIONS') return send(res,200,{ok:true});
   if(req.method!=='GET') return send(res,405,{ok:false,error:'GET only'});
@@ -461,6 +488,12 @@ module.exports=async function handler(req,res){
       source={page:u.toString(),fallbackEvent:'',fallbackHash:'',awayId:String(req.query.awayId||'').toUpperCase(),homeId:String(req.query.homeId||'').toUpperCase()};
     }catch{return send(res,400,{ok:false,error:'Invalid source page'});}
   }
+  if(!source && String(req.query.discover||'')==='1'){
+    const date=String(req.query.date||requestedGame.match(/^(\d{4})-(\d{2})-(\d{2})/)?.slice(1).join('')||'').replace(/\D/g,'').slice(0,8);
+    const awayName=String(req.query.away||'').replace(/-/g,' '), homeName=String(req.query.home||'').replace(/-/g,' ');
+    const page=await discoverSourcePage(date,awayName,homeName);
+    if(page) source={page,fallbackEvent:'',fallbackHash:'',awayId:String(req.query.awayId||'').toUpperCase(),homeId:String(req.query.homeId||'').toUpperCase()};
+  }
   if(!source) return send(res,404,{ok:false,error:'No verified Presto source registered for this game',game:requestedGame});
   let boot={status:null,ok:false,cookie:'',found:null,sample:''}, attempts=[];
   try{ boot=await bootstrap(source); }catch(e){ boot.error=String(e?.message||e); }
@@ -473,7 +506,7 @@ module.exports=async function handler(req,res){
       const lr=await fetchLive(source,c,boot.cookie||'');
       attempts.push({kind:c.kind,status:lr.status,url:lr.url,body:lr.body});
       if(lr.ok&&isLivePayload(lr.json)){
-        return send(res,200,{ok:true,game,upstreamStatus:lr.status,cadenceSeconds:10,sourcePage:source.page,bootstrapStatus:boot.status,credentialMode:c.kind,data:normalize(lr.json,{...source,awayLogo:boot.visitorLogo||'',homeLogo:boot.homeLogo||''})});
+        return send(res,200,{ok:true,game,page:source.page,visitor:'',home:'',upstreamStatus:lr.status,cadenceSeconds:10,sourcePage:source.page,bootstrapStatus:boot.status,credentialMode:c.kind,data:normalize(lr.json,{...source,awayLogo:boot.visitorLogo||'',homeLogo:boot.homeLogo||''})});
       }
       if(lr.json?.error){ attempts[attempts.length-1].upstreamError=String(lr.json.error); }
     }catch(e){ attempts.push({kind:c.kind,status:null,error:String(e?.message||e)}); }

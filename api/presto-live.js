@@ -281,7 +281,35 @@ function scoreFallbackFromPlays(plays,source){
   return seenAny?{away,home}:{away:null,home:null};
 }
 function flattenDrives(data){ const out=[]; walk(data?.drives,(o)=>{ if(Array.isArray(o))return; const plays=num(o.plays??o.playCount??o.numplays),yards=num(o.yards??o.yds??o.netyards),team=text(o.team??o.teamId??o.team_id??o.id),result=text(o.result??o.end??o.summary??o.outcome),time=text(o.time??o.elapsed??o.top); if(plays!=null||yards!=null||result||time)out.push({team,plays,yards,result,time}); }); return out.slice(-24).reverse(); }
-function teamAndPlayerStats(data){ const teamStats=[],playerStats=[]; walk(data?.team,(o,path)=>{ if(Array.isArray(o))return; const id=text(o.id||o.teamId||o.team_id||o.code||o.abbr),name=text(o.name||o.player||o.fullname||o.full_name); const statKeys=Object.keys(o).filter(k=>/^(yds|yards|att|cmp|comp|td|int|rec|car|rush|pass|tkl|tack|sack|fg|xp|punt)/i.test(k)); if(!statKeys.length)return; const stats={}; statKeys.slice(0,24).forEach(k=>{if(['string','number'].includes(typeof o[k]))stats[k]=o[k]}); if(name&&!/^MAC$|^GUE$/i.test(name))playerStats.push({team:id,name,stats,path}); else if(id)teamStats.push({team:id,stats,path}); }); return {teamStats:teamStats.slice(0,30),playerStats:playerStats.slice(0,140)}; }
+function teamAndPlayerStats(data){
+  const teamStats=[], playerStats=[], seen=new Set();
+  const roots=Array.isArray(data?.team)?data.team:(data?.team&&typeof data.team==='object'?Object.values(data.team):[]);
+  const scalarStats=(o)=>{const stats={}; for(const [k,v] of Object.entries(o||{})){ if(!['string','number'].includes(typeof v)) continue; if(/(?:^|_)(?:yds?|yards?|att|attempts?|cmp|comp|completions?|td|touchdowns?|int|interceptions?|rec|receptions?|car|carries?|rush|pass|tkl|tackles?|sack|fg|xp|punt|avg|long)(?:$|_)/i.test(k) || /^(?:pass|rush|receiv|def|tack|sack|kick|punt)/i.test(k)) stats[k]=v; } return stats; };
+  const playerName=(o)=> text(o?.name||o?.player||o?.fullname||o?.full_name||o?.displayName||o?.display_name||o?.athlete||o?.playerName||o?.player_name||([o?.firstName||o?.first_name,o?.lastName||o?.last_name].filter(Boolean).join(' '))).trim();
+  const teamId=(o,fallback='')=>text(o?.id||o?.teamId||o?.team_id||o?.code||o?.abbr||o?.team||fallback).trim();
+  function scan(root,tid,path){
+    walk(root,(o,p)=>{
+      if(Array.isArray(o)||!o||typeof o!=='object') return;
+      const stats=scalarStats(o); if(!Object.keys(stats).length) return;
+      const nm=playerName(o), id=teamId(o,tid);
+      // player rows are often nested under category arrays and inherit the team id from their parent team object.
+      if(nm && nm.toUpperCase()!==id.toUpperCase() && !/^(TEAM|TOTALS?|OFFENSE|DEFENSE)$/i.test(nm)){
+        const key=id+'|'+nm+'|'+p; if(seen.has(key)) return; seen.add(key);
+        playerStats.push({team:id,name:nm,stats,path:`${path}${p.replace(/^\$/,'')}`});
+      } else if(id){
+        teamStats.push({team:id,stats,path:`${path}${p.replace(/^\$/,'')}`});
+      }
+    });
+  }
+  if(roots.length){
+    roots.forEach((r,i)=>scan(r,teamId(r),`$.team[${i}]`));
+  } else {
+    // Some Presto hosts expose the player tables outside data.team. Scan the payload as a fallback,
+    // and infer the team from explicit fields/path when available.
+    scan(data,'','$');
+  }
+  return {teamStats:teamStats.slice(0,60),playerStats:playerStats.slice(0,300)};
+}
 
 function scalarLeaves(root, prefix='', out=[], depth=0){
   if(depth>5 || root==null) return out;

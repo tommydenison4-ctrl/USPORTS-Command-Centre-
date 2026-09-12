@@ -5203,7 +5203,7 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
   if(typeof priorShellV90==='function'){
     window.shell=function(content,active='schedule'){
       convertAllV90();
-      return priorShellV90(content,active).replace(/V89 • Full Navigation \+ Team-Branded News/g,'V109 • Far-Sideline Chain Crew');
+      return priorShellV90(content,active).replace(/V89 • Full Navigation \+ Team-Branded News/g,'V111 • Completed Final Hydration');
     };
   }
 
@@ -5529,47 +5529,27 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
 </script>
 
 
-<script id="v110-final-score-hydration">
+<script id="v111-final-score-hydration">
 (()=>{
   const n=v=>{const x=Number(v);return Number.isFinite(x)?x:null};
   const ymd=d=>String(d||'').replaceAll('-','');
-  const getSaved=id=>{
-    const keys=[`v102:snap:${id}`,`v103:snap:${id}`,`v104:snap:${id}`,`v105:snap:${id}`,`v106:snap:${id}`,`v108:snap:${id}`];
-    for(const k of keys)try{const j=JSON.parse(localStorage.getItem(k)||sessionStorage.getItem(k)||'null');if(j)return j}catch{}
-    return null;
-  };
-  const scores=d=>{
-    if(!d)return null;
-    const a=n(d.awayScore??d.as??d.away?.score??d.score?.away??d.teams?.away?.score);
-    const h=n(d.homeScore??d.hs??d.home?.score??d.score?.home??d.teams?.home?.score);
-    return a!==null&&h!==null?{a,h}:null;
-  };
-  const apply=(g,d)=>{const z=scores(d);if(!z)return false;g.awayScore=z.a;g.homeScore=z.h;g.status='final';try{localStorage.setItem(`v110:final:${g.id}`,JSON.stringify({awayScore:z.a,homeScore:z.h,data:d,ts:Date.now()}))}catch{};return true};
+  const apply=(g,d)=>{if(!d)return false;const a=n(d.awayScore??d.as??d.away?.score??d.score?.away),hh=n(d.homeScore??d.hs??d.home?.score??d.score?.home);if(a===null||hh===null)return false;g.awayScore=a;g.homeScore=hh;g.status='final';if(d.teamStats||d.quarters||d.leaders){BOX[g.id]={...(BOX[g.id]||{}),...(d.quarters?{quarters:d.quarters}:{}),...(d.teamStats?.length?{teamstats:d.teamStats}:{}),...(d.leaders?{leaders:d.leaders}:{}),source:d.page||BOX[g.id]?.source||'',summary:'Final score and available statistics loaded from the official completed-game source.'}}try{localStorage.setItem(`v111:final:${g.id}`,JSON.stringify({awayScore:a,homeScore:hh,data:d,ts:Date.now()}))}catch{}return true};
+  const saved=g=>{for(const k of [`v111:final:${g.id}`,`v110:final:${g.id}`,`v108:snap:${g.id}`,`v106:snap:${g.id}`,`v105:snap:${g.id}`,`v104:snap:${g.id}`,`v103:snap:${g.id}`,`v102:snap:${g.id}`])try{const j=JSON.parse(localStorage.getItem(k)||sessionStorage.getItem(k)||'null');if(j&&(apply(g,j.data||j)))return true}catch{}return false};
   async function hydrateOne(g){
-    try{const j=JSON.parse(localStorage.getItem(`v110:final:${g.id}`)||'null');if(j&&apply(g,j))return true}catch{}
-    if(apply(g,getSaved(g.id)))return true;
-    try{
-      const u=`/api/presto-live?game=${encodeURIComponent(g.id)}&discover=1&date=${ymd(g.date)}&away=${encodeURIComponent(g.away)}&home=${encodeURIComponent(g.home)}&_=${Date.now()}`;
-      const r=await fetch(u,{cache:'no-store'}),j=await r.json();
-      if(j?.ok&&apply(g,j.data||j))return true;
-    }catch{}
-    try{
-      const r=await fetch(`/api/live-games?date=${ymd(g.date)}&_=${Date.now()}`,{cache:'no-store'}),j=await r.json();
-      if(j?.ok){const norm=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');const a=norm(g.away),h=norm(g.home);const x=(j.games||[]).find(x=>{const av=norm(x.visitor||x.away||x.awayTeam),hm=norm(x.home||x.homeTeam);return (av.includes(a)||a.includes(av))&&(hm.includes(h)||h.includes(hm))});if(x&&apply(g,x))return true}
-    }catch{}
+    if(saved(g))return true;
+    const away=TEAM[g.away]?.short||TEAM[g.away]?.name||g.away,home=TEAM[g.home]?.short||TEAM[g.home]?.name||g.home,date=ymd(g.date);
+    // Completed-game endpoint is authoritative for yesterday/final games. It scans the
+    // national/conference Presto pages and returns the final snapshot even though live-games excludes finals.
+    try{const r=await fetch(`/api/final-games?date=${date}&away=${encodeURIComponent(away)}&home=${encodeURIComponent(home)}&detail=1&_=${Date.now()}`,{cache:'no-store'}),j=await r.json();const x=j?.games?.[0];if(j?.ok&&x&&apply(g,x))return true}catch{}
+    // Last-resort direct source rediscovery. This can recover a final page retained by the live API.
+    try{const r=await fetch(`/api/presto-live?game=${encodeURIComponent(g.id)}&discover=1&date=${date}&away=${encodeURIComponent(g.away)}&home=${encodeURIComponent(g.home)}&_=${Date.now()}`,{cache:'no-store'}),j=await r.json();if(j?.ok&&apply(g,j.data||j))return true}catch{}
     return false;
   }
-  async function hydrate(){
-    const blanks=(GAMES||[]).filter(g=>g.status==='final'&&(n(g.awayScore)===null||n(g.homeScore)===null));
-    if(!blanks.length)return;
-    const changed=(await Promise.all(blanks.map(hydrateOne))).some(Boolean);
-    if(changed&&(!location.hash||location.hash==='#'))renderHome();
-  }
-  const oldRender=window.renderHome;
-  window.renderHome=function(){const r=oldRender.apply(this,arguments);setTimeout(hydrate,0);return r};
-  // Restore any final scores learned on a previous visit before the first schedule paint.
-  for(const g of (GAMES||[]))try{const j=JSON.parse(localStorage.getItem(`v110:final:${g.id}`)||'null');if(j)apply(g,j)}catch{}
-  setTimeout(hydrate,50);
+  let busy=false;
+  async function hydrate(){if(busy)return;busy=true;try{const blanks=(GAMES||[]).filter(g=>g.status==='final'&&(n(g.awayScore)===null||n(g.homeScore)===null));if(!blanks.length)return;let changed=false;for(const g of blanks)changed=(await hydrateOne(g))||changed;if(changed&&(!location.hash||location.hash==='#'))renderHome()}finally{busy=false}}
+  for(const g of (GAMES||[]))saved(g);
+  const oldRender=window.renderHome;window.renderHome=function(){const r=oldRender.apply(this,arguments);setTimeout(hydrate,0);return r};
+  setTimeout(hydrate,50);setTimeout(hydrate,2500);
 })();
 </script>
 

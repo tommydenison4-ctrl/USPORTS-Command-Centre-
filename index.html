@@ -5203,7 +5203,7 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
   if(typeof priorShellV90==='function'){
     window.shell=function(content,active='schedule'){
       convertAllV90();
-      return priorShellV90(content,active).replace(/V89 • Full Navigation \+ Team-Branded News/g,'V108 • Far-Sideline Chain Crew');
+      return priorShellV90(content,active).replace(/V89 • Full Navigation \+ Team-Branded News/g,'V109 • Far-Sideline Chain Crew');
     };
   }
 
@@ -5237,13 +5237,13 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
 .v107-posball{display:none;flex:0 0 auto;width:18px;height:11px;border-radius:58% 42% 58% 42%;background:#9b5d31;box-shadow:inset -3px -2px 0 rgba(0,0,0,.22),0 0 0 1px rgba(255,255,255,.16);transform:rotate(-18deg);position:relative;margin:0 2px}
 .v107-posball:after{content:"";position:absolute;left:5px;top:4px;width:8px;height:1px;background:#fff;opacity:.8;box-shadow:2px -2px 0 -0.4px #fff,4px -1px 0 -0.4px #fff}
 .v107-posball.on{display:inline-block}
-/* V108: chain crew lives on the FAR sideline, standing just outside the turf. */
-.v107-chain{position:absolute;top:27%;bottom:auto;z-index:35;width:34px;height:92px;transform:translateX(-50%);pointer-events:none;transition:left .45s ease;filter:drop-shadow(0 6px 5px rgba(0,0,0,.45))}
-.v107-chain .pole{position:absolute;left:50%;bottom:0;width:5px;height:77px;background:#ff7a00;border-radius:4px;transform:translateX(-50%);box-shadow:0 0 0 1px rgba(0,0,0,.24)}
-.v107-chain .ring{position:absolute;left:50%;top:0;width:19px;height:19px;border:5px solid #ff7a00;border-radius:50%;background:#111;transform:translateX(-50%)}
-.v107-chain.los .downbox{position:absolute;left:50%;top:18px;transform:translateX(-50%);min-width:30px;height:31px;padding:0 4px;border-radius:4px;background:#111;border:3px solid #ff7a00;color:#fff;display:grid;place-items:center;font-size:16px;font-weight:1000;line-height:1}
-.v107-chain.first .ring.bottom{top:auto;bottom:0}
-@media(max-width:760px){.v107-chain{top:25%;height:70px;width:30px}.v107-chain .pole{height:58px}.v107-chain .ring{width:17px;height:17px;border-width:4px}.v107-chain.los .downbox{top:15px;min-width:25px;height:25px;font-size:13px}.v107-posball{width:16px;height:10px}}
+/* V109: single down marker floats above the midpoint between LOS and line-to-gain. */
+.v107-chain{position:absolute;top:24%;z-index:35;width:58px;height:46px;transform:translateX(-50%);pointer-events:none;transition:left .35s ease;filter:drop-shadow(0 6px 5px rgba(0,0,0,.45))}
+.v107-chain .pole,.v107-chain .ring{display:none!important}
+.v107-chain.los .downbox{position:absolute;inset:0;border-radius:9px;background:#111;border:4px solid #ff7a00;color:#fff;display:grid;place-items:center;font-size:22px;font-weight:1000;line-height:1;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.v107-chain.los .downbox:after{content:"DOWN";position:absolute;top:100%;margin-top:4px;font-size:8px;letter-spacing:.12em;color:#ffb15a;font-weight:900}
+.v107-chain.first{display:none!important}
+@media(max-width:760px){.v107-chain{top:22%;width:50px;height:40px}.v107-chain.los .downbox{font-size:19px;border-width:3px}.v107-chain.los .downbox:after{font-size:7px}.v107-posball{width:16px;height:10px}}
 </style>
 <script id="v102-single-live-controller">
 (()=>{
@@ -5383,8 +5383,8 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
     }
     const vp=document.querySelector('.v102-field .field3DViewport.v9');
     if(vp){
-      if(!document.getElementById('v107-chain-los'))vp.insertAdjacentHTML('beforeend','<div class="v107-chain los" id="v107-chain-los"><span class="ring"></span><span class="pole"></span><span class="downbox" id="v107-downbox">1</span></div>');
-      if(!document.getElementById('v107-chain-first'))vp.insertAdjacentHTML('beforeend','<div class="v107-chain first" id="v107-chain-first"><span class="ring"></span><span class="pole"></span><span class="ring bottom"></span></div>');
+      if(!document.getElementById('v107-chain-los'))vp.insertAdjacentHTML('beforeend','<div class="v107-chain los" id="v107-chain-los"><span class="downbox" id="v107-downbox">1</span></div>');
+      const oldFirst=document.getElementById('v107-chain-first');if(oldFirst)oldFirst.remove();
     }
   }
   function patchField(){
@@ -5411,12 +5411,22 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
     const bx=pct(coord),ball=document.getElementById('fieldBallV9'),los=document.getElementById('losLineV9'),first=document.getElementById('firstLineV9');
     if(ball){ball.style.display='block';ball.style.left=bx+'%'}
     if(los){los.style.display='block';los.style.left=bx+'%'}
-    const losStick=document.getElementById('v107-chain-los'),firstStick=document.getElementById('v107-chain-first'),downBox=document.getElementById('v107-downbox');
-    if(losStick){losStick.style.display='block';losStick.style.left=bx+'%'}
+    const losStick=document.getElementById('v107-chain-los'),downBox=document.getElementById('v107-downbox');
     const dn=Number(x.down);if(downBox)downBox.textContent=Number.isFinite(dn)&&dn>0?String(dn):'•';
     let dir=0;if(poss===g.away)dir=1;else if(poss===g.home)dir=-1;
     const dist=Number(x.distance);
-    if(first){if(dir&&Number.isFinite(dist)&&dist>0){const fp=pct(coord+dir*dist);first.style.display='block';first.style.left=fp+'%';if(firstStick){firstStick.style.display='block';firstStick.style.left=fp+'%'}}else{first.style.display='none';if(firstStick)firstStick.style.display='none'}}
+    let fpct=null;
+    if(first){
+      if(dir&&Number.isFinite(dist)&&dist>0){fpct=pct(coord+dir*dist);first.style.display='block';first.style.left=fpct+'%'}
+      else first.style.display='none';
+    }
+    if(losStick){
+      // Keep the marker visually centered between the blue LOS and yellow line-to-gain.
+      // If the line-to-gain is unavailable, hover directly above the LOS instead.
+      const markerX=fpct==null?bx:(bx+fpct)/2;
+      losStick.style.display='block';
+      losStick.style.left=markerX+'%';
+    }
   }
   // V106: never programmatically move the viewport during live polling.
   // Browser scroll anchoring is allowed to do its native job; polling only patches data nodes.
@@ -5480,7 +5490,7 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
       }catch{}
       const el=document.getElementById('v102-national-rail');
       if(el){const fresh=rail(L.selected),box=document.createElement('div');box.innerHTML=fresh;const next=box.firstElementChild;if(next&&el.innerHTML!==next.innerHTML)el.innerHTML=next.innerHTML}
-    }catch(e){console.warn('V108 national rail',e)}
+    }catch(e){console.warn('V109 national rail',e)}
   }
   async function tick(){if(L.inflight||!L.selected||document.visibilityState==='hidden')return;L.inflight=true;try{const d=await fetchSnap();if(d){if(!L.rendered||!document.querySelector('.v102-live'))render();else patch()}else{if(now()-L.lastDiscover>8000)discover(true);/* keep the last good snapshot on screen */}pollNational()}finally{L.inflight=false}}
   function startTimer(){clearInterval(L.timer);L.timer=setInterval(tick,4000)}

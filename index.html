@@ -5203,7 +5203,7 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
   if(typeof priorShellV90==='function'){
     window.shell=function(content,active='schedule'){
       convertAllV90();
-      return priorShellV90(content,active).replace(/V89 • Full Navigation \+ Team-Branded News/g,'V107 • Chain Crew + Possession');
+      return priorShellV90(content,active).replace(/V89 • Full Navigation \+ Team-Branded News/g,'V108 • Far-Sideline Chain Crew');
     };
   }
 
@@ -5237,12 +5237,13 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
 .v107-posball{display:none;flex:0 0 auto;width:18px;height:11px;border-radius:58% 42% 58% 42%;background:#9b5d31;box-shadow:inset -3px -2px 0 rgba(0,0,0,.22),0 0 0 1px rgba(255,255,255,.16);transform:rotate(-18deg);position:relative;margin:0 2px}
 .v107-posball:after{content:"";position:absolute;left:5px;top:4px;width:8px;height:1px;background:#fff;opacity:.8;box-shadow:2px -2px 0 -0.4px #fff,4px -1px 0 -0.4px #fff}
 .v107-posball.on{display:inline-block}
-.v107-chain{position:absolute;bottom:9%;z-index:30;width:34px;height:70px;transform:translateX(-50%);pointer-events:none;transition:left .45s ease;filter:drop-shadow(0 5px 4px rgba(0,0,0,.38))}
-.v107-chain .pole{position:absolute;left:50%;bottom:0;width:5px;height:58px;background:#ff7a00;border-radius:4px;transform:translateX(-50%);box-shadow:0 0 0 1px rgba(0,0,0,.18)}
+/* V108: chain crew lives on the FAR sideline, standing just outside the turf. */
+.v107-chain{position:absolute;top:27%;bottom:auto;z-index:35;width:34px;height:92px;transform:translateX(-50%);pointer-events:none;transition:left .45s ease;filter:drop-shadow(0 6px 5px rgba(0,0,0,.45))}
+.v107-chain .pole{position:absolute;left:50%;bottom:0;width:5px;height:77px;background:#ff7a00;border-radius:4px;transform:translateX(-50%);box-shadow:0 0 0 1px rgba(0,0,0,.24)}
 .v107-chain .ring{position:absolute;left:50%;top:0;width:19px;height:19px;border:5px solid #ff7a00;border-radius:50%;background:#111;transform:translateX(-50%)}
-.v107-chain.los .downbox{position:absolute;left:50%;top:17px;transform:translateX(-50%);min-width:28px;height:28px;padding:0 3px;border-radius:4px;background:#111;border:3px solid #ff7a00;color:#fff;display:grid;place-items:center;font-size:15px;font-weight:1000;line-height:1}
+.v107-chain.los .downbox{position:absolute;left:50%;top:18px;transform:translateX(-50%);min-width:30px;height:31px;padding:0 4px;border-radius:4px;background:#111;border:3px solid #ff7a00;color:#fff;display:grid;place-items:center;font-size:16px;font-weight:1000;line-height:1}
 .v107-chain.first .ring.bottom{top:auto;bottom:0}
-@media(max-width:760px){.v107-chain{height:56px;width:30px;bottom:8%}.v107-chain .pole{height:46px}.v107-chain .ring{width:17px;height:17px;border-width:4px}.v107-chain.los .downbox{top:14px;min-width:24px;height:24px;font-size:13px}.v107-posball{width:16px;height:10px}}
+@media(max-width:760px){.v107-chain{top:25%;height:70px;width:30px}.v107-chain .pole{height:58px}.v107-chain .ring{width:17px;height:17px;border-width:4px}.v107-chain.los .downbox{top:15px;min-width:25px;height:25px;font-size:13px}.v107-posball{width:16px;height:10px}}
 </style>
 <script id="v102-single-live-controller">
 (()=>{
@@ -5435,20 +5436,51 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
     patchText('v102-winner',(pr>=.5?team(g.away):team(g.home)).name||'');patchField();
     // No scrollBy / scrollTo / automatic viewport correction here. Ever.
   }
+  async function fetchNationalGame(g){
+    if(!g||g.status==='final')return null;
+    if(g.id===L.selected&&L.snap){setLiveState(g.id,L.snap);return L.snap}
+    const ids=sourceIds(g),key=sourceKey(g.id),cached=readSession(key);
+    const tryPage=async(page)=>{
+      if(!page)return null;
+      try{
+        const u=`/api/presto-live?game=${encodeURIComponent(g.id)}&page=${encodeURIComponent(page)}&awayId=${encodeURIComponent(ids.awayId)}&homeId=${encodeURIComponent(ids.homeId)}&_=${now()}`;
+        const r=await fetch(u,{cache:'no-store'}),j=await r.json();
+        if(j?.ok){if(j.page)saveSession(key,{page:j.page});setLiveState(g.id,j.data||{});return j.data||{}}
+      }catch{}
+      return null;
+    };
+    let d=await tryPage(cached?.page);
+    if(d)return d;
+    try{
+      const u=`/api/presto-live?game=${encodeURIComponent(g.id)}&discover=1&date=${ymd(g.date||today())}&away=${encodeURIComponent(g.away)}&home=${encodeURIComponent(g.home)}&awayId=${encodeURIComponent(ids.awayId)}&homeId=${encodeURIComponent(ids.homeId)}&_=${now()}`;
+      const r=await fetch(u,{cache:'no-store'}),j=await r.json();
+      if(j?.ok){if(j.page)saveSession(key,{page:j.page});setLiveState(g.id,j.data||{});return j.data||{}}
+    }catch{}
+    return null;
+  }
   async function pollNational(force=false){
     if(!L.selected||document.visibilityState==='hidden')return;
-    if(!force&&now()-(L.lastNational||0)<9000)return; L.lastNational=now();
+    if(!force&&now()-(L.lastNational||0)<5000)return; L.lastNational=now();
     const gsel=game(L.selected),date=gsel?.date||today();
+    const todays=(GAMES||[]).filter(g=>g.date===date&&g.status!=='final');
     try{
-      const r=await fetch(`/api/live-games?date=${ymd(date)}&_=${now()}`,{cache:'no-store'}); const j=await r.json();
-      if(!j?.ok)return;
-      for(const x of (j.games||[])){
-        const g=matchSource(x,date); if(!g)continue;
-        const st=LIVE_STORE.games[g.id]||(LIVE_STORE.games[g.id]={id:g.id,away:g.away,home:g.home});
-        st._realLive=true;st.as=Number(x.awayScore??st.as??0);st.hs=Number(x.homeScore??st.hs??0);st.q=x.period||st.q||'LIVE';st.clock=x.clock||st.clock||'';
-      }
-      const el=document.getElementById('v102-national-rail'); if(el){const fresh=rail(L.selected);const box=document.createElement('div');box.innerHTML=fresh;const next=box.firstElementChild;if(next&&el.innerHTML!==next.innerHTML)el.innerHTML=next.innerHTML}
-    }catch(e){console.warn('V106 national rail',e)}
+      // Primary national path: probe each scheduled game through the same official
+      // live endpoint used by the selected GameCenter. This prevents the rail from
+      // depending on one aggregate discovery response or stale kickoff cards.
+      await Promise.allSettled(todays.map(fetchNationalGame));
+      // Secondary path: merge anything the aggregate scanner has discovered too.
+      try{
+        const r=await fetch(`/api/live-games?date=${ymd(date)}&_=${now()}`,{cache:'no-store'}),j=await r.json();
+        if(j?.ok)for(const x of (j.games||[])){
+          const g=matchSource(x,date); if(!g)continue;
+          const st=LIVE_STORE.games[g.id]||(LIVE_STORE.games[g.id]={id:g.id,away:g.away,home:g.home});
+          st._realLive=true;st.as=Number(x.awayScore??st.as??0);st.hs=Number(x.homeScore??st.hs??0);st.q=x.period||st.q||'LIVE';st.clock=x.clock||st.clock||'';
+          if(x.page)saveSession(sourceKey(g.id),{page:x.page});
+        }
+      }catch{}
+      const el=document.getElementById('v102-national-rail');
+      if(el){const fresh=rail(L.selected),box=document.createElement('div');box.innerHTML=fresh;const next=box.firstElementChild;if(next&&el.innerHTML!==next.innerHTML)el.innerHTML=next.innerHTML}
+    }catch(e){console.warn('V108 national rail',e)}
   }
   async function tick(){if(L.inflight||!L.selected||document.visibilityState==='hidden')return;L.inflight=true;try{const d=await fetchSnap();if(d){if(!L.rendered||!document.querySelector('.v102-live'))render();else patch()}else{if(now()-L.lastDiscover>8000)discover(true);/* keep the last good snapshot on screen */}pollNational()}finally{L.inflight=false}}
   function startTimer(){clearInterval(L.timer);L.timer=setInterval(tick,4000)}

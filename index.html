@@ -5203,7 +5203,7 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
   if(typeof priorShellV90==='function'){
     window.shell=function(content,active='schedule'){
       convertAllV90();
-      return priorShellV90(content,active).replace(/V89 • Full Navigation \+ Team-Branded News/g,'V106 • Smooth Live GameCenter');
+      return priorShellV90(content,active).replace(/V89 • Full Navigation \+ Team-Branded News/g,'V107 • Chain Crew + Possession');
     };
   }
 
@@ -5232,6 +5232,17 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
 .v102-pbp{display:none}.v102-pbp.open{display:block}.v102-play{display:grid;grid-template-columns:68px 1fr;gap:11px;padding:11px 0;border-top:1px solid #1e3041}.v102-play:first-child{border-top:0}.v102-playtime{font-weight:900;color:#95a5b8}.v102-playtext{line-height:1.45}.v102-action{width:100%;border:1px solid #2b4155;background:#101d29;color:#fff;border-radius:14px;padding:14px;font-weight:900;cursor:pointer}
 .v102-connect{border:1px solid #29455a;background:#0a1a26;border-radius:14px;padding:12px 14px;color:#b6cada;font-size:12px;margin:12px 0}
 @media(max-width:760px){.v102-live{padding:10px 11px 50px}.v102-predict{grid-template-columns:1fr 1fr;gap:9px}.v102-prob{grid-column:1/-1;grid-row:1}.v102-team{grid-row:2}.v102-team img{width:49px;height:49px;border-radius:12px}.v102-team h2{font-size:15px}.v102-team small{font-size:9px}.v102-score{grid-template-columns:1fr 112px 1fr;padding:13px 9px}.v102-score-side{font-size:13px;gap:5px}.v102-score-side img{width:38px;height:38px}.v102-num{font-size:40px}.v102-status{font-size:12px}.v102-sit{font-size:12px}.v102-grid2,.v102-playergrid{grid-template-columns:1fr}.v102-statrow{grid-template-columns:38px 1fr 86px 1fr 38px}.v102-card{padding:13px}.v102-field .field3DViewport.v9{margin-top:-5px;margin-bottom:-15px}.v102-field .canadianFieldPlane.v9{transform:rotateX(55deg)}.v102-crumb{font-size:10px}.v102-tabs button{padding:8px 12px;font-size:11px}}
+
+/* V107 possession + chain crew */
+.v107-posball{display:none;flex:0 0 auto;width:18px;height:11px;border-radius:58% 42% 58% 42%;background:#9b5d31;box-shadow:inset -3px -2px 0 rgba(0,0,0,.22),0 0 0 1px rgba(255,255,255,.16);transform:rotate(-18deg);position:relative;margin:0 2px}
+.v107-posball:after{content:"";position:absolute;left:5px;top:4px;width:8px;height:1px;background:#fff;opacity:.8;box-shadow:2px -2px 0 -0.4px #fff,4px -1px 0 -0.4px #fff}
+.v107-posball.on{display:inline-block}
+.v107-chain{position:absolute;bottom:9%;z-index:30;width:34px;height:70px;transform:translateX(-50%);pointer-events:none;transition:left .45s ease;filter:drop-shadow(0 5px 4px rgba(0,0,0,.38))}
+.v107-chain .pole{position:absolute;left:50%;bottom:0;width:5px;height:58px;background:#ff7a00;border-radius:4px;transform:translateX(-50%);box-shadow:0 0 0 1px rgba(0,0,0,.18)}
+.v107-chain .ring{position:absolute;left:50%;top:0;width:19px;height:19px;border:5px solid #ff7a00;border-radius:50%;background:#111;transform:translateX(-50%)}
+.v107-chain.los .downbox{position:absolute;left:50%;top:17px;transform:translateX(-50%);min-width:28px;height:28px;padding:0 3px;border-radius:4px;background:#111;border:3px solid #ff7a00;color:#fff;display:grid;place-items:center;font-size:15px;font-weight:1000;line-height:1}
+.v107-chain.first .ring.bottom{top:auto;bottom:0}
+@media(max-width:760px){.v107-chain{height:56px;width:30px;bottom:8%}.v107-chain .pole{height:46px}.v107-chain .ring{width:17px;height:17px;border-width:4px}.v107-chain.los .downbox{top:14px;min-width:24px;height:24px;font-size:13px}.v107-posball{width:16px;height:10px}}
 </style>
 <script id="v102-single-live-controller">
 (()=>{
@@ -5363,13 +5374,29 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
   function content(id,d){const g=game(id),a=team(g.away),h=team(g.home),st=LIVE_STORE?.games?.[id]||{},p=prob(g,d),ap=Math.round(p*100),hp=100-ap,w=p>=.5?a:h,as=d?.game?.awayScore??st.as??0,hs=d?.game?.homeScore??st.hs??0,q=d?.status?.period||st.q||'LIVE',clock=d?.status?.clock||st.clock||'',poss=possSlug(g,d),spot=String(d?.situation?.spot||st.spot||'').replace(/\s+/g,'').toUpperCase();return `<div class="v102-live" style="--away:${a.primary||'#b58b2a'};--home:${h.primary||'#ca173f'}">${rail(id)}<div class="v102-crumb"><span>Live › <b>${esc2(a.short||a.name||g.away)} at ${esc2(h.short||h.name||g.home)}</b></span><span>${esc2(g.conference||'')} · ${esc2(g.date||'')}</span></div><section class="v102-predict"><div class="v102-team">${img(a)}<div><h2>${esc2(a.name||g.away)}</h2><small>${esc2(a.record||'')}</small></div></div><div class="v102-prob"><div class="v102-prob-title">Win Probability</div><div class="v102-prob-row"><strong id="v102-ap">${ap}%</strong><div class="v102-probbar"><i id="v102-ab" style="width:${ap}%;background:${a.primary||'#c49a31'}"></i><i id="v102-hb" style="width:${hp}%;background:${h.primary||'#cd1740'}"></i></div><strong id="v102-hp">${hp}%</strong></div><div class="v102-winner">Projected Winner<b id="v102-winner">${esc2(w.name||'')}</b></div></div><div class="v102-team home"><div><h2>${esc2(h.name||g.home)}</h2><small>${esc2(h.record||'')}</small></div>${img(h)}</div></section><section class="v102-score"><div class="v102-score-side">${img(a)}<span>${esc2(a.abbr||'')}</span><span class="v102-num" id="v102-as">${as}</span></div><div class="v102-score-center"><div class="v102-status" id="v102-status">${esc2([q,clock].filter(Boolean).join(' • '))}</div><div class="v102-sit" id="v102-sit">${esc2([downText(d),spot].filter(Boolean).join(' · '))}</div><div class="v102-pos" id="v102-pos">${poss?esc2((team(poss).abbr||poss)+' ball'):''}</div></div><div class="v102-score-side home"><span class="v102-num" id="v102-hs">${hs}</span><span>${esc2(h.abbr||'')}</span>${img(h)}</div></section><div class="v102-tabs"><button class="active" onclick="V102_LIVE.view('overview',this)">Overview</button><button onclick="V102_LIVE.view('box',this)">Box Score</button><button onclick="V102_LIVE.scroll('v102-teamstats')">Team Stats</button><button onclick="V102_LIVE.scroll('v102-playergrid')">Player Stats</button><button onclick="V102_LIVE.view('box',this)">Drives</button><button onclick="V102_LIVE.togglePbp()">Play-by-Play</button></div><div id="v102-overview"><div class="v102-grid2"><section class="v102-card"><h3>Last Play</h3><div class="v102-last" id="v102-last">${esc2(d?.plays?.[0]?.description||'Waiting for the next official play.')}</div><div class="v102-sub" id="v102-lasttime">${esc2([d?.plays?.[0]?.q,d?.plays?.[0]?.clock].filter(Boolean).join(' • '))}</div></section><section class="v102-card"><h3>Current Drive</h3><div id="v102-drive">${drive(d)}</div></section></div>${field(g)}<section class="v102-card"><h3>Team Stats</h3><div id="v102-teamstats">${statRows(d,g)}</div></section><div class="v102-playergrid" id="v102-playergrid">${pcard('away',d,g)}${pcard('home',d,g)}</div><button class="v102-action" onclick="V102_LIVE.view('box')">▣ View Full Box Score ›</button><section class="v102-card"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><div><h3 style="margin-bottom:3px">Play-by-Play</h3><div class="v102-sub">Show full play-by-play feed</div></div><button class="v102-action" style="width:auto;margin:0;padding:10px 14px" onclick="V102_LIVE.togglePbp()">Show Play-by-Play</button></div><div class="v102-pbp" id="v102-pbp">${plays(d)}</div></section></div><div id="v102-box" style="display:none"><section class="v102-card"><h3>Full Team Box Score</h3><div id="v102-boxstats">${statRows(d,g)}</div></section><div class="v102-playergrid">${pcard('away',d,g)}${pcard('home',d,g)}</div><section class="v102-card"><h3>Drives</h3><div id="v102-drives">${(d?.drives||[]).map(x=>`<div class="v102-play"><div class="v102-playtime">${esc2(x.team||'')}</div><div class="v102-playtext">${esc2(x.plays??'—')} plays • ${esc2(x.yards??'—')} yards ${x.time?`• ${esc2(x.time)}`:''} ${x.result?`• ${esc2(x.result)}`:''}</div></div>`).join('')||'<div class="v102-empty">No drive rows yet.</div>'}</div></section></div></div>`}
   function render(){if(!L.selected)return;const g=game(L.selected);if(!g)return;const d=L.snap||readSession(snapKey(L.selected))||{game:{awayScore:LIVE_STORE?.games?.[L.selected]?.as||0,homeScore:LIVE_STORE?.games?.[L.selected]?.hs||0},status:{period:LIVE_STORE?.games?.[L.selected]?.q||'LIVE',clock:LIVE_STORE?.games?.[L.selected]?.clock||''},situation:{},plays:[],drives:[],statComparison:[],playerStats:[]};L.snap=d;document.getElementById('app').innerHTML=shell(content(L.selected,d),'live');L.rendered=true;patchField()}
   function patchText(id,v){const e=document.getElementById(id);if(e)e.textContent=v??''}
+  function ensureV107Extras(){
+    const scoreSides=document.querySelectorAll('.v102-score-side');
+    if(scoreSides.length>=2){
+      if(!document.getElementById('v107-pos-away')){const b=document.createElement('span');b.id='v107-pos-away';b.className='v107-posball';b.setAttribute('aria-label','possession');const score=scoreSides[0].querySelector('.v102-num');scoreSides[0].insertBefore(b,score||null)}
+      if(!document.getElementById('v107-pos-home')){const b=document.createElement('span');b.id='v107-pos-home';b.className='v107-posball';b.setAttribute('aria-label','possession');const score=scoreSides[1].querySelector('.v102-num');scoreSides[1].insertBefore(b,score||scoreSides[1].firstChild)}
+    }
+    const vp=document.querySelector('.v102-field .field3DViewport.v9');
+    if(vp){
+      if(!document.getElementById('v107-chain-los'))vp.insertAdjacentHTML('beforeend','<div class="v107-chain los" id="v107-chain-los"><span class="ring"></span><span class="pole"></span><span class="downbox" id="v107-downbox">1</span></div>');
+      if(!document.getElementById('v107-chain-first'))vp.insertAdjacentHTML('beforeend','<div class="v107-chain first" id="v107-chain-first"><span class="ring"></span><span class="pole"></span><span class="ring bottom"></span></div>');
+    }
+  }
   function patchField(){
     if(!L.snap||!L.selected)return;
+    ensureV107Extras();
     const g=game(L.selected),x=L.snap.situation||{},gm=L.snap.game||{};
     const spot=String(x.spot||L.snap?.plays?.[0]?.spot||'').toUpperCase().replace(/\s+/g,'').replace(/-/g,'');
     patchText('v102-fieldstate',[downText(L.snap),spot].filter(Boolean).join(' • '));
     const hud=document.getElementById('fieldHudV9');
     const poss=possSlug(g,L.snap);
+    const pab=document.getElementById('v107-pos-away'),phb=document.getElementById('v107-pos-home');
+    if(pab)pab.classList.toggle('on',poss===g.away);
+    if(phb)phb.classList.toggle('on',poss===g.home);
     if(hud)hud.textContent=[poss?(team(poss).abbr||poss).toUpperCase()+' BALL':'',downText(L.snap),spot].filter(Boolean).join(' • ')||'LIVE';
     const m=spot.match(/^([A-Z]{2,8})(\d{1,3})$/); if(!m)return;
     const code=m[1],yd=Math.max(0,Math.min(55,Number(m[2]))); if(!Number.isFinite(yd))return;
@@ -5383,9 +5410,12 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
     const bx=pct(coord),ball=document.getElementById('fieldBallV9'),los=document.getElementById('losLineV9'),first=document.getElementById('firstLineV9');
     if(ball){ball.style.display='block';ball.style.left=bx+'%'}
     if(los){los.style.display='block';los.style.left=bx+'%'}
+    const losStick=document.getElementById('v107-chain-los'),firstStick=document.getElementById('v107-chain-first'),downBox=document.getElementById('v107-downbox');
+    if(losStick){losStick.style.display='block';losStick.style.left=bx+'%'}
+    const dn=Number(x.down);if(downBox)downBox.textContent=Number.isFinite(dn)&&dn>0?String(dn):'•';
     let dir=0;if(poss===g.away)dir=1;else if(poss===g.home)dir=-1;
     const dist=Number(x.distance);
-    if(first){if(dir&&Number.isFinite(dist)&&dist>0){first.style.display='block';first.style.left=pct(coord+dir*dist)+'%'}else first.style.display='none'}
+    if(first){if(dir&&Number.isFinite(dist)&&dist>0){const fp=pct(coord+dir*dist);first.style.display='block';first.style.left=fp+'%';if(firstStick){firstStick.style.display='block';firstStick.style.left=fp+'%'}}else{first.style.display='none';if(firstStick)firstStick.style.display='none'}}
   }
   // V106: never programmatically move the viewport during live polling.
   // Browser scroll anchoring is allowed to do its native job; polling only patches data nodes.

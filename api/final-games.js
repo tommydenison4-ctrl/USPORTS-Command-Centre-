@@ -10,7 +10,17 @@ function cookieHeader(r){try{if(typeof r.headers.getSetCookie==='function'){cons
 async function getText(url){const r=await fetch(url,{redirect:'follow',headers:{...HEADERS,'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'}});return {status:r.status,ok:r.ok,text:await r.text(),cookie:cookieHeader(r),url:r.url||url};}
 function metaFromHtml(html,page){html=dec(html||'');return {page,event:one(html,/conf\.eventId\s*=\s*['"]([^'"]+)['"]/i),hash:one(html,/conf\.eventIdHashCode\s*=\s*['"]([^'"]+)['"]/i),visitor:one(html,/conf\.visitor\s*=\s*['"]([^'"]*)['"]/i),home:one(html,/conf\.home\s*=\s*['"]([^'"]*)['"]/i),final:boolVal(one(html,/conf\.statusFinal\s*=\s*['"]?([^;'"\n]+)['"]?/i).trim()),visitorLogo:one(html,/conf\.visitorTeamLogo\s*=\s*['"]([^'"]*)['"]/i),homeLogo:one(html,/conf\.homeTeamLogo\s*=\s*['"]([^'"]*)['"]/i)};}
 async function fetchLive(meta,cookie=''){if(!meta.event||!meta.hash)return null;const origin=new URL(meta.page).origin,u=new URL('/action/sports/liveupdate',origin);u.searchParams.set('e',meta.event);u.searchParams.set('h',meta.hash);const headers={...HEADERS,'Accept':'application/json,text/plain,*/*','X-Requested-With':'XMLHttpRequest','Referer':meta.page,'Origin':origin};if(cookie)headers.Cookie=cookie;const r=await fetch(u,{headers,redirect:'follow'});const body=await r.text();let j=null;try{j=JSON.parse(body)}catch{}return {status:r.status,json:j};}
-async function scanSchedule(scheduleUrl,date){const s=await getText(scheduleUrl);if(!s.ok)return [];const origin=new URL(scheduleUrl).origin;const re=new RegExp(`(?:https?:\\/\\/[^"'<>\\s]+)?\\/sports\\/fball\\/2026-27\\/boxscores\\/${date}_[A-Za-z0-9]+\\.xml`,'gi');const set=new Set();for(const m of s.text.matchAll(re)){let u=m[0];if(u.startsWith('/'))u=origin+u;set.add(u);}return [...set];}
+async function scanSchedule(scheduleUrl,date){
+ const s=await getText(scheduleUrl);if(!s.ok)return [];
+ const origin=new URL(scheduleUrl).origin,html=dec(s.text||''),set=new Set();
+ const patterns=[
+  new RegExp(`https?:\\/\\/[^"'<>\\s]+\\/sports\\/fball\\/[^"'<>\\s]+\\/boxscores\\/${date}_[A-Za-z0-9_-]+\\.xml`,'gi'),
+  new RegExp(`\\/sports\\/fball\\/[^"'<>\\s]+\\/boxscores\\/${date}_[A-Za-z0-9_-]+\\.xml`,'gi'),
+  new RegExp(`(?:href|data-url|data-link)=["']([^"']*boxscores\\/${date}_[A-Za-z0-9_-]+\\.xml[^"']*)["']`,'gi')
+ ];
+ for(const re of patterns)for(const m of html.matchAll(re)){let u=(m[1]||m[0]||'').replace(/^(?:href|data-url|data-link)=["']?/i,'').replace(/["']$/,'');try{u=new URL(u,origin).href}catch{continue}set.add(u)}
+ return [...set];
+}
 function score(j){const rows=Array.isArray(j?.scores?.score)?j.scores.score:[];for(let i=rows.length-1;i>=0;i--){const a=Number(rows[i]?.vscore),h=Number(rows[i]?.hscore);if(Number.isFinite(a)&&Number.isFinite(h))return {away:a,home:h};}return {away:null,home:null};}
 function quarters(j){const rows=Array.isArray(j?.scores?.score)?j.scores.score:[];const away=[0,0,0,0],home=[0,0,0,0];let pv=0,ph=0,seen=false;for(const r of rows){const q=Number(Array.isArray(r.qtr)?r.qtr[0]:r.qtr);const v=Number(r.vscore),h=Number(r.hscore);if(!(q>=1&&q<=4)||!Number.isFinite(v)||!Number.isFinite(h))continue;away[q-1]+=Math.max(0,v-pv);home[q-1]+=Math.max(0,h-ph);pv=v;ph=h;seen=true;}return seen?{away,home}:null;}
 function norm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/university|universite|ravens|warriors|marauders|gryphons|golden hawks|lancers|mustangs|lions|gaels|gee gees|gee-gees/g,'').replace(/[^a-z0-9]/g,'');}
@@ -83,7 +93,16 @@ module.exports=async function handler(req,res){
  const away=String(req.query.away||''),home=String(req.query.home||''),detail=String(req.query.detail||'')==='1';
  const direct=sidearmFallback(date,away,home,detail);
  if(direct)return send(res,200,{ok:true,date,count:1,games:[direct],mode:'verified-completed-registry'});
- const scheduleUrls=['https://en.usports.ca/sports/fball/2026-27/schedule','https://oua.ca/sports/fball/2026-27/schedule'];
+ const scheduleUrls=[
+  'https://en.usports.ca/sports/fball/2026-27/schedule',
+  'https://en.usports.ca/sports/fball/composite',
+  'https://oua.ca/sports/fball/2026-27/schedule',
+  'https://www.atlanticuniversitysport.com/sports/fball/2026-27/schedule',
+  'https://atlanticuniversitysport.com/sports/fball/2026-27/schedule',
+  'https://aus.prestosports.com/sports/fball/2026-27/schedule',
+  'https://smu.prestosports.com/sports/fball/2026-27/schedule',
+  'https://mountiepriderefresh2023.prestosports.com/sports/fball/2026-27/schedule'
+ ];
  let pages=[];for(const u of scheduleUrls){try{pages.push(...await scanSchedule(u,date));}catch{}}pages=[...new Set(pages)].slice(0,30);
  const games=[];
  for(const page of pages){try{const b=await getText(page);if(!b.ok)continue;const meta=metaFromHtml(b.text,page);if(!meta.event||!meta.hash||!matches(meta,away,home))continue;const live=await fetchLive(meta,b.cookie);const j=live?.json;if(!j||j.error)continue;const sc=score(j);games.push({page,boxId:(page.match(/\/([^/]+)\.xml$/)||[])[1]||'',visitor:meta.visitor,home:meta.home,visitorLogo:meta.visitorLogo,homeLogo:meta.homeLogo,final:meta.final||String(j?.status?.complete||'').toUpperCase()==='Y',awayScore:sc.away,homeScore:sc.home,...(detail?{quarters:quarters(j),teamStats:compactStats(j),plays:plays(j),drives:drives(j),lastUpdated:String(j?.network?.lastUpdated||'')}:{})});if(detail&&away&&home)break;}catch{}}

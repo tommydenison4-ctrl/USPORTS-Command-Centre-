@@ -1,0 +1,5 @@
+
+# Local Advantage ingestion cache
+scripts/advantage/feed-cache/
+scripts/advantage/*-history.json
+scripts/advantage/__pycache__/

@@ -136,7 +136,7 @@ def ingest_usports():
     for row in sources.values():
         if row.get('adapter')!='sidearm':continue
         root=row['url'].split('/sports/')[0]
-        for year in range(int(ASOF[:4])-2,int(ASOF[:4])+1):
+        for year in [2026]:
             suffix=f'{year}-{year+1}' if 'gogaelsgo' in root else f'{year}-{str(year+1)[-2:]}' if any(t in root for t in ['uwaterloo','mcgill','gaiters']) else str(year)
             urls.append(root+'/sports/football/schedule/'+suffix)
     def links(u):

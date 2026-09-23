@@ -3,3 +3,6 @@
 scripts/advantage/feed-cache/
 scripts/advantage/*-history.json
 scripts/advantage/__pycache__/
+
+scripts/advantage/*-model.json
+scripts/advantage/*-holdout.json

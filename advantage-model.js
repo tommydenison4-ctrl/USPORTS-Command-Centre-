@@ -23,8 +23,9 @@
  function project(data,game){
   if(!data||!game)return {available:false,reason:'Model data is not loaded.'};
   if(game.league&&game.league!==data.league)return {available:false,reason:'League does not match the model.'};
+  if(data.league==='USPORTS'&&(data.dataPolicy?.season!==2026||data.dataPolicy?.trainingSeason!==2026||!data.model))return {available:false,reason:data.modelStatus||'Only 2026 data is permitted. Verified 2026-only model inputs are not ready.'};
   const date=String(game.date||'').slice(0,10);
-  const frozen=data.frozen?.[String(game.id||'')];if(frozen&&frozen.date===date&&frozen.league===data.league)return frozen;
+  const frozen=data.frozen?.[String(game.id||'')];if(frozen&&frozen.date===date&&frozen.league===data.league&&(data.league!=='USPORTS'||frozen.modelVersion?.includes('2026')))return frozen;
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return {available:false,reason:'A verified game date is required.'};
   if(date<data.asOf)return {available:false,reason:'No frozen pregame prediction was saved for this past game.'};
   const a=team(data,game.away),h=team(data,game.home);
@@ -37,7 +38,7 @@
   const hp=.6*components.football+.35*components.power+.05*components.form;
   const margin=calculate(m.margin,f.margin),rawTotal=calculate(m.total,f.total);if(!finite(margin)||!finite(rawTotal))return {available:false,reason:'Incomplete score model inputs.'};const total=Math.max(0,rawTotal);
   const hs=Math.max(0,(total+margin)/2),as=Math.max(0,(total-margin)/2),age=Math.max(...[a,h].map(p=>(Date.parse(date)-Date.parse(p.lastGame))/86400000));
-  return {available:true,league:data.league,gameId:String(game.id||''),date,asOf:data.asOf,modelVersion:data.modelVersion,awayName:a.name,homeName:h.name,away_score:as,home_score:hs,home_win_prob:hp,away_win_prob:1-hp,margin:hs-as,total:hs+as,marginInterval:[margin-m.marginInterval80,margin+m.marginInterval80],expected:f.expected,components,confidence:age>120?'Prior-season data':data.league==='USPORTS'?'Limited validation sample':'Historical-feed model',source:'Advantage Winner Model V3',sources:[...new Set([...a.sources,...h.sources])],profileDates:{away:a.lastGame,home:h.lastGame},powerGap:f.power[0],ageDays:age,report:m.report};
+  return {available:true,league:data.league,gameId:String(game.id||''),date,asOf:data.asOf,modelVersion:data.modelVersion,awayName:a.name,homeName:h.name,away_score:as,home_score:hs,home_win_prob:hp,away_win_prob:1-hp,margin:hs-as,total:hs+as,marginInterval:finite(m.marginInterval80)?[margin-m.marginInterval80,margin+m.marginInterval80]:null,expected:f.expected,components,confidence:m.provisional?'Provisional · 2026 only · '+m.trainingGames+' training games':age>120?'Prior-season data':data.league==='USPORTS'?'Limited validation sample':'Historical-feed model',source:'Advantage Winner Model V3',sources:[...new Set([...a.sources,...h.sources])],profileDates:{away:a.lastGame,home:h.lastGame},powerGap:f.power[0],ageDays:age,report:m.report};
  }
  function scenario(data,p,side,target,turnoverDiff=0){
   if(!p?.available||!data.model.scenario||!['away','home'].includes(side))return null;
@@ -87,6 +88,7 @@
   const home=p.home_win_prob>=.5,winner=home?p.homeName:p.awayName,prob=Math.max(p.home_win_prob,p.away_win_prob);
   let html=`<section class="awm-card"><small>ADVANTAGE WINNER MODEL · PREGAME</small><b>${esc(winner)} <span>${(prob*100).toFixed(1)}%</span></b><p>${esc(p.awayName)} ${p.away_score.toFixed(1)} – ${p.home_score.toFixed(1)} ${esc(p.homeName)}</p><div class="awm-bar"><i style="width:${p.away_win_prob*100}%"></i></div><p>Expected total ${p.total.toFixed(1)} · ${esc(p.confidence)} · Data through ${esc(p.asOf)}</p>`;
   if(detail){
+   if(data?.model?.provisional)html+='<p>Early-season estimate fitted only to 2026 games. The sample is small; win probabilities are not yet calibrated. No prior-season data is used.</p>';
    html+=`<div class="awm-metrics"><div><small>HOME MARGIN</small><b>${p.margin>=0?'+':''}${p.margin.toFixed(1)}</b></div><div><small>80% ERROR BAND</small><b>${p.marginInterval?p.marginInterval.map(x=>x.toFixed(1)).join(' to '):'Not supplied'}</b></div></div>`;
    if(p.expected)html+=`<table><thead><tr><th>Expected matchup</th><th>${esc(p.awayName)}</th><th>${esc(p.homeName)}</th></tr></thead><tbody>${[['tempo','Eligible plays'],['explosives','Explosive plays'],['median','Median yards'],['neg','Negative play rate']].map(([k,label])=>`<tr><td>${label}</td>${['away','home'].map(side=>`<td>${finite(p.expected[side]?.[k])?(p.expected[side][k]*(k==='neg'?100:1)).toFixed(1)+(k==='neg'?'%':''):'—'}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
    if(p.requirements)html+='<details><summary>What we need to win · workbook targets</summary><p>Conditional explosive-play targets at even turnovers, copied from the original workbook. These are estimates, not guarantees.</p><table><thead><tr><th>Team</th><th>50%</th><th>60%</th><th>70%</th><th>80%</th><th>50% with +1 TO</th></tr></thead><tbody>'+['away','home'].map(side=>{const r=p.requirements[side];return `<tr><td>${esc(side==='away'?p.awayName:p.homeName)}</td>${r.targets.map(n=>`<td>${n}</td>`).join('')}<td>${r.plusOneTurnover50}</td></tr>`;}).join('')+'</tbody></table>'+['away','home'].map(side=>{const r=p.requirements[side];return `<p>${esc(side==='away'?p.awayName:p.homeName)}: median ${r.median.toFixed(1)} yards; negative-play ceiling ${(r.negativeCeiling*100).toFixed(1)}%; impact target ${r.impact}.</p>`;}).join('')+'</details>';

@@ -3,7 +3,7 @@ window.US_AWM=(()=>{
  const forecast=g=>A.project(data,{...g,league:'USPORTS'});
  function panel(g,d){
   const p=forecast(g),st=typeof LIVE_STORE!=='undefined'?LIVE_STORE.games?.[g.id]:null;
-  let html=A.card(p,true,data);
+  let html=A.card(p,true,data)+(window.US_PlayerLeaders?.card(window.US_PLAYER_DATA,g)||'');
   if(st?._realLive){
    const q=Number(String(d?.status?.period||st.q||'').match(/[1-4]/)?.[0]);
    const t=String(d?.status?.clock||st.clock||'').match(/^(\d+):(\d\d)$/);

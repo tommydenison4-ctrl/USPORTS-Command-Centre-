@@ -28,6 +28,11 @@ def build():
             row['yards']+=yards;row['touchdowns']+=td;row['interceptions']+=interceptions;row['games'].add(source)
             p['sources'].add(source);p['dates'].add(date);games.add(source);teams.add(str(team['id']))
         if league=='USPORTS':
+            import train
+            h=Path(os.environ.get('AWM_HISTORY_DIR',str(BASE)))/'usports-history.json'
+            verified=train.clean(json.loads(h.read_text())['history'],'USPORTS')
+            result={'season':2026,'asOf':ASOF,'games':[dict(date=g['date'][:10],away=g['away']['id'],home=g['home']['id'],awayScore=g['away']['score'],homeScore=g['home']['score'],source=g['source']) for g in verified if g.get('complete') and g['date'].startswith('2026-')]}
+            (ROOT/'data/verified-results-usports.json').write_text(json.dumps(result,allow_nan=False))
             source=json.loads((ROOT/'data/player-leaders-usports.json').read_text())
             for g in source['games']:
                 if not '2026-08-01'<=g['date']<ASOF:continue
@@ -55,15 +60,24 @@ def build():
                             except (KeyError,ValueError,TypeError):continue
                             a=r['athlete'];add(team,a['displayName'],a['id'],date,src,name,y,td,ints)
         rows=[]
+        stat_rows=[]
         for p in players.values():
             n=len(p['dates'])
-            if n<2:continue
+
             score=0
             for cat,v in p['stats'].items():
                 score+=v['yards']/(25 if cat=='passing' else 10)+v['touchdowns']*(4 if cat=='passing' else 6)-v['interceptions']*2
                 v['games']=len(v['games'])
             p.update(games=n,score=round(score/n,2),sources=sorted(p['sources']),firstGame=min(p['dates']),lastGame=max(p['dates']));del p['dates']
-            rows.append(p)
+            stat_rows.append(p)
+            if n>=2:rows.append(p)
+        leaders={}
+        for category in ['passing','rushing','receiving']:
+            eligible_rows=[p for p in stat_rows if category in p['stats']]
+            eligible_rows.sort(key=lambda p:(-p['stats'][category]['yards'],p['name']))
+            leaders[category]=[dict(name=p['name'],team=p['team'],teamId=p['teamId'],games=p['stats'][category]['games'],yards=p['stats'][category]['yards'],touchdowns=p['stats'][category]['touchdowns'],lastGame=p['lastGame'],sources=p['sources'][-2:]) for p in eligible_rows[:50]]
+        stats={'season':2026,'asOf':ASOF,'coveredGames':len(games),'coveredTeams':len(teams),'categories':leaders}
+        (ROOT/('data/player-stats-'+league.lower()+'.json')).write_text(json.dumps(stats,allow_nan=False))
         rows.sort(key=lambda p:(-p['score'],p['name']))
         bundle[league]={'season':2026,'asOf':ASOF,'players':rows[:10],'coveredGames':len(games),'coveredTeams':len(teams),'eligibleTeamIds':eligible,'eligibilitySource':eligibility_source,'method':'Offensive production per recorded appearance: passing yards / 25 + rushing and receiving yards / 10 + passing TD × 4 + rushing and receiving TD × 6 − interceptions × 2. At least two recorded game appearances. Not an award-voting model; defense and special teams are not scored. Missing box scores may change the order.'}
     (ROOT/'data/season-watch.json').write_text(json.dumps(bundle,allow_nan=False))

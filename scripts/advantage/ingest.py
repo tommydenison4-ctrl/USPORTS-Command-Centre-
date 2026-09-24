@@ -1,3 +1,4 @@
+import os
 import argparse, concurrent.futures as cf, datetime as dt, hashlib, json, re, time,subprocess
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
@@ -5,14 +6,14 @@ from urllib.request import Request,urlopen
 from bs4 import BeautifulSoup
 
 BASE=Path(__file__).resolve().parent
-CACHE=BASE/'feed-cache'; CACHE.mkdir(exist_ok=True)
+CACHE=Path(os.environ.get('AWM_CACHE_DIR',str(BASE/'feed-cache'))); CACHE.mkdir(exist_ok=True)
 import os,datetime
 ASOF=os.environ.get('AWM_ASOF',datetime.datetime.now(datetime.timezone.utc).date().isoformat())
 errors=[]
 def fetch(url):
     path=CACHE/(hashlib.sha256(url.encode()).hexdigest()+'.txt')
-    if path.exists() and ('/summary?' in url or '/boxscore/' in url or time.time()-path.stat().st_mtime<21600):return path.read_text()
-    text=subprocess.check_output(['curl','--fail','--location','--silent','--show-error','--max-time','25',url],stderr=subprocess.DEVNULL).decode('utf-8',errors='replace')
+    if path.exists() and ('/summary?' in url or '/boxscore/' in url or time.time()-path.stat().st_mtime<1800):return path.read_text()
+    text=subprocess.check_output(['curl','--fail','--location','--silent','--show-error','--max-time','25','--user-agent','Mozilla/5.0',url],stderr=subprocess.DEVNULL).decode('utf-8',errors='replace')
     path.write_text(text);return text
 def batch(fn, items):
     out=[]

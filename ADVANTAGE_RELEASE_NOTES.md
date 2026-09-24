@@ -16,3 +16,6 @@ Early Super Bowl, NCAA FBS and Vanier Cup picks rank covered teams by average ne
 
 ## Official standings and news refresh
 All 27 teams use 2026 official OUA, Canada West, AUS and RSEQ standings. The open page checks standings and football headlines every 60 seconds; CDN caching and publisher delays can add latency. Source failures retain clearly labeled last verified records. News uses dated 2026 stories and links to school originals. Standalone HTML uses the public deployed feed endpoints.
+
+## Dedicated football tabs and current data (September 24)
+Award and championship watches now have named top navigation tabs and no longer sit on schedules. Players use sourced 2026 box-score totals; U SPORTS Top 10 scrapes the official poll, and team/conference pages use current official records. NFL/NCAA News reads ESPN football articles. Automatic data jobs run every two hours; standings/news poll each minute. Missing sources retain last verified data and are labeled. Highlights preserve local uploads; an automatic verified game-highlight feed is not available.

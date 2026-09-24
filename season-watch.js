@@ -25,13 +25,31 @@
  root.SeasonWatch={contenders,render};
  if(!root.document)return;
  const style=document.createElement('style');style.textContent='.season-watch{background:#101925;border:1px solid #293b50;border-radius:16px;padding:22px;margin:16px 0;color:#eaf0f7;font-family:inherit}.season-heading{display:flex;justify-content:space-between;gap:16px;align-items:center}.season-heading small,.season-pick small{color:#f5c542;font-weight:800;letter-spacing:.08em}.season-watch h2{font-size:24px;margin:7px 0}.season-watch h3{font-size:21px;margin:0 0 9px}.season-watch h4{font-size:16px;margin:4px 0}.season-watch p{font-size:14px;line-height:1.55;margin:8px 0}.season-watch a{color:#79c8ff}.season-watch summary{cursor:pointer;color:#9bceee;font-size:13px;margin:12px 0}.season-heading>span,.season-watch .season-note{color:#a3b4c8;font-size:12px}.season-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:24px}.season-person{display:flex;gap:12px;border-top:1px solid #ffffff16;padding:14px 0}.season-rank{font-size:21px;font-weight:900;color:#f5c542;width:26px;flex-shrink:0}.season-pick{padding:20px;background:#162f2c;border-left:4px solid #61ddb0;border-radius:9px;margin:14px 0}.season-watch li{margin:10px 0}.awm-win-team{border-top:1px solid #ffffff22;margin-top:16px;padding-top:10px}.awm-win-guide li{line-height:1.6;margin:10px 0}.awm-win-guide h3{font-size:20px}.awm-win-guide h4{font-size:17px}@media(max-width:760px){.season-grid{grid-template-columns:1fr}.season-heading{align-items:flex-start;flex-direction:column}.season-watch{padding:16px}}';document.head.appendChild(style);
- function mount(){
-  for(const [league,selector] of [['NFL','#nflSlate'],['NCAA','#collegeSlate'],['USPORTS','#app .hero']]){
-   const host=document.querySelector(selector);if(!host||document.getElementById('season-watch-'+league))continue;
-   const html=render(league);if(!html)continue;
-   if(league==='USPORTS')host.insertAdjacentHTML('afterend',html);else {const games=host.querySelector(league==='NFL'?'#nflDays':'#collegeDays');if(games)games.insertAdjacentHTML('beforebegin',html);else host.insertAdjacentHTML('beforeend',html);}
-  }
+ const isUS=!!root.AWM_DATA?.USPORTS;
+ const tabs=isUS?[['USPORTS','award','Hec Crighton Watch'],['USPORTS','title','Vanier Cup Watch']]:[['NFL','award','NFL MVP Watch'],['NCAA','award','Heisman Watch'],['NFL','title','Super Bowl Watch'],['NCAA','title','NCAA Championship Watch']];
+ let selected=null;
+ style.textContent+='.watch-navigation{display:contents}.nav{min-width:0;max-width:100%;overflow-x:auto}.nav>button{flex-shrink:0}.topbar{max-width:100%;min-width:0}.topbar .nav{flex:1}.mainnav{min-width:0}body{overflow-x:hidden}.watch-navigation button{white-space:nowrap;background:transparent;color:inherit;border:0;padding:10px;font:inherit;cursor:pointer}.watch-navigation button[aria-current="page"]{color:#f5c542;border-bottom:2px solid #f5c542}#watch-page{position:fixed;left:0;right:0;bottom:0;z-index:29;background:#0b1119;overflow:auto;padding:20px}#watch-page>.season-watch{max-width:1080px;margin:0 auto}body .mainnav{overflow-x:auto;align-items:center;gap:12px}body .topbar-inner{min-width:0}body .mainnav>span{white-space:nowrap}@media(max-width:900px){body .mainnav{display:flex!important;width:100%;overflow-x:auto}.topbar-inner{flex-wrap:wrap}.topbar{height:auto!important;min-height:56px}.mainnav{padding:8px 0}}';
+ function close(){selected=null;document.getElementById('watch-page')?.remove();document.querySelectorAll('[data-watch]').forEach(b=>b.removeAttribute('aria-current'));if(location.hash.startsWith('#watch='))history.replaceState(null,'',location.pathname+location.search);}
+ function show(league,kind){
+  selected=[league,kind];document.querySelectorAll('.nav button.active,.mainnav span.active').forEach(b=>b.classList.remove('active'));const html=render(league);const wrapper=document.createElement('div');wrapper.innerHTML=html;
+  const content=wrapper.querySelectorAll('.season-grid>section')[kind==='award'?0:1];content?.querySelector('h3')?.remove();
+  let page=document.getElementById('watch-page');if(!page){page=document.createElement('main');page.id='watch-page';document.body.append(page)}
+  const title=tabs.find(t=>t[0]===league&&t[1]===kind)?.[2]||'Season watch';
+  page.innerHTML='<section class="season-watch"><small>2026 FOOTBALL · Updated '+esc(root.SEASON_WATCH?.[league]?.asOf||'unavailable')+'</small><h1>'+esc(title)+'</h1>'+(content?.outerHTML||'<p>Verified data is temporarily unavailable.</p>')+'</section>';
+  page.style.top=Math.max(56,document.querySelector('.topbar')?.getBoundingClientRect().bottom||56)+'px';
+  document.querySelectorAll('[data-watch]').forEach(b=>{if(b.dataset.watch===league+':'+kind)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
  }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
- new MutationObserver(mount).observe(document.body,{childList:true,subtree:true});
+ function mount(){
+  const nav=document.querySelector(isUS?'#app .nav':'.mainnav');if(!nav)return;
+  if(!nav.querySelector('[data-watch]')){const group=document.createElement('span');group.className='watch-navigation';group.innerHTML=tabs.map(([l,k,n])=>'<button type="button" data-watch="'+l+':'+k+'">'+esc(n)+'</button>').join('');if(isUS){const schedule=[...nav.children].find(b=>b.textContent.trim()==='Schedule');if(schedule)schedule.after(group);else nav.append(group)}else nav.append(group)}
+  // The schedule stays focused on games; watches live only in their named tabs.
+  document.querySelectorAll('[id^="season-watch-"]').forEach(e=>e.remove());
+ }
+ document.addEventListener('click',e=>{const b=e.target.closest('[data-watch]');if(b){e.preventDefault();e.stopImmediatePropagation();const [l,k]=b.dataset.watch.split(':');history.pushState(null,'','#watch='+l+':'+k);show(l,k);return}if(e.target.closest('.nav button,.mainnav [data-jump],.mobile-header-switch button'))close();},true);
+ function routeWatch(){const m=location.hash.match(/^#watch=(NFL|NCAA|USPORTS):(award|title)$/);if(m){mount();show(m[1],m[2]);return true}if(selected)close();return false}
+ if(isUS&&typeof root.route==='function'){const old=root.route;root.route=function(){if(!routeWatch())return old.apply(this,arguments)}}
+ window.addEventListener('popstate',routeWatch);window.addEventListener('hashchange',routeWatch);
+ window.addEventListener('resize',()=>{if(selected)show(...selected)});
+ root.SeasonWatch.open=show;root.SeasonWatch.refresh=()=>{if(selected)show(...selected)};
+ mount();routeWatch();new MutationObserver(mount).observe(document.body,{childList:true,subtree:true});
 })(typeof globalThis!=='undefined'?globalThis:this);

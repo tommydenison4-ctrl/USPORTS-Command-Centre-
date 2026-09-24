@@ -12,6 +12,23 @@
     },
     "api/standings.js": {
       "maxDuration": 30
+    },
+    "api/rankings.js": {
+      "maxDuration": 30
+    },
+    "api/podcasts.js": {
+      "maxDuration": 30
     }
-  }
+  },
+  "headers": [
+    {
+      "source": "/data/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ]
 }

@@ -17,7 +17,8 @@ async function feed(channelId){
  return blocks.slice(0,18).map(b=>({id:entry(b,'yt:videoId'),title:entry(b,'title'),published:(entry(b,'published')||'').slice(0,10),channel:text(author),description:entry(b,'media:description')})).filter(x=>x.id);
 }
 module.exports=async function handler(req,res){
+ res.setHeader('Access-Control-Allow-Origin','*');
  res.setHeader('Cache-Control','s-maxage=300, stale-while-revalidate=1800');
- try{const handle=String(req.query?.channel||HANDLE_DEFAULT);const channelId=await getChannelId(handle);const episodes=await feed(channelId);return res.status(200).json({ok:true,channelId,handle,episodes,featured:FEATURED});}
- catch(e){return res.status(200).json({ok:false,error:String(e.message||e),episodes:[{id:FEATURED,title:'The 55 Podcast — @atthe55podcast',published:'Featured episode',channel:'@atthe55podcast',description:'The 55 Podcast from the official @atthe55podcast YouTube channel.'}]});}
+ try{const handle=String(req.query?.channel||HANDLE_DEFAULT);const channelId=await getChannelId(handle);const episodes=(await feed(channelId)).filter(e=>e.published.startsWith('2026-')&&e.published<=new Date().toISOString().slice(0,10));return res.status(200).json({ok:true,season:2026,checkedAt:new Date().toISOString(),channelId,handle,episodes});}
+ catch(e){return res.status(200).json({ok:false,error:String(e.message||e),episodes:[]});}
 }

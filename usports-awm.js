@@ -17,6 +17,6 @@ window.US_AWM=(()=>{
 
 // Load the season panels after the existing page has initialized.
 (function(){
- async function panels(){if(window.AWM_BUNDLED)return;for(const file of ['season-watch-data.js', 'season-watch.js', 'standings-data.js', 'news-data.js', 'usports-realtime.js', 'player-stats-usports-data.js', 'rankings-data.js', 'football-tabs.js']){try{await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=file+'?v=20260924tabs';script.onload=resolve;script.onerror=reject;document.head.append(script)})}catch(error){console.warn('Season panel unavailable:',file);break}}}
+ async function panels(){if(window.AWM_BUNDLED)return;for(const file of ['season-watch-data.js', 'season-watch.js', 'standings-data.js', 'news-data.js', 'usports-realtime.js', 'player-stats-usports-data.js', 'rankings-data.js', 'football-tabs.js']){try{await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=file+'?v=20260924edges2';script.onload=resolve;script.onerror=reject;document.head.append(script)})}catch(error){console.warn('Season panel unavailable:',file);break}}}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',panels,{once:true});else panels();
 })();

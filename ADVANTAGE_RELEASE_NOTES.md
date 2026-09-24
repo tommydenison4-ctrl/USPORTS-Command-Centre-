@@ -19,3 +19,7 @@ All 27 teams use 2026 official OUA, Canada West, AUS and RSEQ standings. The ope
 
 ## Dedicated football tabs and current data (September 24)
 Award and championship watches now have named top navigation tabs and no longer sit on schedules. Players use sourced 2026 box-score totals; U SPORTS Top 10 scrapes the official poll, and team/conference pages use current official records. NFL/NCAA News reads ESPN football articles. Automatic data jobs run every two hours; standings/news poll each minute. Missing sources retain last verified data and are labeled. Highlights preserve local uploads; an automatic verified game-highlight feed is not available.
+
+
+September 24 navigation fit update: wrapping desktop tabs and a collapsible phone menu replace horizontal scrolling.
+2026-only data policy unchanged.

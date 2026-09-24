@@ -24,7 +24,9 @@ def build():
                         if len(cells)<=yi:continue
                         name=cells[0].get_text(' ',strip=True); val=cells[yi].get_text(strip=True)
                         if name.lower() in ['team','totals','total'] or not re.fullmatch(r'-?\d+',val):continue
-                        rows.append({'name':name,'yards':int(val)})
+                        tdi=headers.index('td') if 'td' in headers else None
+                        td=cells[tdi].get_text(strip=True) if tdi is not None and len(cells)>tdi else ''
+                        rows.append({'name':name,'yards':int(val),'touchdowns':int(td) if td.isdigit() else None,'interceptions':int(cells[headers.index('int')].get_text(strip=True)) if category=='passing' and 'int' in headers and cells[headers.index('int')].get_text(strip=True).isdigit() else None})
                     totals=t.select('tfoot tr td')
                     if len(totals)<=yi or not re.fullmatch(r'-?\d+',totals[yi].get_text(strip=True)):continue
                     if sum(r['yards'] for r in rows)!=int(totals[yi].get_text(strip=True)):continue

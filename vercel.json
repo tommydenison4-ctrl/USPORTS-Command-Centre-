@@ -1,6 +1,17 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/", "destination": "/index.html" }
-  ]
+    {
+      "source": "/",
+      "destination": "/index.html"
+    }
+  ],
+  "functions": {
+    "api/news.js": {
+      "maxDuration": 60
+    },
+    "api/standings.js": {
+      "maxDuration": 30
+    }
+  }
 }

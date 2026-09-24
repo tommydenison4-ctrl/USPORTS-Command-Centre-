@@ -1,0 +1,37 @@
+(function(root){
+ 'use strict';
+ const names={NFL:['NFL MVP Watch','Super Bowl'],NCAA:['Heisman Watch','NCAA (FBS) Championship'],USPORTS:['Hec Crighton Watch','Vanier Cup']};
+ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function contenders(league,d,watch){
+  if(!d?.model||!watch)return [];
+  if(league==='USPORTS'&&(d.dataPolicy?.season!==2026||d.dataPolicy?.trainingSeason!==2026))return [];
+  const eligible=watch.eligibleTeamIds&&new Set(watch.eligibleTeamIds),A=root.AdvantageModel;
+  const pool=Object.values(d.profiles||{}).filter(p=>(!eligible||eligible.has(String(p.id)))&&(league!=='USPORTS'||p.lastGame?.startsWith('2026-')));
+  return pool.map(p=>{
+   const probabilities=pool.filter(o=>o.id!==p.id).map(o=>{const m=d.model,prob=(a,h)=>{const f=A.features(a,h,true);return .6*A.calculate(m.football,f.football)+.35*A.calculate(m.power,f.power)+.05*A.calculate(m.form,f.form)};return (prob(o,p)+1-prob(p,o))/2}).filter(Number.isFinite);
+   return {...p,rating:probabilities.length?probabilities.reduce((a,b)=>a+b,0)/probabilities.length:null,pool:pool.length};
+  }).filter(p=>p.rating!==null).sort((a,b)=>b.rating-a.rating||a.name.localeCompare(b.name));
+ }
+ function sourceLinks(sources){return [...new Set(sources||[])].filter(u=>/^https:\/\//.test(u)).map((u,i)=>'<a href="'+esc(u)+'" target="_blank" rel="noopener">Box score '+(i+1)+'</a>').join(' · ')}
+ function player(p,i){
+  const stats=Object.entries(p.stats).map(([cat,s])=>Math.round(s.yards)+' '+cat+' yards · '+s.touchdowns+' touchdowns'+(cat==='passing'?' · '+s.interceptions+' interceptions':''));
+  return '<article class="season-person"><span class="season-rank">'+(i+1)+'</span><div><h4>'+esc(p.name)+'</h4><p>'+esc(p.team)+' · '+p.games+' recorded games</p><p>'+stats.map(esc).join('<br>')+'</p><details><summary>Why they’re on the watch</summary><p>Ranks '+(i+1)+' by our offensive production guide among the players covered. Production score: '+p.score.toFixed(1)+' per recorded game. Latest appearance: '+esc(p.lastGame)+'.</p>'+sourceLinks(p.sources)+'</details></div></article>';
+ }
+ function render(league){
+  const w=root.SEASON_WATCH?.[league],d=root.AWM_DATA?.[league];if(!w||!d)return '';
+  const ranked=contenders(league,d,w),pick=ranked[0],total=league==='USPORTS'?27:league==='NFL'?32:w.eligibleTeamIds?.length;
+  return '<section class="season-watch" id="season-watch-'+league+'"><div class="season-heading"><div><small>2026 SEASON OUTLOOK</small><h2>Awards & championship picks</h2></div><span>Updated '+esc(w.asOf)+'</span></div><p><b>'+names[league][0]+':</b> '+esc(w.players[0]?.name||'Awaiting data')+' · <b>'+names[league][1]+' pick:</b> '+esc(pick?.name||'Awaiting data')+'</p><p class="season-note">Early model picks · '+ranked.length+' of '+total+' teams ranked. '+(league==='USPORTS'?'2026 only; incomplete national coverage.':'Award watches use 2026 production.')+'</p><details><summary>Open the watch list, contenders and explanations</summary><div class="season-grid"><section><h3>'+names[league][0]+'</h3><p>Who to watch based on this season’s offensive production.</p><p class="season-note">'+w.coveredTeams+' teams · '+w.coveredGames+' box scores covered. Watch list, not official finalists or voting odds.</p>'+(w.players.length?w.players.slice(0,5).map(player).join(''):'<p>Not enough 2026 player data yet.</p>')+'<details><summary>Full watch list & how it works</summary>'+w.players.slice(5).map((p,i)=>player(p,i+5)).join('')+'<p>'+esc(w.method)+'</p></details></section><section><h3>'+names[league][1]+' prediction</h3>'+(pick?'<div class="season-pick"><small>OUR EARLY PICK'+(ranked.length<total?' · PARTIAL COVERAGE':'')+'</small><h2>'+esc(pick.name)+'</h2><p>This team ranks strongest when the model compares every covered team on a neutral field.</p></div><h4>Why this team?</h4><p>Its recent profile averages '+pick.pf.toFixed(1)+' points scored and '+pick.pa.toFixed(1)+' allowed per game. The pick combines the matchup model, team strength and recent form.</p><h4>Other contenders</h4><ol>'+ranked.slice(1,6).map(p=>'<li>'+esc(p.name)+'</li>').join('')+'</ol><p class="season-note">'+ranked.length+' of '+total+' teams covered. '+(league==='USPORTS'?'Uses 2026 data only; the small sample makes this a provisional pick. ':'Team profiles may include prior-season games. ')+'This is a strength-based winner pick, not a playoff-bracket simulation or a championship probability.</p><details><summary>What could change the pick?</summary><p>New results, injuries, qualifying for the playoffs and the route through the bracket. Teams without sufficient profiles are unranked; they are not ruled out.</p><p>Ranking method: each team’s average modeled chance against all other covered teams on a neutral field. The existing Advantage model uses 60% matchup, 35% power and 5% recent form. Data through '+esc(d.asOf)+'.</p>'+sourceLinks(pick.sources)+'</details>':'<p>Not enough verified team data for a championship pick.</p>')+'</section></div></details></section>';
+ }
+ root.SeasonWatch={contenders,render};
+ if(!root.document)return;
+ const style=document.createElement('style');style.textContent='.season-watch{background:#101925;border:1px solid #293b50;border-radius:16px;padding:22px;margin:16px 0;color:#eaf0f7;font-family:inherit}.season-heading{display:flex;justify-content:space-between;gap:16px;align-items:center}.season-heading small,.season-pick small{color:#f5c542;font-weight:800;letter-spacing:.08em}.season-watch h2{font-size:24px;margin:7px 0}.season-watch h3{font-size:21px;margin:0 0 9px}.season-watch h4{font-size:16px;margin:4px 0}.season-watch p{font-size:14px;line-height:1.55;margin:8px 0}.season-watch a{color:#79c8ff}.season-watch summary{cursor:pointer;color:#9bceee;font-size:13px;margin:12px 0}.season-heading>span,.season-watch .season-note{color:#a3b4c8;font-size:12px}.season-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:24px}.season-person{display:flex;gap:12px;border-top:1px solid #ffffff16;padding:14px 0}.season-rank{font-size:21px;font-weight:900;color:#f5c542;width:26px;flex-shrink:0}.season-pick{padding:20px;background:#162f2c;border-left:4px solid #61ddb0;border-radius:9px;margin:14px 0}.season-watch li{margin:10px 0}.awm-win-team{border-top:1px solid #ffffff22;margin-top:16px;padding-top:10px}.awm-win-guide li{line-height:1.6;margin:10px 0}.awm-win-guide h3{font-size:20px}.awm-win-guide h4{font-size:17px}@media(max-width:760px){.season-grid{grid-template-columns:1fr}.season-heading{align-items:flex-start;flex-direction:column}.season-watch{padding:16px}}';document.head.appendChild(style);
+ function mount(){
+  for(const [league,selector] of [['NFL','#nflSlate'],['NCAA','#collegeSlate'],['USPORTS','#app .hero']]){
+   const host=document.querySelector(selector);if(!host||document.getElementById('season-watch-'+league))continue;
+   const html=render(league);if(!html)continue;
+   if(league==='USPORTS')host.insertAdjacentHTML('afterend',html);else {const games=host.querySelector(league==='NFL'?'#nflDays':'#collegeDays');if(games)games.insertAdjacentHTML('beforebegin',html);else host.insertAdjacentHTML('beforeend',html);}
+  }
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
+ new MutationObserver(mount).observe(document.body,{childList:true,subtree:true});
+})(typeof globalThis!=='undefined'?globalThis:this);

@@ -19,3 +19,7 @@ subprocess.run(['node',str(Path(__file__).with_name('snapshots.cjs')),'build'],c
 
 import players
 players.build()
+
+import season_watch
+season_watch.build()
+subprocess.run(['node',str(Path(__file__).with_name('check-season.cjs'))],check=True)

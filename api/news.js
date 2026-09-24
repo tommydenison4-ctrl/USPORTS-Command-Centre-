@@ -63,9 +63,8 @@ function dateFromText(text=''){
 }
 function cutoff(days){ const d=new Date(); d.setUTCHours(0,0,0,0); d.setUTCDate(d.getUTCDate()-days); return d.toISOString().slice(0,10); }
 function looksFootball(title,context=''){
-  const s=(title+' '+context).toLowerCase();
-  if(/soccer|basketball|volleyball|hockey|rugby|baseball|softball|track|cross country|golf|swim|lacrosse/.test(s) && !/football/.test(s)) return false;
-  return /football|gridiron|quarterback|touchdown|touchdowns|kickoff|mustang|marauder|warrior|raven|gryphon|lancer|lion|golden hawk|gael|gee-gee|dino|thunderbird|bison|husk|ram|golden bear|rouge et or|carabin|vert & or|gaiter|stinger|mountie|x-men|x-men|xmen/.test(s);
+  let path=context;try{path=new URL(context).pathname}catch{}
+  return /football|gridiron|quarterback|touchdowns?|kickoff|\bfball\b/i.test(title+' '+path);
 }
 function parsePage(html,row,minDate){
   const {team,source,url:base}=row; const out=[]; const seen=new Set();
@@ -73,18 +72,12 @@ function parsePage(html,row,minDate){
   let m;
   while((m=re.exec(html))){
     const href=m[1]; if(!href||href.startsWith('#')||href.startsWith('javascript:'))continue;
-    const url=abs(base,href); if(!url||seen.has(url))continue;
+    const url=abs(base,href); if(!url||seen.has(url)||!url.startsWith('https://')||new URL(url).hostname!==new URL(base).hostname)continue;
     let title=stripTags(m[2]);
-    const start=Math.max(0,m.index-650), end=Math.min(html.length,re.lastIndex+650);
-    const chunk=html.slice(start,end), context=stripTags(chunk);
-    if(title.length<8){
-      const tm=chunk.match(/(?:title|headline|sidearm-card-title|s-title)[^>]*>\s*(?:<[^>]+>)*([^<]{8,220})/i);
-      if(tm)title=stripTags(tm[1]);
-    }
     if(title.length<8||title.length>240||/^(read more|details|story|football|schedule|roster|news|more)$/i.test(title))continue;
-    if(!looksFootball(title,context))continue;
-    let date=dateFromUrl(url)||dateFromText(context);
-    if(!date||date<minDate)continue;
+    if(!looksFootball(title,url))continue;
+    let date=dateFromUrl(url);
+    if(!date||!date.startsWith('2026-')||date<minDate||date>new Date().toISOString().slice(0,10))continue;
     // Prefer actual story/article URLs; reject utility/navigation links.
     if(!/news|article|story|actualit|nouvelle|football|fball|sports/i.test(url))continue;
     seen.add(url); out.push({teams:[team],date,title,source,url,type:'official'});
@@ -92,11 +85,20 @@ function parsePage(html,row,minDate){
   return out.sort((a,b)=>b.date.localeCompare(a.date)).slice(0,12);
 }
 function candidateUrls(row){
-  const u=new URL(row.url); const root=u.origin;
-  const urls=[row.url];
-  // Sidearm and Presto sites commonly expose recent stories on these routes even when the sport landing page is JS-heavy.
-  ['/sports/football/archives','/sports/football/news','/news','/sports/fball/index'].forEach(path=>urls.push(root+path));
-  return [...new Set(urls)];
+ const u=new URL(row.url);
+ return [u.origin+'/rss.aspx?path=football',row.url];
+}
+function parseRSS(xml,row,minDate){
+ const out=[];const today=new Date().toISOString().slice(0,10);
+ for(const m of xml.matchAll(/<item\b[^>]*>([\s\S]*?)<\/item>/gi)){
+  const value=tag=>{const x=m[1].match(new RegExp('<'+tag+'[^>]*>([\\s\\S]*?)<\\/'+tag+'>','i'));return x?x[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,'$1').trim():'';};
+  const title=stripTags(value('title')),url=abs(row.url,value('link'));
+  const raw=value('pubDate'),d=new Date(raw);const date=Number.isFinite(d.getTime())?d.toISOString().slice(0,10):dateFromUrl(url);
+  if(!looksFootball(title,url))continue;
+  if(!title||!/^https:\/\//.test(url)||!date.startsWith('2026-')||date<minDate||date>today)continue;
+  if(new URL(url).hostname!==new URL(row.url).hostname)continue;
+  out.push({teams:[row.team],date,title,source:row.source,url,type:'official'});
+ }return out;
 }
 async function fetchHtml(url){
   const ac=new AbortController(); const t=setTimeout(()=>ac.abort(),6500);
@@ -106,16 +108,9 @@ async function fetchHtml(url){
   }catch(e){return {status:0,text:'',error:e?.name||'fetch_error'}} finally{clearTimeout(t)}
 }
 async function fetchOne(row,minDate){
-  const urls=candidateUrls(row); const stories=[]; let bestStatus=0; let error=null;
-  for(const url of urls){
-    const got=await fetchHtml(url); bestStatus=Math.max(bestStatus,got.status||0); if(got.error)error=got.error;
-    if(got.text){
-      const parsed=parsePage(got.text,{...row,url},minDate);
-      for(const x of parsed) if(!stories.some(y=>y.url===x.url)) stories.push(x);
-      if(stories.length>=12) break;
-    }
-  }
-  return {team:row.team,source:row.source,url:row.url,status:bestStatus,error,stories:stories.sort((a,b)=>b.date.localeCompare(a.date)).slice(0,12)};
+ const urls=candidateUrls(row),results=await Promise.all(urls.map(fetchHtml));const stories=[];
+ results.forEach((got,i)=>{if(!got.text)return;const parsed=/<rss\b/i.test(got.text)?parseRSS(got.text,row,minDate):parsePage(got.text,{...row,url:urls[i]},minDate);for(const x of parsed)if(!stories.some(y=>y.url===x.url))stories.push(x)});
+ return {team:row.team,source:row.source,url:row.url,status:results.some(x=>x.status===200)?200:results[0].status,error:results.every(x=>x.status!==200)?'Source unavailable':null,stories:stories.sort((a,b)=>b.date.localeCompare(a.date)).slice(0,12)};
 }
 async function pooled(items,limit,fn){
   const out=new Array(items.length); let next=0;
@@ -123,12 +118,12 @@ async function pooled(items,limit,fn){
   await Promise.all(Array.from({length:Math.min(limit,items.length)},worker)); return out;
 }
 export default async function handler(req,res){
-  const days=Math.max(3,Math.min(30,Number(req.query.days||14))); const minDate=cutoff(days);
+  const rawDays=Number(req.query.days||14);const days=Number.isFinite(rawDays)?Math.max(3,Math.min(30,rawDays)):14; const minDate=cutoff(days);
   const results=await pooled(SOURCES,8,s=>fetchOne(s,minDate));
   const map=new Map();
-  [...VERIFIED_BOOTSTRAP,...results.flatMap(x=>x.stories)].forEach(x=>{if(x.date>=minDate&&x.url&&!map.has(x.url))map.set(x.url,x)});
+  [...VERIFIED_BOOTSTRAP,...results.flatMap(x=>x.stories)].forEach(x=>{if(x.date.startsWith('2026-')&&x.date<=new Date().toISOString().slice(0,10)&&x.date>=minDate&&x.url&&!map.has(x.url))map.set(x.url,x)});
   const stories=[...map.values()].sort((a,b)=>b.date.localeCompare(a.date)||a.title.localeCompare(b.title));
   // A short CDN cache keeps the scrape continuous without hammering 27 school sites for every visitor.
-  res.setHeader('Cache-Control','s-maxage=60, stale-while-revalidate=120');
-  res.status(200).json({ok:true,generatedAt:new Date().toISOString(),minDate,nextRefreshSeconds:60,stories,sourceStatus:results.map(x=>({team:x.team,source:x.source,status:x.status,count:x.stories.length,error:x.error||null}))});
+  res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Cache-Control','s-maxage=60, stale-while-revalidate=60');
+  res.status(200).json({ok:results.some(x=>x.status===200),generatedAt:new Date().toISOString(),minDate,nextRefreshSeconds:60,stories,sourceStatus:results.map(x=>({team:x.team,source:x.source,status:x.status,count:x.stories.length,error:x.error||null}))});
 }

@@ -41,7 +41,7 @@
   return {available:true,league:data.league,gameId:String(game.id||''),date,asOf:data.asOf,modelVersion:data.modelVersion,awayName:a.name,homeName:h.name,away_score:as,home_score:hs,home_win_prob:hp,away_win_prob:1-hp,margin:hs-as,total:hs+as,marginInterval:finite(m.marginInterval80)?[margin-m.marginInterval80,margin+m.marginInterval80]:null,expected:f.expected,components,confidence:m.provisional?'Provisional · 2026 only · '+m.trainingGames+' training games':age>120?'Prior-season data':data.league==='USPORTS'?'Limited validation sample':'Historical-feed model',source:'Advantage Winner Model V3',sources:[...new Set([...a.sources,...h.sources])],profileDates:{away:a.lastGame,home:h.lastGame},powerGap:f.power[0],ageDays:age,report:m.report};
  }
  function scenario(data,p,side,target,turnoverDiff=0){
-  if(!p?.available||!data.model.scenario||!['away','home'].includes(side))return null;
+  if(!p?.available||!p.expected?.away||!p.expected?.home||!finite(p.powerGap)||!data?.model?.scenario||!['away','home'].includes(side))return null;
   const s=side==='home'?1:-1,own=p.expected[side],opp=p.expected[side==='home'?'away':'home'];
   for(let n=0;n<=Math.ceil(own.tempo);n++){
    const impact=s*(n-opp.explosives+2*turnoverDiff),med=s*(own.median-opp.median),neg=s*(own.neg-opp.neg);
@@ -83,6 +83,21 @@
   state.metrics={};for(const side of ['away','home']){const pp=ps.filter(p=>p.team===String(c[side].team.id)),ys=pp.map(p=>p.yards).sort((a,b)=>a-b);if(!ys.length)continue;state.metrics[side]={explosives:pp.filter(p=>p.yards>=(p.type==='pass'?20:15)).length,turnovers:pp.filter(p=>p.turnover).length,median:(ys[Math.floor((ys.length-1)/2)]+ys[Math.floor(ys.length/2)])/2,neg:ys.filter(y=>y<=0).length/ys.length};}
   return state;
  }
+
+ function winGuide(data,p){
+  const explanation='<p>A <b>big play</b> means a run of at least 15 yards or a pass of at least 20 yards. <b>Winning the turnover battle by one</b> means taking the ball away once more than you give it away.</p>';
+  return '<section class="awm-win-guide"><h3>How each team can win</h3>'+explanation+['away','home'].map(side=>{
+   const name=side==='away'?p.awayName:p.homeName,other=side==='away'?p.homeName:p.awayName,r=p.requirements?.[side],expected=p.expected?.[side];
+   const even=r?.targets?.[1]??scenario(data,p,side,.6,0),extra=r?.plusOneTurnover50??scenario(data,p,side,.5,1),median=r?.median??expected?.median,neg=r?.negativeCeiling??expected?.neg;
+   let text='<h4>How '+esc(name)+' can win</h4><ul>';
+   text+=even!=null?'<li><b>Win with big plays:</b> aim for at least '+even+' big play'+(even===1?'':'s')+' if both teams give the ball away equally often. Under the model’s other assumptions, that is enough for about a 6-in-10 chance.</li>':'<li><b>Create the game-changing plays:</b> turn a few ordinary drives into scoring chances with long runs or passes. There is not enough evidence yet to attach a win percentage to a specific count.</li>';
+   text+=extra!=null?'<li><b>Win by protecting the ball:</b> take it away once more than '+esc(other)+' does, and aim for at least '+extra+' big play'+(extra===1?'':'s')+'. The model puts that combination at roughly even chances or better.</li>':'<li><b>Give yourself an extra possession:</b> avoid interceptions and lost fumbles, and force '+esc(other)+' to make a mistake. This is a football game plan, not a measured probability boost.</li>';
+   if(finite(median))text+='<li><b>Keep drives alive:</b> '+(r?'the workbook target':'the matchup baseline')+' is about '+median.toFixed(1)+' yards on a typical play. Use this as a typical-play benchmark, not a promise for every snap.</li>';
+   if(finite(neg))text+='<li><b>Limit wasted plays:</b> '+(r?'keep plays that gain zero yards or lose yards to no more than about ':'the model expects about ')+Math.round(neg*10)+' out of every 10 plays'+(r?'.':' to gain no yards or lose yards; reducing those wasted plays helps keep drives alive.')+'</li>';
+   return '<div class="awm-win-team">'+text+'</ul></div>';
+  }).join('')+'<p><small>These examples assume the opponent makes its expected number of big plays and both teams otherwise perform as expected. Hitting a target does not guarantee a win.</small></p></section>';
+ }
+
  function card(p,detail=false,data=null){
   if(!p?.available)return `<section class="awm-card"><small>ADVANTAGE WINNER MODEL</small><b>Prediction unavailable</b><p>${esc(p?.reason||'Verified history is not yet available.')}</p></section>`;
   const home=p.home_win_prob>=.5,winner=home?p.homeName:p.awayName,prob=Math.max(p.home_win_prob,p.away_win_prob);
@@ -91,13 +106,9 @@
    if(data?.model?.provisional)html+='<p>Early-season estimate fitted only to 2026 games. The sample is small; win probabilities are not yet calibrated. No prior-season data is used.</p>';
    html+=`<div class="awm-metrics"><div><small>HOME MARGIN</small><b>${p.margin>=0?'+':''}${p.margin.toFixed(1)}</b></div><div><small>80% ERROR BAND</small><b>${p.marginInterval?p.marginInterval.map(x=>x.toFixed(1)).join(' to '):'Not supplied'}</b></div></div>`;
    if(p.expected)html+=`<table><thead><tr><th>Expected matchup</th><th>${esc(p.awayName)}</th><th>${esc(p.homeName)}</th></tr></thead><tbody>${[['tempo','Eligible plays'],['explosives','Explosive plays'],['median','Median yards'],['neg','Negative play rate']].map(([k,label])=>`<tr><td>${label}</td>${['away','home'].map(side=>`<td>${finite(p.expected[side]?.[k])?(p.expected[side][k]*(k==='neg'?100:1)).toFixed(1)+(k==='neg'?'%':''):'—'}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
-   if(p.requirements)html+='<details><summary>What we need to win · workbook targets</summary><p>Conditional explosive-play targets at even turnovers, copied from the original workbook. These are estimates, not guarantees.</p><table><thead><tr><th>Team</th><th>50%</th><th>60%</th><th>70%</th><th>80%</th><th>50% with +1 TO</th></tr></thead><tbody>'+['away','home'].map(side=>{const r=p.requirements[side];return `<tr><td>${esc(side==='away'?p.awayName:p.homeName)}</td>${r.targets.map(n=>`<td>${n}</td>`).join('')}<td>${r.plusOneTurnover50}</td></tr>`;}).join('')+'</tbody></table>'+['away','home'].map(side=>{const r=p.requirements[side];return `<p>${esc(side==='away'?p.awayName:p.homeName)}: median ${r.median.toFixed(1)} yards; negative-play ceiling ${(r.negativeCeiling*100).toFixed(1)}%; impact target ${r.impact}.</p>`;}).join('')+'</details>';
-   if(data?.model.scenario&&p.powerGap!=null){html+='<details><summary>What we need to win</summary><p>Conditional scenario estimates, holding median yards and negative rate at the expected levels. These are not guarantees or causal thresholds.</p><table><thead><tr><th>Team / turnovers</th><th>50%</th><th>60%</th><th>70%</th><th>80%</th></tr></thead><tbody>';
-    for(const side of ['away','home'])for(const to of [0,1])html+=`<tr><td>${esc(side==='home'?p.homeName:p.awayName)} / ${to?'+1':'even'}</td>${[.5,.6,.7,.8].map(t=>`<td>${scenario(data,p,side,t,to)??'—'}</td>`).join('')}</tr>`;
-    html+='</tbody></table><p>Values are explosive counts. One turnover is worth two impact plays.</p></details>';
-   }
+   html+=winGuide(data,p);
    html+=`<details><summary>Model and source details</summary><p>${esc(p.modelVersion)}. ${p.components?'60% football matchup, 35% power, 5% current form.':'Frozen workbook result.'} Market lines are excluded. Forecast scores and targets are estimates, not observed statistics.</p>${p.report?`<p>Chronological holdout: ${p.report.testGames} games · Brier ${p.report.brier.toFixed(3)} · margin MAE ${p.report.marginMAE.toFixed(1)} points. Validation is limited to the collected games.</p>`:''}${(p.sources||[]).map((s,i)=>/^https:\/\//.test(s)?`<a href="${esc(s)}" target="_blank" rel="noopener">Gamebook ${i+1}</a> `:`<p>${esc(s)}</p>`).join('')}</details>`;
   }return html+'</section>';
  }
- return {VERSION,calculate,features,team,project,scenario,countTail,live,espnState,card,esc,canonical:canon};
+ return {VERSION,calculate,features,team,project,scenario,winGuide,countTail,live,espnState,card,esc,canonical:canon};
 });

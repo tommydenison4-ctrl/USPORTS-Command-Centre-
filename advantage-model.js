@@ -17,8 +17,8 @@
  function team(data,input){
   if(input==null)return null;
   if(input&&typeof input==='object'&&input.id!=null){const exact=data.profiles?.[String(input.id)];if(exact)return exact;}
-  const keys=(typeof input==='object'?[input.id,input.school,input.name,input.short,input.abbr]:[input]).filter(Boolean).map(canon);
-  const matches=Object.values(data.profiles||{}).filter(p=>[p.id,p.name,p.short,p.abbr].some(x=>x&&keys.includes(canon(x))));return matches.length===1?matches[0]:null;
+  const keys=(typeof input==='object'?[input.id,input.slug,input.school,input.name,input.short,input.abbr]:[input]).filter(Boolean).map(canon);
+  const matches=Object.values(data.profiles||{}).filter(p=>[p.id,p.name,p.short,p.abbr,...(p.aliases||[])].some(x=>x&&keys.includes(canon(x))));return matches.length===1?matches[0]:null;
  }
  function project(data,game){
   if(!data||!game)return {available:false,reason:'Model data is not loaded.'};

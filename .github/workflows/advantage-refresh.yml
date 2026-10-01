@@ -26,12 +26,14 @@ jobs:
           key: advantage-feeds-${{ github.run_id }}
           restore-keys: advantage-feeds-
       - run: pip install -r scripts/advantage/requirements.txt
+      - run: python -m unittest discover -s scripts/advantage -p "test_*.py"
       - run: python scripts/advantage/refresh.py
+      - run: node scripts/advantage/check-national.cjs
       - name: Save refreshed data
         run: |
           git config user.name 'Advantage data bot'
           git config user.email 'advantage-data@users.noreply.github.com'
-          git add data/verified-results-usports.json data/player-stats-*.json data/season-watch.json season-watch-data.js data/advantage-*.json data/forecasts-*.json data/advantage-snapshots advantage-data.js data/player-leaders-usports.json player-leaders-data.js
+          git add player-stats-usports-data.js national-schedule-data.js data/national-schedule-usports.json data/verified-results-usports.json data/player-stats-*.json data/season-watch.json season-watch-data.js data/advantage-*.json data/forecasts-*.json data/advantage-snapshots advantage-data.js data/player-leaders-usports.json player-leaders-data.js
           if ! git diff --cached --quiet; then
             git commit -m 'Refresh verified Advantage prediction inputs'
             git push

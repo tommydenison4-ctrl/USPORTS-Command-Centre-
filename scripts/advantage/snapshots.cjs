@@ -15,7 +15,7 @@ for(const league of leagues){
   const priorFile=path.join(root,`data/forecasts-${league.toLowerCase()}.json`);
   if(fs.existsSync(priorFile))for(const p of JSON.parse(fs.readFileSync(priorFile)).predictions){if(p.modelVersion?.includes('2026')&&p.date<now.toISOString().slice(0,10)&&!d.frozen[p.gameId])d.frozen[p.gameId]=p;}
  }else{
-  const predictions=schedule.map(g=>({...forecast(g),gameId:String(g.id)})).filter(p=>p.available);
+  const predictions=schedule.filter(g=>!g.pendingParticipants&&!['cancelled','postponed'].includes(g.status)).map(g=>({...forecast(g),gameId:String(g.id)})).filter(p=>p.available);
   const snapshot={createdAt:now.toISOString(),asOf:d.asOf,league,predictions};
   fs.writeFileSync(path.join(root,`data/forecasts-${league.toLowerCase()}.json`),JSON.stringify(snapshot));
   const dir=path.join(root,'data/advantage-snapshots');fs.mkdirSync(dir,{recursive:true});

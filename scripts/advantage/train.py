@@ -21,11 +21,9 @@ def calc(m,x):
  v=m['coef'][0]+sum(b*(v-mu)/sd for b,v,mu,sd in zip(m['coef'][1:],x,m['mean'],m['scale']))
  return float(sigmoid(v)) if m['logistic'] else v
 def canonical(s):
- s=re.sub('[^a-z]','',s.lower())
- aliases={'ott':'ottawa','tor':'toronto','wat':'waterloo','laur':'laurier','marauder':'mcmaster','stfrancisxavier':'stfx','stmarys':'saintmarys','mtallison':'mountallison'}
- for key in ['alberta','bishops','calgary','carleton','concordia','guelph','laval','laurier','manitoba','mcgill','mcmaster','montreal','ottawa','queens','regina','saskatchewan','sherbrooke','toronto','ubc','waterloo','western','windsor','york','acadia','stfx','saintmarys','mountallison']:
-  if s.startswith(key):return key
- return aliases.get(s,s)
+ import national
+ t=national.team(s)
+ return national.norm(t['slug']) if t else national.norm(s)
 def clean(history,league):
  out={}
  for g in history:
@@ -103,6 +101,10 @@ def train(league):
    a,h=g['away']['id'],g['home']['id'];p=1/(1+10**((elo[a]-elo[h])/400));y=.5 if g['home']['score']==g['away']['score'] else int(g['home']['score']>g['away']['score']);delta=20*(y-p);elo[h]+=delta;elo[a]-=delta
    for side in ['away','home']:
     tid=g[side]['id'];rows[tid].append((g,side));names[tid]={k:v for k,v in g[side].items() if k in ['id','name','short','abbr','logo']}
+    if league=='USPORTS':
+     import national
+     t=national.team(tid)
+     if t:names[tid]['aliases']=[t[k] for k in ('slug','name','short','abbr')]
  if len(samples)<40:return provisional(league,source,history,samples,rows,elo,names)
  cut=samples[int(len(samples)*.75)]['g']['date'][:10];training=[s for s in samples if s['g']['date'][:10]<cut];hold=[s for s in samples if s['g']['date'][:10]>=cut]
  m={k:fit([s['f'][k] for s in training],[s['y'] for s in training]) for k in ['football','power','form']}

@@ -51,3 +51,13 @@ V104: hard scroll stability for live GameCenter. Live scrolling is persisted per
 - Live 3D field now moves the football, line of scrimmage, and first-down marker from the current official spot/possession/distance.
 - National out-of-town rail polls the same verified live discovery endpoint and patches scores in place.
 - Presto individual-stat extraction now reads nested player category/stat objects rather than requiring flat scalar player rows.
+
+### National schedule and shared forecasts
+
+`https://en.usports.ca/sports/fball/composite` is the national index. The refresh job follows every date in the current season, normalizes OUA, RSEQ, AUS and Canada West games to the existing date/away/home IDs, and saves `data/national-schedule-usports.json`. Unassigned playoff slots and the East/West showcase are retained as normalized pending events; they receive no invented team profiles or probabilities. Unknown school names, failed date requests and missing conferences abort publication.
+
+Presto play-by-play and official Sidearm gamebooks enrich only games in that index. Both adapters use the same eligible-play rules, team registry, history schema, prior-only training, and existing Advantage 60/35/5 blend. No conference-specific coefficients or strength bonuses enter forecasts. Build Matchup, dashboard/schedule cards, pregame GameCenter and team schedules call the shared `US_AWM.forecast` entry point. Missing history stays explicitly unavailable.
+
+The scheduled refresh publishes the national schedule, profiles, forecasts and player-stat bundles together. Browser loading retains legacy venue metadata and verified finals when the index lacks scores, and does not convert already-Eastern kickoff times twice. Existing live feeds, completed-score fallbacks, out-of-town scoreboard and field/down-marker code remain in place; indexed boxscore links also feed the existing live adapter.
+
+Validation: `python -m unittest discover -s scripts/advantage -p 'test_*.py'`, then `node scripts/advantage/check-national.cjs` and the existing `check.cjs`, `check-players.cjs`, `check-season.cjs`, and `check-ribbons.cjs`. Refresh with `python scripts/advantage/refresh.py` after installing `scripts/advantage/requirements.txt`.

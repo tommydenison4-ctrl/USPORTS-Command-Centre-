@@ -1,6 +1,6 @@
 window.US_AWM=(()=>{
  const data=window.AWM_DATA.USPORTS,A=window.AdvantageModel;
- const forecast=g=>A.project(data,{...g,league:'USPORTS'});
+ const forecast=g=>g?.pendingParticipants||['cancelled','postponed'].includes(g?.status)?{available:false,reason:'A confirmed matchup and kickoff are required.'}:A.project(data,{...g,league:'USPORTS'});
  function panel(g,d){
   const p=forecast(g),st=typeof LIVE_STORE!=='undefined'?LIVE_STORE.games?.[g.id]:null;
   let html=A.card(p,true,data)+(window.US_PlayerLeaders?.card(window.US_PLAYER_DATA,g)||'');

@@ -1,0 +1,191 @@
+[
+  {
+    "slug": "carleton",
+    "short": "Carleton",
+    "name": "Carleton Ravens",
+    "conference": "OUA",
+    "abbr": "CAR"
+  },
+  {
+    "slug": "guelph",
+    "short": "Guelph",
+    "name": "Guelph Gryphons",
+    "conference": "OUA",
+    "abbr": "GUE"
+  },
+  {
+    "slug": "mcmaster",
+    "short": "McMaster",
+    "name": "McMaster Marauders",
+    "conference": "OUA",
+    "abbr": "MAC"
+  },
+  {
+    "slug": "ottawa",
+    "short": "Ottawa",
+    "name": "Ottawa Gee-Gees",
+    "conference": "OUA",
+    "abbr": "OTT"
+  },
+  {
+    "slug": "queens",
+    "short": "Queen's",
+    "name": "Queen's Gaels",
+    "conference": "OUA",
+    "abbr": "QUE"
+  },
+  {
+    "slug": "toronto",
+    "short": "Toronto",
+    "name": "Toronto Varsity Blues",
+    "conference": "OUA",
+    "abbr": "TOR"
+  },
+  {
+    "slug": "waterloo",
+    "short": "Waterloo",
+    "name": "Waterloo Warriors",
+    "conference": "OUA",
+    "abbr": "WAT"
+  },
+  {
+    "slug": "western",
+    "short": "Western",
+    "name": "Western Mustangs",
+    "conference": "OUA",
+    "abbr": "WES"
+  },
+  {
+    "slug": "windsor",
+    "short": "Windsor",
+    "name": "Windsor Lancers",
+    "conference": "OUA",
+    "abbr": "WIN"
+  },
+  {
+    "slug": "laurier",
+    "short": "Laurier",
+    "name": "Wilfrid Laurier Golden Hawks",
+    "conference": "OUA",
+    "abbr": "WLU"
+  },
+  {
+    "slug": "york",
+    "short": "York",
+    "name": "York Lions",
+    "conference": "OUA",
+    "abbr": "YRK"
+  },
+  {
+    "slug": "bishops",
+    "short": "Bishop's",
+    "name": "Bishop's Gaiters",
+    "conference": "RSEQ",
+    "abbr": "BIS"
+  },
+  {
+    "slug": "concordia",
+    "short": "Concordia",
+    "name": "Concordia Stingers",
+    "conference": "RSEQ",
+    "abbr": "CON"
+  },
+  {
+    "slug": "laval",
+    "short": "Laval",
+    "name": "Laval Rouge et Or",
+    "conference": "RSEQ",
+    "abbr": "LAV"
+  },
+  {
+    "slug": "mcgill",
+    "short": "McGill",
+    "name": "McGill Redbirds",
+    "conference": "RSEQ",
+    "abbr": "MCG"
+  },
+  {
+    "slug": "montreal",
+    "short": "Montréal",
+    "name": "Montréal Carabins",
+    "conference": "RSEQ",
+    "abbr": "MTL"
+  },
+  {
+    "slug": "sherbrooke",
+    "short": "Sherbrooke",
+    "name": "Sherbrooke Vert & Or",
+    "conference": "RSEQ",
+    "abbr": "SHE"
+  },
+  {
+    "slug": "acadia",
+    "short": "Acadia",
+    "name": "Acadia Axemen",
+    "conference": "AUS",
+    "abbr": "ACA"
+  },
+  {
+    "slug": "mount-allison",
+    "short": "Mount Allison",
+    "name": "Mount Allison Mounties",
+    "conference": "AUS",
+    "abbr": "MTA"
+  },
+  {
+    "slug": "saint-marys",
+    "short": "Saint Mary's",
+    "name": "Saint Mary's Huskies",
+    "conference": "AUS",
+    "abbr": "SMU"
+  },
+  {
+    "slug": "stfx",
+    "short": "StFX",
+    "name": "StFX X-Men",
+    "conference": "AUS",
+    "abbr": "STF"
+  },
+  {
+    "slug": "alberta",
+    "short": "Alberta",
+    "name": "Alberta Golden Bears",
+    "conference": "CW",
+    "abbr": "ALB"
+  },
+  {
+    "slug": "calgary",
+    "short": "Calgary",
+    "name": "Calgary Dinos",
+    "conference": "CW",
+    "abbr": "CGY"
+  },
+  {
+    "slug": "manitoba",
+    "short": "Manitoba",
+    "name": "Manitoba Bisons",
+    "conference": "CW",
+    "abbr": "MAN"
+  },
+  {
+    "slug": "regina",
+    "short": "Regina",
+    "name": "Regina Rams",
+    "conference": "CW",
+    "abbr": "REG"
+  },
+  {
+    "slug": "saskatchewan",
+    "short": "Saskatchewan",
+    "name": "Saskatchewan Huskies",
+    "conference": "CW",
+    "abbr": "SSK"
+  },
+  {
+    "slug": "ubc",
+    "short": "UBC",
+    "name": "UBC Thunderbirds",
+    "conference": "CW",
+    "abbr": "UBC"
+  }
+]

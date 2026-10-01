@@ -12,12 +12,18 @@ ASOF=os.environ.get('AWM_ASOF',datetime.datetime.now(datetime.timezone.utc).date
 errors=[]
 def fetch(url):
     path=CACHE/(hashlib.sha256(url.encode()).hexdigest()+'.txt')
-    if path.exists() and ('/summary?' in url or '/boxscore/' in url or time.time()-path.stat().st_mtime<1800):return path.read_text()
-    text=subprocess.check_output(['curl','--fail','--location','--silent','--show-error','--max-time','25','--user-agent','Mozilla/5.0',url],stderr=subprocess.DEVNULL).decode('utf-8',errors='replace')
-    path.write_text(text);return text
+    if path.exists() and path.stat().st_size>0 and ('/summary?' in url or '/boxscore/' in url or time.time()-path.stat().st_mtime<1800):return path.read_text()
+    for attempt in range(3):
+        try:
+            text=subprocess.check_output(['curl','--fail','--location','--silent','--show-error','--max-time','25','--user-agent','Mozilla/5.0',url],stderr=subprocess.DEVNULL).decode('utf-8',errors='replace')
+            if not text.strip():raise ValueError('Empty feed response: '+url)
+            path.write_text(text);return text
+        except Exception:
+            if attempt==2:raise
+            time.sleep(1+attempt)
 def batch(fn, items):
     out=[]
-    with cf.ThreadPoolExecutor(max_workers=8) as pool:
+    with cf.ThreadPoolExecutor(max_workers=4) as pool:
         jobs={pool.submit(fn,x):x for x in items}
         for f in cf.as_completed(jobs):
             try:
@@ -132,7 +138,7 @@ def sidearm(url):
         g[side]['verifiedTurnovers']=int(ints[i][-1])+int(lost[i][-1]) if ints and lost and all(ints) and all(lost) else None
     g['plays']=allplays
     return g
-def ingest_usports():
+def sidearm_history():
     sources=json.loads((BASE.parents[1]/'roster-sources.json').read_text());urls=[]
     for row in sources.values():
         if row.get('adapter')!='sidearm':continue
@@ -150,6 +156,36 @@ def ingest_usports():
         k=(g['date'][:10],g['away']['name'],g['home']['name'])
         if k not in unique or len(g['plays'])>len(unique[k]['plays']):unique[k]=g
     return list(unique.values()),[]
+def ingest_usports():
+    import national
+    schedule,unresolved=national.discover(fetch,batch,int(ASOF[:4]))
+    completed=[g for g in schedule if g['status']=='final' and g['date']<ASOF]
+    presto_games=batch(lambda g:national.presto(g,fetch,text_play,metrics),completed)
+    sidearm_games,_=sidearm_history()
+    indexed={(g['date'],national.norm(g['away']),national.norm(g['home'])):g for g in completed}
+    unique={}
+    for g in presto_games+sidearm_games:
+        teams=[national.team(g[s]['id']) for s in ('away','home')]
+        if not all(teams):continue
+        key=(g['date'][:10],*[national.norm(t['slug']) for t in teams])
+        index=indexed.get(key)
+        if not index:continue # School sites enrich only games present in the national index.
+        for side,t in zip(('away','home'),teams):
+            old=g[side]['id'];new=national.norm(t['slug'])
+            g[side].update(id=new,name=t['short'],short=t['short'],abbr=t['abbr'])
+            for p in g['plays']:
+                if p['team']==old:p['team']=new
+        g.update(id=index['id'],date=index['date'],conference=index['conference'],neutral=index['neutral'],indexSource=index['source'])
+        # Composite scores are authoritative; reject a mismatched gamebook.
+        if any(g[s]['score']!=index[s+'Score'] for s in ('away','home')):continue
+        coverage=min(sum(p['team']==g[s]['id'] for p in g['plays']) for s in ('away','home'))
+        prior=unique.get(key)
+        prior_coverage=min(sum(p['team']==prior[s]['id'] for p in prior['plays']) for s in ('away','home')) if prior else -1
+        if coverage>prior_coverage or (coverage>=25 and '/boxscore/' in g['source']):unique[key]=g
+    national.save_schedule(schedule,unresolved,ASOF)
+    print('National composite:',len(schedule),'games;',len(unique),'gamebooks;',len(unresolved),'unresolved events',flush=True)
+    return sorted(unique.values(),key=lambda g:g['id']),schedule+unresolved
+
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('league',choices=['NFL','NCAA','USPORTS']);args=parser.parse_args()
     h,s=ingest_usports() if args.league=='USPORTS' else ingest_espn(args.league)

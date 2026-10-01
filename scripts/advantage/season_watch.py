@@ -78,6 +78,7 @@ def build():
             leaders[category]=[dict(name=p['name'],team=p['team'],teamId=p['teamId'],games=p['stats'][category]['games'],yards=p['stats'][category]['yards'],touchdowns=p['stats'][category]['touchdowns'],lastGame=p['lastGame'],sources=p['sources'][-2:]) for p in eligible_rows[:50]]
         stats={'season':2026,'asOf':ASOF,'coveredGames':len(games),'coveredTeams':len(teams),'categories':leaders}
         (ROOT/('data/player-stats-'+league.lower()+'.json')).write_text(json.dumps(stats,allow_nan=False))
+        if league=='USPORTS':(ROOT/'player-stats-usports-data.js').write_text('window.FOOTBALL_STATS=window.FOOTBALL_STATS||{};window.FOOTBALL_STATS.USPORTS='+json.dumps(stats,allow_nan=False).replace('<','\\u003c')+';')
         rows.sort(key=lambda p:(-p['score'],p['name']))
         bundle[league]={'season':2026,'asOf':ASOF,'players':rows[:10],'coveredGames':len(games),'coveredTeams':len(teams),'eligibleTeamIds':eligible,'eligibilitySource':eligibility_source,'method':'Offensive production per recorded appearance: passing yards / 25 + rushing and receiving yards / 10 + passing TD × 4 + rushing and receiving TD × 6 − interceptions × 2. At least two recorded game appearances. Not an award-voting model; defense and special teams are not scored. Missing box scores may change the order.'}
     (ROOT/'data/season-watch.json').write_text(json.dumps(bundle,allow_nan=False))

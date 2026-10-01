@@ -20,6 +20,19 @@
   const keys=(typeof input==='object'?[input.id,input.slug,input.school,input.name,input.short,input.abbr]:[input]).filter(Boolean).map(canon);
   const matches=Object.values(data.profiles||{}).filter(p=>[p.id,p.name,p.short,p.abbr,...(p.aliases||[])].some(x=>x&&keys.includes(canon(x))));return matches.length===1?matches[0]:null;
  }
+ // Editorial strength prior: AUS 2/10; other conferences retain the unadjusted 10/10 baseline.
+ // Apply the strength ratio to odds, preserving complementary probabilities and same-conference games.
+ const AUS_TEAMS=new Set(['acadia','bishops','mountallison','saintmarys','stfx']);
+ function conferenceStrength(data,p){return data.league==='USPORTS'&&AUS_TEAMS.has(canon(p.id))?2:10;}
+ function matchupProbability(data,a,h,neutral=false){
+  const f=features(a,h,neutral),m=data.model;
+  const components={football:calculate(m.football,f.football),power:calculate(m.power,f.power),form:calculate(m.form,f.form)};
+  if(Object.values(components).some(x=>!finite(x)))return {homeWin:null,components};
+  const base=.6*components.football+.35*components.power+.05*components.form;
+  const away=conferenceStrength(data,a),home=conferenceStrength(data,h);
+  const homeWin=away===home?base:base*home/(base*home+(1-base)*away);
+  return {homeWin,components,conferenceStrength:data.league==='USPORTS'?{away,home,baseHomeWin:base,method:'Editorial strength ratio applied to win odds; AUS 2/10, other conferences 10/10 baseline.'}:null};
+ }
  function project(data,game){
   if(!data||!game)return {available:false,reason:'Model data is not loaded.'};
   if(game.league&&game.league!==data.league)return {available:false,reason:'League does not match the model.'};
@@ -33,12 +46,11 @@
   if(a.id===h.id)return {available:false,reason:'Ambiguous matchup.'};
   if([a,h].some(p=>p.lastGame.slice(0,10)>=date))return {available:false,reason:'Post-kickoff data cannot enter a pregame prediction.'};
   const f=features(a,h,!!game.neutral),m=data.model;
-  const components={football:calculate(m.football,f.football),power:calculate(m.power,f.power),form:calculate(m.form,f.form)};
-  if(Object.values(components).some(x=>!finite(x)))return {available:false,reason:'Incomplete model inputs.'};
-  const hp=.6*components.football+.35*components.power+.05*components.form;
+  const probability=matchupProbability(data,a,h,!!game.neutral),components=probability.components,hp=probability.homeWin;
+  if(!finite(hp))return {available:false,reason:'Incomplete model inputs.'};
   const margin=calculate(m.margin,f.margin),rawTotal=calculate(m.total,f.total);if(!finite(margin)||!finite(rawTotal))return {available:false,reason:'Incomplete score model inputs.'};const total=Math.max(0,rawTotal);
   const hs=Math.max(0,(total+margin)/2),as=Math.max(0,(total-margin)/2),age=Math.max(...[a,h].map(p=>(Date.parse(date)-Date.parse(p.lastGame))/86400000));
-  return {available:true,league:data.league,gameId:String(game.id||''),date,asOf:data.asOf,modelVersion:data.modelVersion,awayName:a.name,homeName:h.name,away_score:as,home_score:hs,home_win_prob:hp,away_win_prob:1-hp,margin:hs-as,total:hs+as,marginInterval:finite(m.marginInterval80)?[margin-m.marginInterval80,margin+m.marginInterval80]:null,expected:f.expected,components,confidence:m.provisional?'Provisional · 2026 only · '+m.trainingGames+' training games':age>120?'Prior-season data':data.league==='USPORTS'?'Limited validation sample':'Historical-feed model',source:'Advantage Winner Model V3',sources:[...new Set([...a.sources,...h.sources])],profileDates:{away:a.lastGame,home:h.lastGame},powerGap:f.power[0],ageDays:age,report:m.report};
+  return {available:true,league:data.league,gameId:String(game.id||''),date,asOf:data.asOf,modelVersion:data.modelVersion+(data.league==='USPORTS'?'+AUS-strength-2-v1':''),awayName:a.name,homeName:h.name,away_score:as,home_score:hs,home_win_prob:hp,away_win_prob:1-hp,margin:hs-as,total:hs+as,marginInterval:finite(m.marginInterval80)?[margin-m.marginInterval80,margin+m.marginInterval80]:null,expected:f.expected,components,conferenceStrength:probability.conferenceStrength,confidence:m.provisional?'Provisional · 2026 only · '+m.trainingGames+' training games':age>120?'Prior-season data':data.league==='USPORTS'?'Limited validation sample':'Historical-feed model',source:'Advantage Winner Model V3',sources:[...new Set([...a.sources,...h.sources])],profileDates:{away:a.lastGame,home:h.lastGame},powerGap:f.power[0],ageDays:age,report:m.report};
  }
  function scenario(data,p,side,target,turnoverDiff=0){
   if(!p?.available||!p.expected?.away||!p.expected?.home||!finite(p.powerGap)||!data?.model?.scenario||!['away','home'].includes(side))return null;
@@ -107,8 +119,8 @@
    html+=`<div class="awm-metrics"><div><small>HOME MARGIN</small><b>${p.margin>=0?'+':''}${p.margin.toFixed(1)}</b></div><div><small>80% ERROR BAND</small><b>${p.marginInterval?p.marginInterval.map(x=>x.toFixed(1)).join(' to '):'Not supplied'}</b></div></div>`;
    if(p.expected)html+=`<table><thead><tr><th>Expected matchup</th><th>${esc(p.awayName)}</th><th>${esc(p.homeName)}</th></tr></thead><tbody>${[['tempo','Eligible plays'],['explosives','Explosive plays'],['median','Median yards'],['neg','Negative play rate']].map(([k,label])=>`<tr><td>${label}</td>${['away','home'].map(side=>`<td>${finite(p.expected[side]?.[k])?(p.expected[side][k]*(k==='neg'?100:1)).toFixed(1)+(k==='neg'?'%':''):'—'}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
    html+=winGuide(data,p);
-   html+=`<details><summary>Model and source details</summary><p>${esc(p.modelVersion)}. ${p.components?'60% football matchup, 35% power, 5% current form.':'Frozen workbook result.'} Market lines are excluded. Forecast scores and targets are estimates, not observed statistics.</p>${p.report?`<p>Chronological holdout: ${p.report.testGames} games · Brier ${p.report.brier.toFixed(3)} · margin MAE ${p.report.marginMAE.toFixed(1)} points. Validation is limited to the collected games.</p>`:''}${(p.sources||[]).map((s,i)=>/^https:\/\//.test(s)?`<a href="${esc(s)}" target="_blank" rel="noopener">Gamebook ${i+1}</a> `:`<p>${esc(s)}</p>`).join('')}</details>`;
+   html+=`<details><summary>Model and source details</summary><p>${esc(p.modelVersion)}. ${p.components?'60% football matchup, 35% power, 5% current form.':'Frozen workbook result.'} ${p.conferenceStrength?esc(p.conferenceStrength.method)+' Score estimates remain based on the statistical score model.':''} Market lines are excluded. Forecast scores and targets are estimates, not observed statistics.</p>${p.report?`<p>Chronological holdout: ${p.report.testGames} games · Brier ${p.report.brier.toFixed(3)} · margin MAE ${p.report.marginMAE.toFixed(1)} points. Validation is limited to the collected games.</p>`:''}${(p.sources||[]).map((s,i)=>/^https:\/\//.test(s)?`<a href="${esc(s)}" target="_blank" rel="noopener">Gamebook ${i+1}</a> `:`<p>${esc(s)}</p>`).join('')}</details>`;
   }return html+'</section>';
  }
- return {VERSION,calculate,features,team,project,scenario,winGuide,countTail,live,espnState,card,esc,canonical:canon};
+ return {VERSION,calculate,features,team,conferenceStrength,matchupProbability,project,scenario,winGuide,countTail,live,espnState,card,esc,canonical:canon};
 });

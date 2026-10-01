@@ -61,3 +61,9 @@ Presto play-by-play and official Sidearm gamebooks enrich only games in that ind
 The scheduled refresh publishes the national schedule, profiles, forecasts and player-stat bundles together. Browser loading retains legacy venue metadata and verified finals when the index lacks scores, and does not convert already-Eastern kickoff times twice. Existing live feeds, completed-score fallbacks, out-of-town scoreboard and field/down-marker code remain in place; indexed boxscore links also feed the existing live adapter.
 
 Validation: `python -m unittest discover -s scripts/advantage -p 'test_*.py'`, then `node scripts/advantage/check-national.cjs` and the existing `check.cjs`, `check-players.cjs`, `check-season.cjs`, and `check-ribbons.cjs`. Refresh with `python scripts/advantage/refresh.py` after installing `scripts/advantage/requirements.txt`.
+
+### AUS conference strength
+
+The shared JavaScript Advantage probability calculation applies an editorial AUS strength of **2/10** to all five AUS teams, including Bishop’s. Other conferences retain a neutral **10/10 baseline**, not a fitted strength rating. After the existing 60/35/5 blend, home win odds are multiplied by home strength / away strength. An otherwise 50–50 AUS matchup against another conference becomes 16.7% for AUS; same-conference probabilities are unchanged. This configured prior is not a historically calibrated estimate. Score projections remain statistical estimates without this odds adjustment. Saved historical pregame forecasts remain unchanged.
+
+Build Matchup, schedule/dashboard, pregame GameCenter, team predictions and the Vanier neutral-field ranking all use this shared calculation. The Vanier view is a strength ranking, not a bracket simulation or literal championship probability; AUS teams are penalized, not assigned an artificial zero chance.

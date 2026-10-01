@@ -26,3 +26,14 @@ const w=watch.USPORTS, ranked=SeasonWatch.contenders('USPORTS',d,w);
 for(const p of ranked){const opponents=ranked.filter(o=>o.id!==p.id);const expected=opponents.reduce((sum,o)=>sum+(A.matchupProbability(d,o,p,true).homeWin+1-A.matchupProbability(d,p,o,true).homeWin)/2,0)/opponents.length;assert(Math.abs(p.rating-expected)<1e-12)}
 assert(!['acadia','bishops','mountallison','saintmarys','stfx'].includes(ranked[0].id));
 console.log('AUS 2/10: all five teams, both venues, same-conference invariance and shared Vanier ranking passed; pick:',ranked[0].name);
+
+for(const id of ['acadia','bishops','mountallison','saintmarys','stfx'])for(const [away,home] of [[id,'laval'],['laval',id]]){
+ const g=A.project(d,{away,home,date:d.asOf,neutral:true});
+ assert(g.available);assert(away===id?g.scoreAdjustment>0:g.scoreAdjustment<0);
+ assert(g.home_score>=0&&g.away_score>=0);
+ assert(Math.abs(g.total-(g.home_score+g.away_score))<1e-9);
+ assert(A.strengthNote(g).includes('2/10'));
+ assert(A.strengthNote(g).includes('before →'));
+}
+assert.equal(A.project(d,{away:'acadia',home:'stfx',date:d.asOf,neutral:true}).scoreAdjustment,0);
+console.log('Build Matchup conference disclosure, score adjustment, both orientations and same-conference invariance passed');

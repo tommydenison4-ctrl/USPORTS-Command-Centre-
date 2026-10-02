@@ -69,3 +69,11 @@ The shared JavaScript Advantage probability calculation applies an editorial AUS
 Build Matchup, schedule/dashboard, pregame GameCenter, team predictions and the Vanier neutral-field ranking all use this shared calculation. The Vanier view is a strength ranking, not a bracket simulation or literal championship probability; AUS teams are penalized, not assigned an artificial zero chance.
 
 When the independent score regression contradicts the final U SPORTS win-probability favourite, the score is reconciled using the final home probability as the home share of the expected total. Agreeing score forecasts are retained. The reconciliation is disclosed in prediction details and applies through the same shared model to every prediction view. Team marks are restored on prediction cards and official news cards.
+
+### Embedded podcasts
+
+The Podcasts tab reads the fixed publisher RSS feeds for At The 55 through `/api/podcasts`. It displays eight latest published audio episodes per show, official feed artwork, publisher/copyright credits, RSS and subscription links. Audio streams directly from each publisher with native controls, no autoplay and no audio preloading. The saved `podcasts-data.js` snapshot supplies episodes during a feed outage. Background sports data refreshes do not replace active players. If a publisher enclosure fails, a visible message directs listeners to the original publisher/subscription links. At verification time, At The 55 audio returned HTTP 206. Artwork and player rendering were verified; the in-app test browser crashed when starting audio, so full playback verification remains limited.
+
+Run `node scripts/advantage/check-podcasts.cjs` for RSS parsing, URL, publication cutoff, duplicate and partial-failure checks.
+
+Navigation uses one Players & Leaders view, with legacy player routes directed there. The obsolete Command Center button is removed; its old route returns to the schedule dashboard. Team Stats adds per-game passing/rushing/total yards from complete individual box-score tables and a separately labelled eligible-play sample showing offensive/defensive yards per game and per play, plays per game, big-play and no-gain rates, and scoring averages. Sample YPG is YPP × plays per game from the same covered-game window.

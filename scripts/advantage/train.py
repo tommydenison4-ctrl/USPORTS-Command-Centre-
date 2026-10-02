@@ -45,11 +45,12 @@ def aggregate(rows,side):
  if len(plays)<70:return None
  ys=[p['yards'] for p in plays];n=len(plays)
  return dict(ypp=sum(ys)/n,median=statistics.median(ys),expl=sum(p['yards']>=(20 if p['type']=='pass' else 15) for p in plays)/n,neg=sum(p['yards']<=0 for p in plays)/n,sack=sum(p.get('sack',False) for p in plays)/n,tempo=n/len(rows))
-def profile(rows,elo):
+def profile(rows,elo,results=None):
  rows=rows[-8:];off=aggregate(rows,'off');de=aggregate(rows,'def')
  if len(rows)<2 or not off or not de:return None
- margins=[g[s]['score']-g['away' if s=='home' else 'home']['score'] for g,s in rows]
- return dict(off=off,defense=de,elo=elo,form=float(np.mean([np.clip(x,-28,28) for x in margins[-3:]])),pf=float(np.mean([g[s]['score'] for g,s in rows])),pa=float(np.mean([g['away' if s=='home' else 'home']['score'] for g,s in rows])),games=len(rows),lastGame=rows[-1][0]['date'],sources=list(dict.fromkeys(g['source'] for g,s in rows)))
+ result_rows=results if results is not None else rows
+ margins=[g[s]['score']-g['away' if s=='home' else 'home']['score'] for g,s in result_rows]
+ return dict(off=off,defense=de,elo=elo,form=float(np.mean([np.clip(x,-28,28) for x in margins[-3:]])),pf=float(np.mean([g[s]['score'] for g,s in result_rows])),pa=float(np.mean([g['away' if s=='home' else 'home']['score'] for g,s in result_rows])),resultGames=len(result_rows),games=len(rows),lastGame=result_rows[-1][0]['date'],sources=list(dict.fromkeys(g['source'] for g,s in rows)),resultSources=list(dict.fromkeys(g['source'] for g,s in result_rows)))
 def features(a,h,neutral=False):
  exp={}
  for side,t,o in [('away',a,h),('home',h,a)]:
@@ -76,14 +77,14 @@ def live_features(p,g,idx):
   ss.append([sum(x['yards']>=(20 if x['type']=='pass' else 15) for x in pp),sum(x.get('turnover',False) for x in pp),statistics.median(ys),sum(y<=0 for y in ys)/len(ys)])
  a,h=ss
  return [math.log(max(.001,p)/max(.001,1-p))*(1-f),(last['hs']-last['as'])/math.sqrt(max(.03,1-f)),(h[0]-a[0]+2*(a[1]-h[1]))*f,(h[2]-a[2])*f,(h[3]-a[3])*f,1-f]
-def provisional(league,source,history,samples,rows,elo,names):
+def provisional(league,source,history,samples,rows,elo,names,results):
  if len(samples)<8 or len(set(s['y'] for s in samples))<2:raise ValueError('Insufficient 2026 prior-only training examples')
  m={k:fit([s['f'][k] for s in samples],[s['y'] for s in samples]) for k in ['football','power','form']}
  for k in ['margin','total']:
   m[k]=fit([s['f'][k] for s in samples],[s['g']['home']['score']+(-1 if k=='margin' else 1)*s['g']['away']['score'] for s in samples],False)
  m.update(scenario=None,live=None,liveScore=None,marginInterval80=None,report=None,provisional=True,trainingGames=len(samples),trainedThrough=samples[-1]['g']['date'][:10],trainingDates=[s['g']['date'][:10] for s in samples],trainingSources=[s['g']['source'] for s in samples])
- profiles={tid:{**names[tid],**p,'season':2026} for tid in rows if (p:=profile(rows[tid],elo[tid]))}
- out=dict(league=league,asOf=ASOF,modelVersion='AWM-V3-2026-provisional-1',dataPolicy={'season':2026,'trainingSeason':2026},model=m,profiles=profiles,schedule=source['schedule'],frozen={},coverage={'completedGames':len(history),'profileTeams':len(profiles)},method='Provisional 2026-only fit. Prior-only game features; 60/35/5 blend. No older-season coefficients, external market inputs or validated accuracy claims. Small-sample probabilities are uncalibrated estimates.')
+ profiles={tid:{**names[tid],**p,'season':2026} for tid in rows if (p:=profile(rows[tid],elo[tid],results[tid]))}
+ out=dict(league=league,asOf=ASOF,modelVersion='AWM-V3-2026-provisional-results-2',dataPolicy={'season':2026,'trainingSeason':2026},model=m,profiles=profiles,schedule=source['schedule'],frozen={},coverage={'completedGames':sum(len(r) for r in rows.values())//2,'profileTeams':len(profiles),'resultGames':sum(len(r) for r in results.values())//2,'resultPolicy':'All verified regular-season finals; exhibitions excluded from competitive profiles'},method='Provisional 2026-only fit. Prior-only game features; 60/35/5 blend. No older-season coefficients, external market inputs or validated accuracy claims. Small-sample probabilities are uncalibrated estimates.')
  (ROOT/(league.lower()+'-model.json')).write_text(json.dumps(out,allow_nan=False))
  (ROOT/(league.lower()+'-holdout.json')).write_text('[]')
  print(league,'provisional model:',len(samples),'2026-only prior-game examples;',len(profiles),'profiles')
@@ -91,21 +92,30 @@ def provisional(league,source,history,samples,rows,elo,names):
 
 def train(league):
  source=json.loads((ROOT/(league.lower()+'-history.json')).read_text());history=clean(source['history'],league)
- elo=defaultdict(lambda:1500.);rows=defaultdict(list);samples=[];names={};dates=defaultdict(list)
- for g in history:dates[g['date'][:10]].append(g)
+ elo=defaultdict(lambda:1500.);rows=defaultdict(list);results=defaultdict(list);samples=[];names={};dates=defaultdict(list)
+ if league=='USPORTS':
+  import national
+  indexed={g['id']:national.history_game(g) for g in source['schedule'] if g.get('status')=='final' and g['date']<ASOF and g['date'].startswith('2026-') and not g.get('exhibition') and all(isinstance(g.get(s+'Score'),(int,float)) for s in ('away','home'))}
+  for g in history:
+   if g['id'] in indexed:indexed[g['id']]=g
+  result_history=sorted(indexed.values(),key=lambda g:(g['date'],g['id']))
+ else:result_history=history
+ for g in result_history:dates[g['date'][:10]].append(g)
  for date,games in sorted(dates.items()):
   for g in games:
-   a,h=g['away']['id'],g['home']['id'];ap=profile(rows[a],elo[a]);hp=profile(rows[h],elo[h])
+   a,h=g['away']['id'],g['home']['id'];ap=profile(rows[a],elo[a],results[a]);hp=profile(rows[h],elo[h],results[h])
    if ap and hp and g['away']['score']!=g['home']['score']:samples.append(dict(g=g,f=features(ap,hp,g['neutral']),y=int(g['home']['score']>g['away']['score'])))
   for g in games:
    a,h=g['away']['id'],g['home']['id'];p=1/(1+10**((elo[a]-elo[h])/400));y=.5 if g['home']['score']==g['away']['score'] else int(g['home']['score']>g['away']['score']);delta=20*(y-p);elo[h]+=delta;elo[a]-=delta
    for side in ['away','home']:
-    tid=g[side]['id'];rows[tid].append((g,side));names[tid]={k:v for k,v in g[side].items() if k in ['id','name','short','abbr','logo']}
+    tid=g[side]['id'];results[tid].append((g,side));
+    if all(sum(p['team']==g[s]['id'] for p in g.get('plays',[]))>=25 for s in ('away','home')):rows[tid].append((g,side))
+    names[tid]={k:v for k,v in g[side].items() if k in ['id','name','short','abbr','logo']}
     if league=='USPORTS':
      import national
      t=national.team(tid)
      if t:names[tid]['aliases']=[t[k] for k in ('slug','name','short','abbr')]
- if len(samples)<40:return provisional(league,source,history,samples,rows,elo,names)
+ if len(samples)<40:return provisional(league,source,history,samples,rows,elo,names,results)
  cut=samples[int(len(samples)*.75)]['g']['date'][:10];training=[s for s in samples if s['g']['date'][:10]<cut];hold=[s for s in samples if s['g']['date'][:10]>=cut]
  m={k:fit([s['f'][k] for s in training],[s['y'] for s in training]) for k in ['football','power','form']}
  m['margin']=fit([s['f']['margin'] for s in training],[s['g']['home']['score']-s['g']['away']['score'] for s in training],False)
@@ -148,9 +158,9 @@ def train(league):
   report['liveSnapshots']=len(livehold);report['liveBrier']=float(np.mean([(p-y)**2 for p,y in livehold])) if livehold else None
  m['marginInterval80']=float(np.quantile(abs(res),.8));m['trainedThrough']=training[-1]['g']['date'][:10];m['report']=report
  m['trainingDates']=[s['g']['date'][:10] for s in training]
- profiles={tid:{**names[tid],**p,'season':2026} for tid in rows if (p:=profile(rows[tid],elo[tid]))}
+ profiles={tid:{**names[tid],**p,'season':2026} for tid in rows if (p:=profile(rows[tid],elo[tid],results[tid]))}
  counts=[g[side]['stats']['explosives'] for g in history for side in ['away','home'] if g[side].get('stats')];mean=np.mean(counts);var=np.var(counts);m['explosiveDispersion']=float(mean**2/(var-mean)) if var>mean else None
- out=dict(league=league,asOf=ASOF,modelVersion='AWM-V3-2026-only-1',dataPolicy={'season':2026,'trainingSeason':2026},model=m,profiles=profiles,schedule=source['schedule'],coverage={'completedGames':len(history),'profileTeams':len(profiles)},method='Master Spec v1.0 architecture; coefficients reconstructed from historical feeds. No betting-market inputs. Scenario targets are descriptive conditional estimates, not validated causal winning requirements.')
+ out=dict(league=league,asOf=ASOF,modelVersion='AWM-V3-2026-only-results-2',dataPolicy={'season':2026,'trainingSeason':2026},model=m,profiles=profiles,schedule=source['schedule'],coverage={'completedGames':sum(len(r) for r in rows.values())//2,'profileTeams':len(profiles),'resultGames':sum(len(r) for r in results.values())//2,'resultPolicy':'All verified regular-season finals; exhibitions excluded from competitive profiles'},method='Master Spec v1.0 architecture; coefficients reconstructed from historical feeds. No betting-market inputs. Scenario targets are descriptive conditional estimates, not validated causal winning requirements.')
  (ROOT/(league.lower()+'-model.json')).write_text(json.dumps(out,allow_nan=False))
  (ROOT/(league.lower()+'-holdout.json')).write_text(json.dumps([{'id':s['g']['id'],'date':s['g']['date'],'homeWinProbability':float(p),'homeWon':s['y'],'source':s['g']['source']} for s,p in zip(hold,ps)]))
  print(league,json.dumps(report),flush=True)

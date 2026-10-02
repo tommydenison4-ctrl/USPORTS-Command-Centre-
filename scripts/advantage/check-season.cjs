@@ -37,3 +37,15 @@ for(const id of ['acadia','bishops','mountallison','saintmarys','stfx'])for(cons
 }
 assert.equal(A.project(d,{away:'acadia',home:'stfx',date:d.asOf,neutral:true}).scoreAdjustment,0);
 console.log('Build Matchup conference disclosure, score adjustment, both orientations and same-conference invariance passed');
+
+for(const away of Object.keys(d.profiles))for(const home of Object.keys(d.profiles))if(away!==home)for(const neutral of [true,false]){
+ const p=A.project(d,{away,home,neutral,date:d.asOf});assert(p.available);
+ assert((p.home_win_prob-.5)*(p.home_score-p.away_score)>=0,away+' '+home);
+ assert(p.home_score>=0&&p.away_score>=0);
+}
+for(const [away,home] of [['york','mount-allison'],['mount-allison','york']]){
+ const p=A.project(d,{away,home,neutral:true,date:d.asOf});assert(p.available);assert((p.home_win_prob-.5)*p.margin>0);
+ console.log(away,home,p.away_win_prob,p.away_score,p.home_score);
+}
+assert(A.card({...A.project(d,{away:'york',home:'mount-allison',date:d.asOf}),awayLogo:'https://example.com/york.png',homeLogo:'https://example.com/mta.png'}).includes('alt="York logo"'));
+console.log('All 1,404 matchup/venue score directions agree with probabilities; York–Mount Allison and logo rendering passed');

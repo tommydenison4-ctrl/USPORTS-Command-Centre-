@@ -49,3 +49,19 @@ for(const [away,home] of [['york','mount-allison'],['mount-allison','york']]){
 }
 assert(A.card({...A.project(d,{away:'york',home:'mount-allison',date:d.asOf}),awayLogo:'https://example.com/york.png',homeLogo:'https://example.com/mta.png'}).includes('alt="York logo"'));
 console.log('All 1,404 matchup/venue score directions agree with probabilities; York–Mount Allison and logo rendering passed');
+let venueChecks=0;
+for(const a of Object.keys(d.profiles))for(const b of Object.keys(d.profiles))if(a!==b){
+ const neutral=A.project(d,{away:a,home:b,neutral:true,date:d.asOf});
+ const reversed=A.project(d,{away:b,home:a,neutral:true,date:d.asOf});
+ const aHome=A.project(d,{away:b,home:a,neutral:false,date:d.asOf});
+ const bHome=A.project(d,{away:a,home:b,neutral:false,date:d.asOf});
+ assert(Math.abs(neutral.away_win_prob-reversed.home_win_prob)<1e-10);
+ assert(Math.abs(neutral.away_score-reversed.home_score)<1e-10);
+ const nm=neutral.away_score-neutral.home_score,am=aHome.home_score-aHome.away_score,bm=bHome.away_score-bHome.home_score;
+ assert(am>=nm-1e-10&&bm<=nm+1e-10,a+' '+b+' home margin improves');
+ assert(aHome.home_win_prob>=neutral.away_win_prob-1e-10);
+ assert(bHome.away_win_prob<=neutral.away_win_prob+1e-10);
+ assert(Math.abs(am-Math.min(neutral.total,nm+3))<1e-9);
+ assert.equal(aHome.homeFieldPoints,3);assert.equal(neutral.homeFieldPoints,0);venueChecks++;
+}
+console.log(venueChecks+' pairings: neutral side-swap invariance, both home margins and probabilities improve, three-point venue prior passed');

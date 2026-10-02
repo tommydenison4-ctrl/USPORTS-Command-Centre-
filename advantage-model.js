@@ -25,17 +25,36 @@
  const AUS_TEAMS=new Set(['acadia','bishops','mountallison','saintmarys','stfx']);
  function conferenceStrength(data,p){return data.league==='USPORTS'&&AUS_TEAMS.has(canon(p.id))?2:10;}
  function matchupProbability(data,a,h,neutral=false){
-  const f=features(a,h,neutral),m=data.model;
-  const components={football:calculate(m.football,f.football),power:calculate(m.power,f.power),form:calculate(m.form,f.form)};
+  const us=data.league==='USPORTS',f=features(a,h,us?true:neutral),m=data.model;
+  const reverse=us?features(h,a,true):null;
+  const component=k=>{const forward=calculate(m[k],f[k]);const backward=us?calculate(m[k],reverse[k]):null;return !finite(forward)||(us&&!finite(backward))?null:us?(forward+1-backward)/2:forward};
+  const components={football:component('football'),power:component('power'),form:component('form')};
   if(Object.values(components).some(x=>!finite(x)))return {homeWin:null,components};
   const base=.6*components.football+.35*components.power+.05*components.form;
   const away=conferenceStrength(data,a),home=conferenceStrength(data,h);
-  const homeWin=away===home?base:base*home/(base*home+(1-base)*away);
-  return {homeWin,components,conferenceStrength:data.league==='USPORTS'?{away,home,baseHomeWin:base,method:'Editorial strength ratio applied to win odds; AUS 2/10, other conferences 10/10 baseline.'}:null};
+  const neutralWin=away===home?base:base*home/(base*home+(1-base)*away);
+  let homeWin=neutralWin,neutralMargin=null,total=null,margin=null,scoreReconciled=false;
+  if(us){
+   // Antisymmetric neutral scores eliminate fitted intercept bias when sides swap.
+   const forward=calculate(m.margin,f.margin),backward=calculate(m.margin,reverse.margin);
+   const rawTotal=calculate(m.total,f.total);if(!finite(forward)||!finite(backward)||!finite(rawTotal))return {homeWin:null,components};total=Math.max(0,rawTotal);
+   neutralMargin=(forward-backward)/2+total*(neutralWin-base);
+   scoreReconciled=(neutralWin-.5)*neutralMargin<0||(neutralWin!==.5&&neutralMargin===0);
+   if(scoreReconciled)neutralMargin=total*(2*neutralWin-1);
+   neutralMargin=Math.max(-total,Math.min(total,neutralMargin));
+   const homePoints=neutral?0:3;
+   margin=Math.max(-total,Math.min(total,neutralMargin+homePoints));
+   // Use the neutral score/probability relationship so winner and margin cross
+   // together. Three points is a provisional venue prior, not a fitted claim.
+   const logit=Math.log(Math.max(.000001,neutralWin)/Math.max(.000001,1-neutralWin));
+   const slope=Math.abs(neutralMargin)>1e-8?Math.abs(logit/neutralMargin):.1;
+   homeWin=neutral?neutralWin:sigmoid(logit+homePoints*slope);
+  }
+  return {homeWin,components,neutralMargin,margin,total,scoreReconciled,homeFieldPoints:us?(neutral?0:3):null,conferenceStrength:us?{away,home,baseHomeWin:base,neutralHomeWin:neutralWin,method:'Editorial strength ratio applied to neutral win odds; AUS 2/10, other conferences 10/10 baseline.'}:null};
  }
  function strengthNote(p){
   const s=p?.conferenceStrength;if(!p?.available||!s)return '';
-  return `<p class="awm-strength"><b>Conference strength:</b> ${esc(p.awayName)} ${s.away}/10 · ${esc(p.homeName)} ${s.home}/10. ${s.away===s.home?'Equal conference strength: no adjustment.':`Applied to win probability and projected score. ${esc(p.awayName)} win chance: ${((1-s.baseHomeWin)*100).toFixed(1)}% before → ${(p.away_win_prob*100).toFixed(1)}% after.`}</p>`;
+  return `<p class="awm-strength"><b>Venue:</b> ${p.homeFieldPoints?esc(p.homeName)+' home · provisional +3 points':'Neutral field · no home advantage'}. <b>Conference strength:</b> ${esc(p.awayName)} ${s.away}/10 · ${esc(p.homeName)} ${s.home}/10. ${s.away===s.home?'Equal conference strength: no adjustment.':`Applied to win probability and projected score. ${esc(p.awayName)} neutral win chance: ${((1-s.baseHomeWin)*100).toFixed(1)}% before → ${((1-s.neutralHomeWin)*100).toFixed(1)}% after.`}</p>`;
  }
  function project(data,game){
   if(!data||!game)return {available:false,reason:'Model data is not loaded.'};
@@ -52,17 +71,17 @@
   const f=features(a,h,!!game.neutral),m=data.model;
   const probability=matchupProbability(data,a,h,!!game.neutral),components=probability.components,hp=probability.homeWin;
   if(!finite(hp))return {available:false,reason:'Incomplete model inputs.'};
-  const baseMargin=calculate(m.margin,f.margin),rawTotal=calculate(m.total,f.total);if(!finite(baseMargin)||!finite(rawTotal))return {available:false,reason:'Incomplete score model inputs.'};const total=Math.max(0,rawTotal);
+  const baseMargin=calculate(m.margin,f.margin),rawTotal=calculate(m.total,f.total);if(!finite(baseMargin)||!finite(rawTotal))return {available:false,reason:'Incomplete score model inputs.'};const total=data.league==='USPORTS'?probability.total:Math.max(0,rawTotal);
   // Shift projected scoring share by the same conference probability adjustment.
   // The total stays fixed; equal-strength games retain their original score forecast.
-  const strength=probability.conferenceStrength,scoreAdjustment=strength?total*(hp-strength.baseHomeWin):0;
+  const strength=probability.conferenceStrength,scoreAdjustment=strength?total*((strength.neutralHomeWin??hp)-strength.baseHomeWin):0;
   const adjustedMargin=scoreAdjustment?Math.max(-total,Math.min(total,baseMargin+scoreAdjustment)):baseMargin;
   // Independent score regression can contradict the winner blend. Reconcile only
   // those USPORTS forecasts using the final probability as the scoring share.
   const scoreReconciled=data.league==='USPORTS'&&((hp-.5)*adjustedMargin<0||(hp!==.5&&adjustedMargin===0));
-  const margin=scoreReconciled?total*(2*hp-1):adjustedMargin;
+  const margin=data.league==='USPORTS'?probability.margin:scoreReconciled?total*(2*hp-1):adjustedMargin;
   const hs=Math.max(0,(total+margin)/2),as=Math.max(0,(total-margin)/2),age=Math.max(...[a,h].map(p=>(Date.parse(date)-Date.parse(p.lastGame))/86400000));
-  return {available:true,league:data.league,gameId:String(game.id||''),date,asOf:data.asOf,modelVersion:data.modelVersion+(data.league==='USPORTS'?'+AUS-strength-2-v3':''),awayName:a.name,homeName:h.name,away_score:as,home_score:hs,home_win_prob:hp,away_win_prob:1-hp,margin:hs-as,total:hs+as,marginInterval:finite(m.marginInterval80)?[margin-m.marginInterval80,margin+m.marginInterval80]:null,expected:f.expected,components,conferenceStrength:probability.conferenceStrength,scoreAdjustment,scoreReconciled,confidence:m.provisional?'Provisional · 2026 only · '+m.trainingGames+' training games':age>120?'Prior-season data':data.league==='USPORTS'?'Limited validation sample':'Historical-feed model',source:'Advantage Winner Model V3',sources:[...new Set([...a.sources,...h.sources])],profileDates:{away:a.lastGame,home:h.lastGame},powerGap:f.power[0],ageDays:age,report:m.report};
+  return {available:true,league:data.league,gameId:String(game.id||''),date,asOf:data.asOf,modelVersion:data.modelVersion+(data.league==='USPORTS'?'+venue-symmetric-v4':''),awayName:a.name,homeName:h.name,away_score:as,home_score:hs,home_win_prob:hp,away_win_prob:1-hp,homeFieldPoints:probability.homeFieldPoints,margin:hs-as,total:hs+as,marginInterval:finite(m.marginInterval80)?[margin-m.marginInterval80,margin+m.marginInterval80]:null,expected:f.expected,components,conferenceStrength:probability.conferenceStrength,scoreAdjustment,scoreReconciled:data.league==='USPORTS'?probability.scoreReconciled:scoreReconciled,confidence:m.provisional?'Provisional · 2026 only · '+m.trainingGames+' training games':age>120?'Prior-season data':data.league==='USPORTS'?'Limited validation sample':'Historical-feed model',source:'Advantage Winner Model V3',sources:[...new Set([...a.sources,...h.sources])],profileDates:{away:a.lastGame,home:h.lastGame},powerGap:f.power[0],ageDays:age,report:m.report};
  }
  function scenario(data,p,side,target,turnoverDiff=0){
   if(!p?.available||!p.expected?.away||!p.expected?.home||!finite(p.powerGap)||!data?.model?.scenario||!['away','home'].includes(side))return null;

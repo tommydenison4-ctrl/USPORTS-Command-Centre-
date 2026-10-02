@@ -9,8 +9,9 @@ ASOF=os.environ.get('AWM_ASOF',datetime.datetime.now(datetime.timezone.utc).date
 def entries(node):
     yield from node.get('standings',{}).get('entries',[])
     for child in node.get('children',[]):yield from entries(child)
-def build():
-    leagues=json.loads((ROOT/'data/advantage-leagues.json').read_text());bundle={}
+def build(only=None):
+    leagues=json.loads((ROOT/'data/advantage-leagues.json').read_text());bundle=json.loads((ROOT/'data/season-watch.json').read_text()) if only else {}
+    if only:leagues=[only]
     cache=Path(os.environ.get('AWM_CACHE_DIR',str(ingest.CACHE)))
     for league in leagues:
         players={};games=set();teams=set();eligible=None;eligibility_source=None
@@ -28,10 +29,10 @@ def build():
             row['yards']+=yards;row['touchdowns']+=td;row['interceptions']+=interceptions;row['games'].add(source)
             p['sources'].add(source);p['dates'].add(date);games.add(source);teams.add(str(team['id']))
         if league=='USPORTS':
-            import train
-            h=Path(os.environ.get('AWM_HISTORY_DIR',str(BASE)))/'usports-history.json'
-            verified=train.clean(json.loads(h.read_text())['history'],'USPORTS')
-            result={'season':2026,'asOf':ASOF,'games':[dict(date=g['date'][:10],away=g['away']['id'],home=g['home']['id'],awayScore=g['away']['score'],homeScore=g['home']['score'],source=g['source']) for g in verified if g.get('complete') and g['date'].startswith('2026-')]}
+            import national
+            index=json.loads((ROOT/'data/national-schedule-usports.json').read_text())
+            finals=[g for g in index['games'] if g['status']=='final' and not g.get('exhibition') and g['date']<ASOF]
+            result={'season':2026,'asOf':ASOF,'games':[dict(date=g['date'],away=national.norm(g['away']),home=national.norm(g['home']),awayScore=g['awayScore'],homeScore=g['homeScore'],source=g.get('boxscore') or g['source']) for g in finals]}
             (ROOT/'data/verified-results-usports.json').write_text(json.dumps(result,allow_nan=False))
             source=json.loads((ROOT/'data/player-leaders-usports.json').read_text())
             for g in source['games']:

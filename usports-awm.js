@@ -36,7 +36,7 @@ window.US_AWM=(()=>{
    let l=A.live(data,p,{awayScore,homeScore,remaining,complete});
    if(!l&&p?.available&&Number.isFinite(awayScore)&&Number.isFinite(homeScore)){
     if(complete){
-     l={homeWin:homeScore===awayScore?.5:homeScore>awayScore?1:0,final:true,mode:'Final result'};
+     l={homeWin:homeScore===awayScore ? .5 : (homeScore>awayScore ? 1 : 0),final:true,mode:'Final result'};
     }else if(Number.isFinite(remaining)&&remaining>=0&&remaining<=3600&&Number.isFinite(p.home_win_prob)){
      const prior=Math.max(.001,Math.min(.999,p.home_win_prob));
      const priorLogit=Math.log(prior/(1-prior));

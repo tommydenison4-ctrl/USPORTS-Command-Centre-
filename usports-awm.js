@@ -29,7 +29,27 @@ window.US_AWM=(()=>{
   );
   if(verifiedLive){
    const remaining=q&&t?(4-q)*900+Number(t[1])*60+Number(t[2]):null;
-   const l=A.live(data,p,{awayScore,homeScore,remaining,complete});
+   // Start live probability at the frozen pregame prior, then move it from
+   // verified score + time. AdvantageModel.live remains the richer path when
+   // its inputs are complete; this fallback guarantees a usable live number
+   // whenever the GameCast itself has a verified score/clock.
+   let l=A.live(data,p,{awayScore,homeScore,remaining,complete});
+   if(!l&&p?.available&&Number.isFinite(awayScore)&&Number.isFinite(homeScore)){
+    if(complete){
+     l={homeWin:homeScore===awayScore?.5:homeScore>awayScore?1:0,final:true,mode:'Final result'};
+    }else if(Number.isFinite(remaining)&&remaining>=0&&remaining<=3600&&Number.isFinite(p.home_win_prob)){
+     const prior=Math.max(.001,Math.min(.999,p.home_win_prob));
+     const priorLogit=Math.log(prior/(1-prior));
+     const margin=homeScore-awayScore;
+     const r=Math.max(0,Math.min(1,remaining/3600));
+     // At kickoff with a 0-0 score, scoreShift is zero, so live === pregame.
+     // As the game advances, the same scoring margin carries more information.
+     const scoreScale=Math.max(2.75,10*Math.sqrt(r+.08));
+     const scoreShift=margin/scoreScale;
+     const homeWin=1/(1+Math.exp(-(priorLogit+scoreShift)));
+     l={homeWin,final:false,mode:'Pregame prior + verified score and clock'};
+    }
+   }
    const liveCard=l
     ?`<section class="awm-card awm-live-only"><small>ADVANTAGE · LIVE WIN PROBABILITY</small><b>${A.esc(TEAM[g.home].short)} ${(l.homeWin*100).toFixed(1)}% · ${A.esc(TEAM[g.away].short)} ${((1-l.homeWin)*100).toFixed(1)}%</b><p>${A.esc(l.mode||'Final result')}</p></section>`
     :`<section class="awm-card awm-live-only"><small>ADVANTAGE · LIVE WIN PROBABILITY</small><b>Live probability updating</b><p>The verified live feed is active. Waiting for the next usable clock state.</p></section>`;

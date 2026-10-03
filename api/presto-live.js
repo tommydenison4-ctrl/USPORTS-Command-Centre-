@@ -286,7 +286,7 @@ function teamAndPlayerStats(data){
   const roots=Array.isArray(data?.team)?data.team:(data?.team&&typeof data.team==='object'?Object.values(data.team):[]);
   const playerName=(o)=> text(o?.name||o?.player||o?.fullname||o?.full_name||o?.displayName||o?.display_name||o?.athlete||o?.playerName||o?.player_name||([o?.firstName||o?.first_name,o?.lastName||o?.last_name].filter(Boolean).join(' '))).trim();
   const teamId=(o,fallback='')=>text(o?.id||o?.teamId||o?.team_id||o?.code||o?.abbr||o?.team||fallback).trim();
-  const relevantKey=k=>/(?:yds?|yards?|att|attempts?|cmp|comp|completions?|td|touchdowns?|int|interceptions?|rec|receptions?|car|carries?|rush|pass|tkl|tackles?|sack|fg|xp|punt|avg|long|solo|assist)/i.test(k);
+  const relevantKey=k=>/(?:yds?|yards?|att|attempts?|cmp|comp|completions?|td|touchdowns?|int|interceptions?|rec|receptions?|car|carries?|rush|pass|tkl|tackles?|sack|fg|xp|punt|avg|long|solo|assist|tgt|target|fum)/i.test(k);
   function collectStats(o,prefix='',out={},depth=0){
     if(depth>5||o==null)return out;
     if(Array.isArray(o)){o.forEach((v,i)=>collectStats(v,prefix?`${prefix}.${i}`:String(i),out,depth+1));return out}

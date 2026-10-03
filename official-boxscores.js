@@ -8,6 +8,10 @@
   if(g?.status==='final'&&location.hash!=='#game='+id)history.pushState(null,'','#game='+id);
   const token=++sequence,hash=location.hash;
   if(r?.fullBoxscore){try{const response=await fetch(r.fullBoxscore,{cache:'no-cache'});if(response.ok){const full=await response.json();if(full.id===r.id)r=full}}catch{}if(token!==sequence||location.hash!==hash)return}
+  if(!r&&g?.status==='final'){
+   try{const response=await fetch('/api/final-games?date='+g.date.replace(/-/g,'').slice(0,8)+'&away='+encodeURIComponent(g.away)+'&home='+encodeURIComponent(g.home)+'&detail=1',{cache:'no-store'});const data=await response.json();const x=data.games?.[0];if(x?.final&&x.record&&x.awayScore!=null&&x.homeScore!=null){r={...x.record,id:g.id};g.awayScore=x.awayScore;g.homeScore=x.homeScore;window.US_PLAYER_DATA.games.push(r)}}catch{}
+   if(token!==sequence||location.hash!==hash)return;
+  }
   if(!r)return previous.apply(this,arguments);
   const a=TEAM[g.away],h=TEAM[g.home];
   const tables=(r.tables||[]).map(t=>'<details class="panel"><summary>'+esc(t.title)+'</summary><div class="football-scroll"><table class="statsTable"><tbody>'+t.rows.map(row=>'<tr>'+row.map(cell=>'<td>'+esc(cell)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div></details>').join('');

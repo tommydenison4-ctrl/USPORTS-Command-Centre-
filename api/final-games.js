@@ -92,11 +92,13 @@ module.exports=async function handler(req,res){
  const date=String(req.query.date||'').replace(/\D/g,'').slice(0,8);if(date.length!==8)return send(res,400,{ok:false,error:'date=YYYYMMDD required'});
  const away=String(req.query.away||''),home=String(req.query.home||''),detail=String(req.query.detail||'')==='1';
  if(!detail){let body='';await require('./scoreboard')({method:'GET',query:{date}},{setHeader(){},end(s){body=s}});const finals=JSON.parse(body||'{}').games||[];const g=finals.find(g=>matches({visitor:g.away,home:g.home},away,home));if(g)return send(res,200,{ok:true,date,count:1,games:[{...g,page:g.source,visitor:g.away,home:g.home}]});}
+ const known=require('../data/completed-boxscores.json').find(r=>r.date.replace(/-/g,'')===date&&matches({visitor:r.away,home:r.home},away,home));
+ if(known){const record=require('../'+known.fullBoxscore);return send(res,200,{ok:true,date,count:1,games:[require('./boxscore-details').response(record)]});}
  const direct=sidearmFallback(date,away,home,detail);
  if(direct)return send(res,200,{ok:true,date,count:1,games:[direct],mode:'verified-completed-registry'});
  const scheduleUrls=[
   'https://en.usports.ca/sports/fball/2026-27/schedule',
-  'https://en.usports.ca/sports/fball/composite',
+  'https://en.usports.ca/sports/fball/composite?d='+date.slice(0,4)+'-'+date.slice(4,6)+'-'+date.slice(6),
   'https://oua.ca/sports/fball/2026-27/schedule',
   'https://www.atlanticuniversitysport.com/sports/fball/2026-27/schedule',
   'https://atlanticuniversitysport.com/sports/fball/2026-27/schedule',
@@ -106,7 +108,7 @@ module.exports=async function handler(req,res){
  ];
  let pages=[];const scans=await Promise.allSettled(scheduleUrls.map(u=>scanSchedule(u,date)));for(const scan of scans)if(scan.status==='fulfilled')pages.push(...scan.value);pages=[...new Set(pages)].slice(0,30);
  const games=[];
- for(const page of pages){try{const b=await getText(page);if(!b.ok)continue;const meta=metaFromHtml(b.text,page);if(!meta.event||!meta.hash||!matches(meta,away,home))continue;const live=await fetchLive(meta,b.cookie);const j=live?.json;if(!j||j.error)continue;const sc=score(j);games.push({page,boxId:(page.match(/\/([^/]+)\.xml$/)||[])[1]||'',visitor:meta.visitor,home:meta.home,visitorLogo:meta.visitorLogo,homeLogo:meta.homeLogo,final:meta.final||String(j?.status?.complete||'').toUpperCase()==='Y',awayScore:sc.away,homeScore:sc.home,...(detail?{quarters:quarters(j),teamStats:compactStats(j),plays:plays(j),drives:drives(j),lastUpdated:String(j?.network?.lastUpdated||'')}:{})});if(detail&&away&&home)break;}catch{}}
+ for(const page of pages){try{const b=await getText(page);if(!b.ok)continue;const record=require('./boxscore-details').parse(b.text,{id:date.slice(0,4)+'-'+date.slice(4,6)+'-'+date.slice(6)+'-'+norm(away)+'-'+norm(home),date:date.slice(0,4)+'-'+date.slice(4,6)+'-'+date.slice(6),away,home,source:page,final:metaFromHtml(b.text,page).final});if(record){games.push(require('./boxscore-details').response(record));if(away&&home)break;continue;}const meta=metaFromHtml(b.text,page);if(!meta.event||!meta.hash||!matches(meta,away,home))continue;const live=await fetchLive(meta,b.cookie);const j=live?.json;if(!j||j.error)continue;const sc=score(j);games.push({page,boxId:(page.match(/\/([^/]+)\.xml$/)||[])[1]||'',visitor:meta.visitor,home:meta.home,visitorLogo:meta.visitorLogo,homeLogo:meta.homeLogo,final:meta.final||String(j?.status?.complete||'').toUpperCase()==='Y',awayScore:sc.away,homeScore:sc.home,...(detail?{quarters:quarters(j),teamStats:compactStats(j),plays:plays(j),drives:drives(j),lastUpdated:String(j?.network?.lastUpdated||'')}:{})});if(detail&&away&&home)break;}catch{}}
  if(!games.length){const fb=sidearmFallback(date,away,home,detail);if(fb)games.push(fb);}
  send(res,200,{ok:true,date,count:games.length,games});
 };

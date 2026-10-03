@@ -17,7 +17,7 @@ function parse(html,g){
   for(let side=0;side<2;side++){const t=cat[side],h=t.rows[0].map(norm),yi=h.indexOf(category==='rushing'&&h.includes('net')?'net':'yds');if(yi<0)continue;
    const val=(row,k)=>{const v=row[h.indexOf(k)];return /^-?\d+$/.test(v||'')?Number(v):null};
    const rows=t.rows.slice(1).filter(r=>r.length>yi&&!/^(team|totals?)$/i.test(r[0])&&/^-?\d+$/.test(r[yi])).map(r=>({name:r[0],yards:Number(r[yi]),touchdowns:val(r,'td'),interceptions:val(r,'int'),completions:val(r,'cmp'),attempts:val(r,'att'),receptions:val(r,'rec')??val(r,'no')}));
-   if(rows.length)record.teams[canonical(ids[side])]={...(record.teams[canonical(ids[side])]||{}),[category]:rows};
+   record.teams[canonical(ids[side])]={...(record.teams[canonical(ids[side])]||{}),[category]:rows};
   }
  }
  return Object.keys(record.teams).length?record:null;

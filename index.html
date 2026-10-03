@@ -4982,65 +4982,8 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
 .v113-leader-row .who{font-size:11px;font-weight:900;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .v113-leader-row .yds{font-size:12px;font-weight:1000;color:#70e1ba}
 </style>
-<script id="v113-final-card-leaders">
-/* V113 — final schedule cards: verified final score + actual game leaders, never pregame probability. */
-(function(){
-  const fetched=new Map(), pending=new Map();
-  const ymd=s=>String(s||'').replace(/-/g,'');
-  const esc113=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  function isFinal(g){
-    const st=window.LIVE_STORE?.games?.[g.id];
-    const snap=(window.V102_LIVE?.g?.id===g.id)?window.V102_LIVE.snap:null;
-    return g.status==='final'||/final/i.test(String(st?.q||''))||/final/i.test(String(snap?.status?.period||snap?.status?.label||''));
-  }
-  function rows113(leaders,g){
-    return window.US_PlayerLeaders?.compact(window.US_PLAYER_DATA,g,true,leaders)||'';
-  }
 
-  function decorate(g,x){
-    if(!g||!x||x.final!==true||x.awayScore==null||x.homeScore==null)return;
-    if(x.awayScore!=null&&x.awayScore!==''&&Number.isFinite(Number(x.awayScore)))g.awayScore=Number(x.awayScore);
-    if(x.homeScore!=null&&x.homeScore!==''&&Number.isFinite(Number(x.homeScore)))g.homeScore=Number(x.homeScore);
-    g.status='final';
-    if(x.record&&window.US_PLAYER_DATA){const rows=window.US_PLAYER_DATA.games;const i=rows.findIndex(r=>r.id===g.id);const record={...x.record,id:g.id};if(i<0)rows.push(record);else rows[i]=record;}
-    window.BOX=window.BOX||{};
-    BOX[g.id]={...(BOX[g.id]||{}),...(x.quarters?{quarters:x.quarters}:{}),...(Array.isArray(x.teamStats)&&x.teamStats.length?{teamstats:x.teamStats}:{}),...(x.leaders?{leaders:x.leaders}:{}),source:x.page||BOX[g.id]?.source||''};
-    let card=document.querySelector('.gameCard[data-game-id="'+CSS.escape(g.id)+'"]');
-    if(!card)return;
-    if(!card.querySelector('.gameStatus.final')&&typeof window.gameCard==='function'){
-      card.outerHTML=window.gameCard(g);
-      card=document.querySelector('.gameCard[data-game-id="'+CSS.escape(g.id)+'"]');
-      if(!card)return;
-    }
-    const scores=card.querySelectorAll('.score');
-    if(scores.length>=2){scores[0].textContent=g.awayScore;scores[1].textContent=g.homeScore}
-    card.querySelectorAll('.awm-card,.v113-final-leaders').forEach(n=>n.remove());
-    const body=rows113(x.leaders||BOX[g.id]?.leaders,g);
-    if(body){
-      const box=document.createElement('div');box.className='v113-final-leaders';
-      box.innerHTML='<small>FINAL · GAME LEADERS</small>'+body;
-      const action=card.querySelector('.gameAction'); action?card.insertBefore(box,action):card.appendChild(box);
-    }
-  }
-  async function load(g){
-    if(pending.has(g.id))return pending.get(g.id);
-    const last=fetched.get(g.id);if(last&&Date.now()-last.time<60000){decorate(g,last.data);return last.data}
-    const a=window.TEAM?.[g.away],h=window.TEAM?.[g.home];
-    const p=fetch('/api/final-games?date='+encodeURIComponent(ymd(g.date))+'&away='+encodeURIComponent(a?.short||a?.name||g.away)+'&home='+encodeURIComponent(h?.short||h?.name||g.home)+'&detail=1',{cache:'no-store'})
-      .then(r=>r.ok?r.json():null).then(j=>j?.games?.[0]||null).then(x=>{if(x){fetched.set(g.id,{time:Date.now(),data:x});decorate(g,x)}return x}).catch(()=>null).finally(()=>pending.delete(g.id));
-    pending.set(g.id,p);return p;
-  }
-  function sweep(){
-    document.querySelectorAll('.gameCard[data-game-id]').forEach(card=>{
-      const g=(typeof GAMES!=='undefined'?GAMES:[]).find(x=>x.id===card.dataset.gameId);if(g&&isFinal(g))load(g);
-    });
-  }
-  const oldUpdate=window.updateCal;if(typeof oldUpdate==='function')window.updateCal=function(){const r=oldUpdate.apply(this,arguments);setTimeout(sweep,0);return r};
-  const oldHome=window.renderHome;if(typeof oldHome==='function')window.renderHome=function(){const r=oldHome.apply(this,arguments);setTimeout(sweep,0);return r};
-  setInterval(sweep,10000);setTimeout(sweep,500);
-})();
-</script>
-<script src="final-scores.js?v=20261003final1"></script>
+<script src="final-scores.js?v=20261003autofinal2"></script>
 <script src="player-box-stats.js?v=20261003stats1"></script>
 <script src="game-highlights.js?v=20261003clips2"></script>
-<script src="completed-boxscores-data.js?v=20261003finalboxes1"></script><script src="game-card-details.js?v=20261003cards1"></script></body></html>
+<script src="completed-boxscores-data.js?v=20261003finalboxes1"></script><script src="game-card-details.js?v=20261003cards1"></script><script src="final-boxscore-sync.js?v=20261003autosync1"></script></body></html>

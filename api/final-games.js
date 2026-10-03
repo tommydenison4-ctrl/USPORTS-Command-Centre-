@@ -87,7 +87,7 @@ function sidearmFallback(date,away,home,detail){
     ...(detail?{quarters:g.quarters,teamStats:g.teamStats,leaders:g.leaders,plays:[],drives:[],lastUpdated:'verified-final'}:{})};
 }
 
-module.exports=async function handler(req,res){
+async function legacyHandler(req,res){
  if(req.method!=='GET')return send(res,405,{ok:false,error:'GET only'});
  const date=String(req.query.date||'').replace(/\D/g,'').slice(0,8);if(date.length!==8)return send(res,400,{ok:false,error:'date=YYYYMMDD required'});
  const away=String(req.query.away||''),home=String(req.query.home||''),detail=String(req.query.detail||'')==='1';
@@ -111,4 +111,30 @@ module.exports=async function handler(req,res){
  for(const page of pages){try{const b=await getText(page);if(!b.ok)continue;const record=require('./boxscore-details').parse(b.text,{id:date.slice(0,4)+'-'+date.slice(4,6)+'-'+date.slice(6)+'-'+norm(away)+'-'+norm(home),date:date.slice(0,4)+'-'+date.slice(4,6)+'-'+date.slice(6),away,home,source:page,final:metaFromHtml(b.text,page).final});if(record){games.push(require('./boxscore-details').response(record));if(away&&home)break;continue;}const meta=metaFromHtml(b.text,page);if(!meta.event||!meta.hash||!matches(meta,away,home))continue;const live=await fetchLive(meta,b.cookie);const j=live?.json;if(!j||j.error)continue;const sc=score(j);games.push({page,boxId:(page.match(/\/([^/]+)\.xml$/)||[])[1]||'',visitor:meta.visitor,home:meta.home,visitorLogo:meta.visitorLogo,homeLogo:meta.homeLogo,final:meta.final||String(j?.status?.complete||'').toUpperCase()==='Y',awayScore:sc.away,homeScore:sc.home,...(detail?{quarters:quarters(j),teamStats:compactStats(j),plays:plays(j),drives:drives(j),lastUpdated:String(j?.network?.lastUpdated||'')}:{})});if(detail&&away&&home)break;}catch{}}
  if(!games.length){const fb=sidearmFallback(date,away,home,detail);if(fb)games.push(fb);}
  send(res,200,{ok:true,date,count:games.length,games});
+};
+
+// Coalesce callers and use the date-specific national index before broad discovery.
+const detailCache=new Map(),detailPending=new Map();
+function ready(r){return r?.tables?.length&&Object.values(r.teams||{}).length===2&&Object.values(r.teams).every(t=>['passing','rushing','receiving'].every(k=>Array.isArray(t[k])))}
+async function getFinalDetails(req){
+ const date=String(req.query.date||'').replace(/\D/g,'').slice(0,8),away=String(req.query.away||''),home=String(req.query.home||'');
+ const indexed=require('../data/completed-boxscores.json').find(r=>r.date.replace(/-/g,'')===date&&matches({visitor:r.away,home:r.home},away,home));
+ if(indexed)return {ok:true,date,games:[require('./boxscore-details').response(require('../'+indexed.fullBoxscore))]};
+ let body='';await require('./scoreboard')({method:'GET',query:{date}},{setHeader(){},end(s){body=s}});
+ const confirmed=(JSON.parse(body||'{}').games||[]).find(g=>matches({visitor:g.away,home:g.home},away,home));
+ if(confirmed?.boxscore){
+  const source=new URL(confirmed.boxscore);if(source.protocol!=='https:'||source.hostname!=='en.usports.ca'||!source.pathname.startsWith('/sports/fball/2026-27/boxscores/'+date+'_'))return {ok:true,date,games:[]};
+  try{const html=await getText(source.href);if(html.ok){const r=require('./boxscore-details').parse(html.text,{...confirmed,source:source.href});if(r&&r.awayScore===confirmed.awayScore&&r.homeScore===confirmed.homeScore)return {ok:true,date,games:[require('./boxscore-details').response(r)]}}}catch{}
+  return {ok:true,date,games:[{...confirmed,page:source.href}],pendingStats:true};
+ }
+ if(confirmed)return {ok:true,date,games:[{...confirmed,page:confirmed.source}],pendingStats:true};
+ let result;await legacyHandler(req,{setHeader(){},end(s){result=JSON.parse(s)}});return result||{ok:true,date,games:[]};
+}
+module.exports=async function handler(req,res){
+ if(req.method!=='GET'||String(req.query.detail)!=='1')return legacyHandler(req,res);
+ const date=String(req.query.date||'').replace(/\D/g,'');if(!/^2026\d{4}$/.test(date))return send(res,400,{ok:false,error:'2026 date required'});
+ const key=[date,norm(req.query.away),norm(req.query.home)].join('|'),cached=detailCache.get(key);
+ if(cached&&Date.now()<cached.until)return send(res,200,cached.body);
+ if(!detailPending.has(key))detailPending.set(key,getFinalDetails(req).then(body=>{const full=body.games?.some(g=>ready(g.record));if(detailCache.size>=200)detailCache.delete(detailCache.keys().next().value);detailCache.set(key,{body,until:Date.now()+(full?300000:10000)});return body}).finally(()=>detailPending.delete(key)));
+ try{return send(res,200,await detailPending.get(key))}catch{return send(res,200,{ok:true,date,games:[],pendingStats:true})}
 };

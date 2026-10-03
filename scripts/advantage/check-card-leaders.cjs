@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),A=require('../../advantage-model.js');
+const data=JSON.parse(fs.readFileSync('data/player-leaders-usports.json')),schedule=vm.runInNewContext(fs.readFileSync('national-schedule-data.js','utf8')+';window.US_NATIONAL_SCHEDULE',{window:{}});
+const ctx={AdvantageModel:A,US_NATIONAL_SCHEDULE:schedule};vm.createContext(ctx);vm.runInContext(fs.readFileSync('player-leaders.js','utf8'),ctx);
+assert.equal(ctx.US_PlayerLeaders.shortName('Matt Linn'),'M. Linn');assert.equal(ctx.US_PlayerLeaders.shortName('Caelan Gray-Stapleton'),'C. Gray-Stapleton');
+const g={date:'2026-09-26',away:'york',home:'laurier'},rows=ctx.US_PlayerLeaders.postgame(data,g);assert.equal(rows.length,3);assert.ok(rows.every(r=>r.leader));assert.equal(rows[0].leader.name,'Will Russell');
+const tiny={season:2026,games:[{date:'2026-08-22',exhibition:true,teams:{york:{passing:[{name:'Exhibition Player',yards:999}]}}},{date:'2026-09-12',teams:{york:{passing:[{name:'Past Leader',yards:100},{name:'Other Player',yards:20}]}}},{date:'2026-09-26',teams:{york:{passing:[{name:'Future Player',yards:900}]}}}]};
+const before=ctx.US_PlayerLeaders.season(tiny,g)[0].teams[0];assert.equal(before.leader.name,'Past Leader');assert.equal(before.leader.yards,100);assert.equal(before.games,1);
+const fallback=ctx.US_PlayerLeaders.postgame({games:[]},g,{pass:[['Small Player','york',5],['Big Player','laurier',100]]});assert.equal(fallback[0].leader.name,'Big Player');
+console.log('PASS: actual game leaders, short names, season totals exclude kickoff/future and exhibition games.');
+const cards={AdvantageModel:A,GAMES:schedule.games,US_PlayerLeaders:ctx.US_PlayerLeaders,document:{querySelectorAll:()=>[],getElementById:()=>({})},MutationObserver:class{observe(){}},queueMicrotask:f=>f(),addEventListener(){}};cards.window=cards;vm.runInNewContext(fs.readFileSync('game-card-details.js','utf8'),cards);
+const events=cards.USGameCardDetails.events;assert.equal(Object.keys(events).length,19);for(const key of Object.keys(events))assert.ok(schedule.games.some(g=>g.date.slice(0,10)+'-'+g.away+'-'+g.home===key),'OUA.tv listing must match national schedule: '+key);
+assert.match(cards.USGameCardDetails.watch(schedule.games.find(g=>g.id==='2026-10-03-queens-western')),/select-package\/5235/);assert.equal(cards.USGameCardDetails.watch({conference:'RSEQ'}),'');assert.equal(cards.USGameCardDetails.watch({conference:'OUA',pendingParticipants:true}),'');
+assert.equal((cards.USGameCardDetails.watchSchedule({date:'2026-10-03'}).match(/select-package/g)||[]).length,19);
+console.log('PASS: all 19 verified OUA.tv event links match national games; other conferences do not receive OUA.tv claims.');

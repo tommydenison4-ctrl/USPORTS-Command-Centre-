@@ -29,6 +29,7 @@ window.US_AWM=(()=>{
   // LIVE_STORE flag when the feed already has a score, period/clock, or live plays.
   const verifiedLive=complete||(
     Number.isFinite(awayScore)&&Number.isFinite(homeScore)&&
+    !/^(pre|pregame|scheduled)$/i.test(period.trim())&&
     ((q>=1&&q<=4&&!!t)||Array.isArray(d?.plays)&&d.plays.length>0||st?._realLive)
   );
   if(verifiedLive){
@@ -61,7 +62,7 @@ window.US_AWM=(()=>{
    // Actual team/player statistics are rendered by the live GameCast directly below.
    return '<div id="us-awm-panel" data-game-state="live">'+liveCard+'</div>';
   }
-  const html=A.card(p,true,data)+(window.US_PlayerLeaders?.card(window.US_PLAYER_DATA,g)||'');
+  const html=A.card(p,true,data)+(window.USScoreSimulation?.card(p)||'')+(window.US_PlayerLeaders?.card(window.US_PLAYER_DATA,g)||'')+(window.USGameCardDetails?.watch(g)||'')+(window.USGameCardDetails?.watchSchedule(g)||'');
   return '<div id="us-awm-panel" data-game-state="pregame">'+html+'</div>';
  }
  return {forecast,panel,newsLogos,card:g=>A.card(forecast(g)),data};

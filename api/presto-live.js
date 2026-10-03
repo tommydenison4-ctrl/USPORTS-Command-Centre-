@@ -10,6 +10,12 @@ const SOURCES = {
   '20260906_zejw': SOURCE_DEF,
   'zejw': SOURCE_DEF
 };
+// Event identifiers verified on the official October 3 PrimeTime pages.
+const VERIFIED_EVENTS={
+ '2026-10-03-guelph-toronto':{visitor:'Guelph',home:'Toronto',box:'20261003_07bf',event:'07bflszglke35olj',hash:'dlsFOlN2zDjmv4ljKTFUUcnD8QKvJYUz'},
+ '2026-10-03-mount-allison-stfx':{visitor:'Mount Allison',home:'StFX',box:'20261003_n4x7',event:'n4x7cckuh06szkka',hash:'PG3vsDK+DmCBMt8PL/4GJcnD8QKvJYUz'}
+};
+const VERIFIED_BOOTSTRAPS=new Map();
 function send(res, status, body) {
   res.statusCode = status;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -513,9 +519,13 @@ module.exports=async function handler(req,res){
     source={...source,page:'https://oua.ca'+new URL(source.page).pathname};
     try{boot=await bootstrap(source)}catch(e){boot.error=String(e?.message||e)}
   }
+  const registry=VERIFIED_EVENTS[game],savedBoot=VERIFIED_BOOTSTRAPS.get(source.page);
+  if(!boot.ok&&savedBoot)boot=savedBoot;
+  if(!boot.ok&&registry&&source.page.endsWith('/'+registry.box+'.xml'))boot={...boot,ok:true,visitor:registry.visitor,home:registry.home,found:{event:registry.event,hash:registry.hash},cookie:''};
   if(!boot.ok)return send(res,502,{ok:false,game,error:'Official source page temporarily unavailable',upstreamStatus:boot.status});
   const sourceDate=source.page.match(/boxscores\/(\d{8})_/)?.[1];
   if(!expected||sourceDate!==expected.date.replace(/-/g,'')||!namesMatch(boot.visitor,expected.away)||!namesMatch(boot.home,expected.home))return send(res,409,{ok:false,game,error:'Live source does not match the requested teams and date'});
+  VERIFIED_BOOTSTRAPS.set(source.page,boot);
   const identity={gameId:game,...expected};
   const candidates=[];
   if(boot.found) candidates.push({...boot.found,kind:'discovered'});

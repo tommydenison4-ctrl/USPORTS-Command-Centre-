@@ -308,12 +308,15 @@ function teamAndPlayerStats(data){
   function scan(root,tid,path,side=''){
     walk(root,(o,p)=>{
       if(Array.isArray(o)||!o||typeof o!=='object')return;
-      const nm=playerName(o), id=teamId(o,tid), fullPath=`${path}${p.replace(/^\$/,'')}`;
+      const nm=playerName(o), id=tid||teamId(o), fullPath=`${path}${p.replace(/^\$/,'')}`;
       const looksPlayer=!!nm && (/player|athlete|individual|passing|rushing|receiv|defen|tackle/i.test(fullPath) || o.jersey!=null || o.number!=null || o.playerId!=null || o.player_id!=null);
       const stats=collectStats(o);
       if(looksPlayer && Object.keys(stats).length && nm.toUpperCase()!==String(id).toUpperCase() && !/^(TEAM|TOTALS?|OFFENSE|DEFENSE)$/i.test(nm)){
         const key=`${id}|${nm}|${fullPath}`; if(seen.has(key))return; seen.add(key);
-        playerStats.push({team:id,side,name:nm,stats,path:fullPath});
+        const categories={pass:'passing',passing:'passing',rush:'rushing',rushing:'rushing',rcv:'receiving',receiving:'receiving',defense:'defense',defence:'defense'};
+        const groups=Object.entries(o).filter(([k,v])=>categories[k.toLowerCase()]&&v&&typeof v==='object');
+        if(groups.length){for(const [k,v] of groups){const scoped={};for(const [field,value] of Object.entries(v))if(typeof value==='string'||typeof value==='number')scoped[field]=value;playerStats.push({team:id,side,name:nm,category:categories[k.toLowerCase()],stats:scoped,path:fullPath+'.'+k});}}
+        else if(!Object.keys(stats).some(k=>k.includes('.')))playerStats.push({team:id,side,name:nm,stats,path:fullPath});
       }
     });
     // Preserve team-level stat rows for diagnostics/other consumers.

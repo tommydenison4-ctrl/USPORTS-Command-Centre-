@@ -13,14 +13,32 @@ window.US_AWM=(()=>{
 
  function panel(g,d){
   const p=forecast(g),st=typeof LIVE_STORE!=='undefined'?LIVE_STORE.games?.[g.id]:null;
-  let html=A.card(p,true,data)+(window.US_PlayerLeaders?.card(window.US_PLAYER_DATA,g)||'');
-  if(st?._realLive){
-   const q=Number(String(d?.status?.period||st.q||'').match(/[1-4]/)?.[0]);
-   const t=String(d?.status?.clock||st.clock||'').match(/^(\d+):(\d\d)$/);
-   const as=d?.game?.awayScore??st.as,hs=d?.game?.homeScore??st.hs;
-   const l=A.live(data,p,{awayScore:as,homeScore:hs,remaining:q&&t?(4-q)*900+Number(t[1])*60+Number(t[2]):null,complete:/final/i.test(d?.status?.period||st.q||'')});
-   html=`<section class="awm-card"><small>ADVANTAGE · LIVE WIN PROBABILITY</small>${l?`<b>${A.esc(TEAM[g.home].short)} ${(l.homeWin*100).toFixed(1)}% · ${A.esc(TEAM[g.away].short)} ${((1-l.homeWin)*100).toFixed(1)}%</b><p>${A.esc(l.mode||'Final result')}</p>`:'<b>Live probability unavailable</b><p>A frozen prior and verified score/clock are required.</p>'}</section>`+html;
-  }return '<div id="us-awm-panel">'+html+'</div>';
+  const period=String(d?.status?.period??st?.q??'');
+  const clock=String(d?.status?.clock??st?.clock??'');
+  const awayRaw=d?.game?.awayScore??st?.as,homeRaw=d?.game?.homeScore??st?.hs;
+  const awayScore=awayRaw===''||awayRaw==null?NaN:Number(awayRaw);
+  const homeScore=homeRaw===''||homeRaw==null?NaN:Number(homeRaw);
+  const q=Number(period.match(/[1-4]/)?.[0]);
+  const t=clock.match(/^(\d+):(\d\d)$/);
+  const complete=/final/i.test(period)||g?.status==='final';
+  // The verified snapshot is the authority for kickoff. Do not wait for a separate
+  // LIVE_STORE flag when the feed already has a score, period/clock, or live plays.
+  const verifiedLive=complete||(
+    Number.isFinite(awayScore)&&Number.isFinite(homeScore)&&
+    ((q>=1&&q<=4&&!!t)||Array.isArray(d?.plays)&&d.plays.length>0||st?._realLive)
+  );
+  if(verifiedLive){
+   const remaining=q&&t?(4-q)*900+Number(t[1])*60+Number(t[2]):null;
+   const l=A.live(data,p,{awayScore,homeScore,remaining,complete});
+   const liveCard=l
+    ?`<section class="awm-card awm-live-only"><small>ADVANTAGE · LIVE WIN PROBABILITY</small><b>${A.esc(TEAM[g.home].short)} ${(l.homeWin*100).toFixed(1)}% · ${A.esc(TEAM[g.away].short)} ${((1-l.homeWin)*100).toFixed(1)}%</b><p>${A.esc(l.mode||'Final result')}</p></section>`
+    :`<section class="awm-card awm-live-only"><small>ADVANTAGE · LIVE WIN PROBABILITY</small><b>Live probability updating</b><p>The verified live feed is active. Waiting for the next usable clock state.</p></section>`;
+   // Once kickoff is verified, pregame scenarios and projected player leaders disappear.
+   // Actual team/player statistics are rendered by the live GameCast directly below.
+   return '<div id="us-awm-panel" data-game-state="live">'+liveCard+'</div>';
+  }
+  const html=A.card(p,true,data)+(window.US_PlayerLeaders?.card(window.US_PLAYER_DATA,g)||'');
+  return '<div id="us-awm-panel" data-game-state="pregame">'+html+'</div>';
  }
  return {forecast,panel,newsLogos,card:g=>A.card(forecast(g)),data};
 })();

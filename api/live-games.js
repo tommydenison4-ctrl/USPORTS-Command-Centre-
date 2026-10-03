@@ -9,12 +9,13 @@ function one(html,re){const m=html.match(re);return m?dec(m[1]):'';}
 function boolVal(v){return String(v).toLowerCase()==='true';}
 function cookieHeader(r){try{if(typeof r.headers.getSetCookie==='function'){const a=r.headers.getSetCookie();if(a?.length)return a.map(x=>x.split(';')[0]).join('; ');}}catch{} const raw=r.headers.get('set-cookie');return raw?raw.split(/,(?=[^;,]+=)/).map(x=>x.split(';')[0]).join('; '):'';}
 async function getText(url){const r=await fetch(url,{redirect:'follow',headers:{...HEADERS,'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'}});return {status:r.status,ok:r.ok,text:await r.text(),cookie:cookieHeader(r),url:r.url||url};}
+function confName(html,key){const m=html.match(new RegExp("conf\\."+key+"\\s*=\\s*(['\"])((?:\\\\.|(?!\\1).)*)\\1",'i'));return dec((m?.[2]||'').replace(/\\(['"\\])/g,'$1'));}
 function metaFromHtml(html,page){
   html=dec(html||'');
   const event=one(html,/conf\.eventId\s*=\s*['"]([^'"]+)['"]/i);
   const hash=one(html,/conf\.eventIdHashCode\s*=\s*['"]([^'"]+)['"]/i);
-  const visitor=one(html,/conf\.visitor\s*=\s*['"]([^'"]*)['"]/i);
-  const home=one(html,/conf\.home\s*=\s*['"]([^'"]*)['"]/i);
+  const visitor=confName(html,'visitor');
+  const home=confName(html,'home');
   const pregame=one(html,/conf\.pregame\s*=\s*([^;\n]+)/i).trim();
   const final=one(html,/conf\.statusFinal\s*=\s*['"]?([^;'"\n]+)['"]?/i).trim();
   const visitorLogo=one(html,/conf\.visitorTeamLogo\s*=\s*['"]([^'"]*)['"]/i);

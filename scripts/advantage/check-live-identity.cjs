@@ -6,6 +6,11 @@ function request(query){return new Promise(async resolve=>{const res={setHeader(
 (async()=>{
  let r=await request({game:requested,page,awayId:'MTA',homeId:'STF'});assert.equal(r.status,409);assert(!calls.some(x=>x.includes('liveupdate')),'Wrong participants must be rejected before fetching live scores');
  calls=[];r=await request({game:requested,discover:'1',date:'20261003',away:'mount-allison',home:'stfx'});assert.equal(r.status,404,'Discovery must not fall back to an unrelated box score');
+ const oldFetch=global.fetch;calls=[];
+ global.fetch=async url=>{const u=String(url);calls.push(u);return {ok:!u.includes('en.usports.ca'),status:u.includes('en.usports.ca')?403:200,headers:{get:()=>''},text:async()=>u.includes('liveupdate')?JSON.stringify({status:{period:'2',clock:'10:00'},scores:{score:[{vscore:'7',hscore:'0'}]}}):`conf.visitor="Queen's";conf.home='Western';conf.eventId='event';conf.eventIdHashCode='hash';`}};
+ r=await request({game:'2026-10-03-queens-western',page:'https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_7san.xml',awayId:'QUE',homeId:'WES'});
+ assert.equal(r.status,200,'Unavailable national page must retry verified OUA event');assert.equal(r.body.visitor,"Queen's");assert.equal(r.body.data.identity.away,'queens');assert(calls.some(u=>u.startsWith('https://oua.ca/')));
+ global.fetch=oldFetch;
  const code=fs.readFileSync(require('path').join(__dirname,'../../live-gamecast.js'),'utf8');const prefix=code.slice(code.indexOf('  const esc2'),code.indexOf('  function prob'));
  const a={id:'2026-10-03-laval-concordia',date:'2026-10-03',away:'laval',home:'concordia'},b={id:requested,date:'2026-10-03',away:'mount-allison',home:'stfx'};let resolve;
  const ctx={L:{selected:a.id,source:{page},lastDiscover:0},GAMES:[a,b],TEAM:{laval:{short:'Laval'},concordia:{short:'Concordia'}},LIVE_STORE:{games:{[b.id]:{_realLive:true,as:42,hs:7}}},window:{},esc:String,localStorage:{getItem(){},setItem(){}},sessionStorage:{getItem(){},setItem(){}},fetch:()=>new Promise(r=>resolve=r),console};vm.runInNewContext(prefix,ctx);

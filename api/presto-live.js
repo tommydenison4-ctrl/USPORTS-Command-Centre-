@@ -435,17 +435,18 @@ function discover(html){
   for(const p of patterns){ const m=html.match(p); if(m) return {event:decodeURIComponent(m[1]),hash:decodeURIComponent(m[2])}; }
   return null;
 }
+function confName(html,key){const m=html.match(new RegExp("conf\\."+key+"\\s*=\\s*(['\"])((?:\\\\.|(?!\\1).)*)\\1",'i'));return htmlDecode((m?.[2]||'').replace(/\\(['"\\])/g,'$1'));}
 async function bootstrap(source){
-  const r=await fetch(source.page,{redirect:'follow',headers:{...BASE_HEADERS,'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Upgrade-Insecure-Requests':'1','Sec-Fetch-Site':'none','Sec-Fetch-Mode':'navigate','Sec-Fetch-Dest':'document'}});
+  const r=await fetch(source.page,{signal:AbortSignal.timeout(8000),redirect:'follow',headers:{...BASE_HEADERS,'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Upgrade-Insecure-Requests':'1','Sec-Fetch-Site':'none','Sec-Fetch-Mode':'navigate','Sec-Fetch-Dest':'document'}});
   const html=await r.text();
-  const visitor=htmlDecode(html.match(/conf\.visitor\s*=\s*["']([^"']*)["']/i)?.[1]||'');const home=htmlDecode(html.match(/conf\.home\s*=\s*["']([^"']*)["']/i)?.[1]||'');const found=discover(html); const li=html.toLowerCase().indexOf('liveupdate'); const ei=html.toLowerCase().indexOf('zejwko'); const vm=html.match(/conf\.visitorTeamLogo\s*=\s*['"]([^'"]+)['"]/i); const hm=html.match(/conf\.homeTeamLogo\s*=\s*['"]([^'"]+)['"]/i); return {status:r.status,ok:r.ok,cookie:cookieHeader(r),found,visitor,home,visitorLogo:htmlDecode(vm?.[1]||''),homeLogo:htmlDecode(hm?.[1]||''),sample:html.slice(0,120),liveupdateSnippet:li>=0?html.slice(Math.max(0,li-180),li+500):'',eventSnippet:ei>=0?html.slice(Math.max(0,ei-180),ei+500):''};
+  const visitor=confName(html,'visitor'),home=confName(html,'home');const found=discover(html); const li=html.toLowerCase().indexOf('liveupdate'); const ei=html.toLowerCase().indexOf('zejwko'); const vm=html.match(/conf\.visitorTeamLogo\s*=\s*['"]([^'"]+)['"]/i); const hm=html.match(/conf\.homeTeamLogo\s*=\s*['"]([^'"]+)['"]/i); return {status:r.status,ok:r.ok,cookie:cookieHeader(r),found,visitor,home,visitorLogo:htmlDecode(vm?.[1]||''),homeLogo:htmlDecode(hm?.[1]||''),sample:html.slice(0,120),liveupdateSnippet:li>=0?html.slice(Math.max(0,li-180),li+500):'',eventSnippet:ei>=0?html.slice(Math.max(0,ei-180),ei+500):''};
 }
 async function fetchLive(source,creds,cookie=''){
   const origin=new URL(source.page).origin;
   const u=new URL('/action/sports/liveupdate',origin); u.searchParams.set('e',creds.event); u.searchParams.set('h',creds.hash);
   const headers={...BASE_HEADERS,'Accept':'application/json,text/plain,*/*','X-Requested-With':'XMLHttpRequest','Referer':source.page,'Origin':origin,'Sec-Fetch-Site':'same-origin','Sec-Fetch-Mode':'cors','Sec-Fetch-Dest':'empty'};
   if(cookie) headers.Cookie=cookie;
-  const r=await fetch(u,{method:'GET',redirect:'follow',headers}); const body=await r.text();
+  const r=await fetch(u,{signal:AbortSignal.timeout(8000),method:'GET',redirect:'follow',headers}); const body=await r.text();
   let json=null; try{json=JSON.parse(body)}catch{}
   return {status:r.status,ok:r.ok,json,body:body.slice(0,240),url:u.toString()};
 }
@@ -456,7 +457,7 @@ function normName(v=''){return String(v).toLowerCase().normalize('NFD').replace(
 const canonicalTeam=require('./scoreboard').team;
 function namesMatch(a,b){const x=canonicalTeam(a),y=canonicalTeam(b);return !!x&&x===y;}
 function expectedGame(id){const date=id.slice(0,10),teams=require('../data/usports-teams.json');for(const a of teams)for(const h of teams)if(id===`${date}-${a.slug}-${h.slug}`)return {date,away:a.slug,home:h.slug};return null;}
-async function getHtml(url){try{const r=await fetch(url,{redirect:'follow',headers:{...BASE_HEADERS,'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'}});return r.ok?await r.text():''}catch{return ''}}
+async function getHtml(url){try{const r=await fetch(url,{signal:AbortSignal.timeout(8000),redirect:'follow',headers:{...BASE_HEADERS,'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'}});return r.ok?await r.text():''}catch{return ''}}
 async function discoverSourcePage(date,awayName,homeName){
   const ck=[date,normName(awayName),normName(homeName)].join('|'); const cached=DISCOVERY_CACHE.get(ck); if(cached&&Date.now()-cached.t<6*60*60*1000)return cached.v;
   const urls=[
@@ -473,7 +474,7 @@ async function discoverSourcePage(date,awayName,homeName){
   for(const [u,html] of docs){if(!html)continue;const origin=new URL(u).origin;for(const m of html.matchAll(reAbs))pages.add(m[0]);for(const m of html.matchAll(reRel)){try{pages.add(new URL(m[1],origin).href)}catch{}}}
 
   for(const page of pages){
-    try{const html=htmlDecode(await getHtml(page));if(!html)continue;const vm=html.match(/conf\.visitor\s*=\s*[\"']([^\"']*)[\"']/i);const hm=html.match(/conf\.home\s*=\s*[\"']([^\"']*)[\"']/i);const v=vm?.[1]||'',h=hm?.[1]||'';if(namesMatch(v,awayName)&&namesMatch(h,homeName)){DISCOVERY_CACHE.set(ck,{t:Date.now(),v:page});return page}}catch{}
+    try{const html=htmlDecode(await getHtml(page));if(!html)continue;const v=confName(html,'visitor'),h=confName(html,'home');if(namesMatch(v,awayName)&&namesMatch(h,homeName)){DISCOVERY_CACHE.set(ck,{t:Date.now(),v:page});return page}}catch{}
   }
   return '';
 }
@@ -503,9 +504,16 @@ module.exports=async function handler(req,res){
     if(page) source={page,fallbackEvent:'',fallbackHash:'',awayId:String(req.query.awayId||'').toUpperCase(),homeId:String(req.query.homeId||'').toUpperCase()};
   }
   if(!source) return send(res,404,{ok:false,error:'No verified Presto source registered for this game',game:requestedGame});
+  const expected=expectedGame(game);
   let boot={status:null,ok:false,cookie:'',found:null,sample:''}, attempts=[];
   try{ boot=await bootstrap(source); }catch(e){ boot.error=String(e?.message||e); }
-  const expected=expectedGame(game);
+  // The national page can be unavailable while the same official conference
+  // event is live. Try its identical OUA event, then verify participants again.
+  if(!boot.ok&&expected&&require('../data/usports-teams.json').find(t=>t.slug===expected.away)?.conference==='OUA'&&new URL(source.page).hostname==='en.usports.ca'){
+    source={...source,page:'https://oua.ca'+new URL(source.page).pathname};
+    try{boot=await bootstrap(source)}catch(e){boot.error=String(e?.message||e)}
+  }
+  if(!boot.ok)return send(res,502,{ok:false,game,error:'Official source page temporarily unavailable',upstreamStatus:boot.status});
   const sourceDate=source.page.match(/boxscores\/(\d{8})_/)?.[1];
   if(!expected||sourceDate!==expected.date.replace(/-/g,'')||!namesMatch(boot.visitor,expected.away)||!namesMatch(boot.home,expected.home))return send(res,409,{ok:false,game,error:'Live source does not match the requested teams and date'});
   const identity={gameId:game,...expected};

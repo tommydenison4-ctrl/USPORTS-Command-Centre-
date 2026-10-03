@@ -225,7 +225,7 @@
       }catch{}
       return null;
     };
-    let d=await tryPage(cached?.page);
+    let d=await tryPage(cached?.page||g.boxscore);
     if(d)return d;
     try{
       const u=`/api/presto-live?game=${encodeURIComponent(g.id)}&discover=1&date=${ymd(g.date||today())}&away=${encodeURIComponent(g.away)}&home=${encodeURIComponent(g.home)}&awayId=${encodeURIComponent(ids.awayId)}&homeId=${encodeURIComponent(ids.homeId)}&_=${now()}`;

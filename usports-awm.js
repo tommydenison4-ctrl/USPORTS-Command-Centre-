@@ -13,9 +13,13 @@ window.US_AWM=(()=>{
 
  function panel(g,d){
   const p=forecast(g),st=typeof LIVE_STORE!=='undefined'?LIVE_STORE.games?.[g.id]:null;
-  const period=String(d?.status?.period??st?.q??'');
-  const clock=String(d?.status?.clock??st?.clock??'');
-  const awayRaw=d?.game?.awayScore??st?.as,homeRaw=d?.game?.homeScore??st?.hs;
+  // V113: the mounted national GameCast is the freshest verified state. The old
+  // LIVE_STORE can lag behind it, so live probability must share the same snapshot
+  // that paints the scoreboard.
+  const gc=(window.V102_LIVE&&window.V102_LIVE.g?.id===g.id)?window.V102_LIVE.snap:null;
+  const period=String(d?.status?.period??gc?.status?.period??gc?.status?.q??st?.q??'');
+  const clock=String(d?.status?.clock??gc?.status?.clock??st?.clock??'');
+  const awayRaw=d?.game?.awayScore??gc?.game?.awayScore??gc?.awayScore??st?.as,homeRaw=d?.game?.homeScore??gc?.game?.homeScore??gc?.homeScore??st?.hs;
   const awayScore=awayRaw===''||awayRaw==null?NaN:Number(awayRaw);
   const homeScore=homeRaw===''||homeRaw==null?NaN:Number(homeRaw);
   const q=Number(period.match(/[1-4]/)?.[0]);

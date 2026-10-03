@@ -61,7 +61,7 @@
   if(game.league&&game.league!==data.league)return {available:false,reason:'League does not match the model.'};
   if(data.league==='USPORTS'&&(data.dataPolicy?.season!==2026||data.dataPolicy?.trainingSeason!==2026||!data.model))return {available:false,reason:data.modelStatus||'Only 2026 data is permitted. Verified 2026-only model inputs are not ready.'};
   const date=String(game.date||'').slice(0,10);
-  const frozen=data.frozen?.[String(game.id||'')];if(frozen&&frozen.date===date&&frozen.league===data.league&&(data.league!=='USPORTS'||frozen.modelVersion?.includes('2026')))return frozen;
+  const frozen=data.frozen?.[String(game.id||'')];if(frozen&&team(data,game.away)&&team(data,game.home)&&canon(team(data,game.away).name)===canon(frozen.awayName)&&canon(team(data,game.home).name)===canon(frozen.homeName)&&frozen.date===date&&frozen.league===data.league&&(data.league!=='USPORTS'||frozen.modelVersion?.includes('2026')))return frozen;
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return {available:false,reason:'A verified game date is required.'};
   if(date<data.asOf)return {available:false,reason:'No frozen pregame prediction was saved for this past game.'};
   const a=team(data,game.away),h=team(data,game.home);

@@ -438,7 +438,7 @@ function discover(html){
 async function bootstrap(source){
   const r=await fetch(source.page,{redirect:'follow',headers:{...BASE_HEADERS,'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Upgrade-Insecure-Requests':'1','Sec-Fetch-Site':'none','Sec-Fetch-Mode':'navigate','Sec-Fetch-Dest':'document'}});
   const html=await r.text();
-  const found=discover(html); const li=html.toLowerCase().indexOf('liveupdate'); const ei=html.toLowerCase().indexOf('zejwko'); const vm=html.match(/conf\.visitorTeamLogo\s*=\s*['"]([^'"]+)['"]/i); const hm=html.match(/conf\.homeTeamLogo\s*=\s*['"]([^'"]+)['"]/i); return {status:r.status,ok:r.ok,cookie:cookieHeader(r),found,visitorLogo:htmlDecode(vm?.[1]||''),homeLogo:htmlDecode(hm?.[1]||''),sample:html.slice(0,120),liveupdateSnippet:li>=0?html.slice(Math.max(0,li-180),li+500):'',eventSnippet:ei>=0?html.slice(Math.max(0,ei-180),ei+500):''};
+  const visitor=htmlDecode(html.match(/conf\.visitor\s*=\s*["']([^"']*)["']/i)?.[1]||'');const home=htmlDecode(html.match(/conf\.home\s*=\s*["']([^"']*)["']/i)?.[1]||'');const found=discover(html); const li=html.toLowerCase().indexOf('liveupdate'); const ei=html.toLowerCase().indexOf('zejwko'); const vm=html.match(/conf\.visitorTeamLogo\s*=\s*['"]([^'"]+)['"]/i); const hm=html.match(/conf\.homeTeamLogo\s*=\s*['"]([^'"]+)['"]/i); return {status:r.status,ok:r.ok,cookie:cookieHeader(r),found,visitor,home,visitorLogo:htmlDecode(vm?.[1]||''),homeLogo:htmlDecode(hm?.[1]||''),sample:html.slice(0,120),liveupdateSnippet:li>=0?html.slice(Math.max(0,li-180),li+500):'',eventSnippet:ei>=0?html.slice(Math.max(0,ei-180),ei+500):''};
 }
 async function fetchLive(source,creds,cookie=''){
   const origin=new URL(source.page).origin;
@@ -453,8 +453,9 @@ async function fetchLive(source,creds,cookie=''){
 
 const DISCOVERY_CACHE = globalThis.__USPORTS_DISCOVERY_CACHE || (globalThis.__USPORTS_DISCOVERY_CACHE=new Map());
 function normName(v=''){return String(v).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/saint/g,'st').replace(/[^a-z0-9]+/g,' ').trim();}
-function slugTokens(v=''){return normName(v).split(/\s+/).filter(Boolean);}
-function namesMatch(a,b){const A=slugTokens(a),B=slugTokens(b);if(!A.length||!B.length)return false;const sa=A.join(' '),sb=B.join(' ');if(sa===sb||sa.includes(sb)||sb.includes(sa))return true;const hit=A.filter(x=>B.includes(x)).length;return hit>=Math.min(2,Math.min(A.length,B.length));}
+const canonicalTeam=require('./scoreboard').team;
+function namesMatch(a,b){const x=canonicalTeam(a),y=canonicalTeam(b);return !!x&&x===y;}
+function expectedGame(id){const date=id.slice(0,10),teams=require('../data/usports-teams.json');for(const a of teams)for(const h of teams)if(id===`${date}-${a.slug}-${h.slug}`)return {date,away:a.slug,home:h.slug};return null;}
 async function getHtml(url){try{const r=await fetch(url,{redirect:'follow',headers:{...BASE_HEADERS,'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'}});return r.ok?await r.text():''}catch{return ''}}
 async function discoverSourcePage(date,awayName,homeName){
   const ck=[date,normName(awayName),normName(homeName)].join('|'); const cached=DISCOVERY_CACHE.get(ck); if(cached&&Date.now()-cached.t<6*60*60*1000)return cached.v;
@@ -470,11 +471,11 @@ async function discoverSourcePage(date,awayName,homeName){
   const reRel=new RegExp(`(?:href|data-url|data-link)=[\"']([^\"']*boxscores\\/${date}_[A-Za-z0-9_-]+\\.xml[^\"']*)[\"']`,'gi');
   const docs=await Promise.all(urls.map(async u=>[u,htmlDecode(await getHtml(u))]));
   for(const [u,html] of docs){if(!html)continue;const origin=new URL(u).origin;for(const m of html.matchAll(reAbs))pages.add(m[0]);for(const m of html.matchAll(reRel)){try{pages.add(new URL(m[1],origin).href)}catch{}}}
-  let fallback='';
+
   for(const page of pages){
-    try{const html=htmlDecode(await getHtml(page));if(!html)continue;fallback ||= page;const vm=html.match(/conf\.visitor\s*=\s*[\"']([^\"']*)[\"']/i);const hm=html.match(/conf\.home\s*=\s*[\"']([^\"']*)[\"']/i);const v=vm?.[1]||'',h=hm?.[1]||'';if(namesMatch(v,awayName)&&namesMatch(h,homeName)){DISCOVERY_CACHE.set(ck,{t:Date.now(),v:page});return page}}catch{}
+    try{const html=htmlDecode(await getHtml(page));if(!html)continue;const vm=html.match(/conf\.visitor\s*=\s*[\"']([^\"']*)[\"']/i);const hm=html.match(/conf\.home\s*=\s*[\"']([^\"']*)[\"']/i);const v=vm?.[1]||'',h=hm?.[1]||'';if(namesMatch(v,awayName)&&namesMatch(h,homeName)){DISCOVERY_CACHE.set(ck,{t:Date.now(),v:page});return page}}catch{}
   }
-  if(fallback){DISCOVERY_CACHE.set(ck,{t:Date.now(),v:fallback});return fallback}return '';
+  return '';
 }
 
 module.exports=async function handler(req,res){
@@ -504,6 +505,10 @@ module.exports=async function handler(req,res){
   if(!source) return send(res,404,{ok:false,error:'No verified Presto source registered for this game',game:requestedGame});
   let boot={status:null,ok:false,cookie:'',found:null,sample:''}, attempts=[];
   try{ boot=await bootstrap(source); }catch(e){ boot.error=String(e?.message||e); }
+  const expected=expectedGame(game);
+  const sourceDate=source.page.match(/boxscores\/(\d{8})_/)?.[1];
+  if(!expected||sourceDate!==expected.date.replace(/-/g,'')||!namesMatch(boot.visitor,expected.away)||!namesMatch(boot.home,expected.home))return send(res,409,{ok:false,game,error:'Live source does not match the requested teams and date'});
+  const identity={gameId:game,...expected};
   const candidates=[];
   if(boot.found) candidates.push({...boot.found,kind:'discovered'});
   if(source.fallbackEvent&&source.fallbackHash) candidates.push({event:source.fallbackEvent,hash:source.fallbackHash,kind:'verified-fallback'});
@@ -513,7 +518,7 @@ module.exports=async function handler(req,res){
       const lr=await fetchLive(source,c,boot.cookie||'');
       attempts.push({kind:c.kind,status:lr.status,url:lr.url,body:lr.body});
       if(lr.ok&&isLivePayload(lr.json)){
-        return send(res,200,{ok:true,game,page:source.page,visitor:'',home:'',upstreamStatus:lr.status,cadenceSeconds:10,sourcePage:source.page,bootstrapStatus:boot.status,credentialMode:c.kind,data:normalize(lr.json,{...source,awayLogo:boot.visitorLogo||'',homeLogo:boot.homeLogo||''})});
+        return send(res,200,{ok:true,game,page:source.page,visitor:boot.visitor,home:boot.home,identity,upstreamStatus:lr.status,cadenceSeconds:10,sourcePage:source.page,bootstrapStatus:boot.status,credentialMode:c.kind,data:{...normalize(lr.json,{...source,awayLogo:boot.visitorLogo||'',homeLogo:boot.homeLogo||''}),identity}});
       }
       if(lr.json?.error){ attempts[attempts.length-1].upstreamError=String(lr.json.error); }
     }catch(e){ attempts.push({kind:c.kind,status:null,error:String(e?.message||e)}); }

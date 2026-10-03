@@ -7,33 +7,37 @@
   const now=()=>Date.now();
   const game=id=>(GAMES||[]).find(g=>g.id===id);
   const team=s=>TEAM?.[s]||{};
-  const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
-  const aliases=slug=>{const t=team(slug);return [slug,t.abbr,t.short,t.name,t.city].map(norm).filter(Boolean)};
-  const tm=(slug,label)=>{const q=norm(label);return q&&aliases(slug).some(v=>q===v||q.includes(v)||v.includes(q))};
-  function sourceKey(id){return 'usports:v102:source:'+id} function snapKey(id){return 'usports:v102:snap:'+id} function scrollKey(id){return 'usports:v104:scroll:'+id}
+  const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/saint/g,'st').replace(/[^a-z0-9]+/g,' ').trim();
+  const aliases=slug=>{const t=team(slug);return [slug,t.abbr,t.short,t.name,...(slug==='stfx'?['St. Francis Xavier','St. Francis Xavier X-Men']:[]),...(slug==='mount-allison'?['Mt. Allison']:[])].map(norm).filter(Boolean)};
+  const tm=(slug,label)=>{const q=norm(label);return q&&aliases(slug).some(v=>q===v)};
+  function sourceKey(id){return 'usports:v115:source:'+id} function snapKey(id){return 'usports:v115:snap:'+id} function scrollKey(id){return 'usports:v104:scroll:'+id}
   function readSession(k){for(const st of [localStorage,sessionStorage]){try{const raw=st.getItem(k);if(raw)return JSON.parse(raw)}catch{}}return null} function saveSession(k,v){for(const st of [localStorage,sessionStorage]){try{st.setItem(k,JSON.stringify(v))}catch{}}}
+  function validIdentity(g,d){const x=d?.identity;return !!g&&x?.gameId===g.id&&x.date===g.date&&x.away===g.away&&x.home===g.home;}
+  function verified(g,j){return j?.ok&&j.game===g.id&&validIdentity(g,j.data)&&tm(g.away,j.visitor)&&tm(g.home,j.home);}
+  for(const g of GAMES||[]){const st=LIVE_STORE.games[g.id];if(st?._realLive&&!validIdentity(g,{identity:st._feedIdentity})){for(const k of ['_realLive','as','hs','q','clock','pos','down','distance','spot'])delete st[k];}}
   function saveScroll(){}
   function savedScroll(){return window.scrollY||0}
   function restoreScroll(){}
   function htmlIfChanged(el,html){if(el&&el.innerHTML!==html)el.innerHTML=html}
   function today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
   function ymd(s){return String(s||'').replace(/\D/g,'').slice(0,8)}
-  function matchSource(x,date){let best=null,score=-999;for(const g of (GAMES||[])){if(g.status==='final')continue;if(date&&g.date!==date)continue;let s=0;if(tm(g.away,x.visitor))s+=100;if(tm(g.home,x.home))s+=100;if(tm(g.away,x.home))s-=80;if(tm(g.home,x.visitor))s-=80;if(s>score){score=s;best=g}}return score>=180?best:null}
-  function setLiveState(id,d){const g=game(id);if(!g)return;const st=LIVE_STORE.games[id]||(LIVE_STORE.games[id]={id,away:g.away,home:g.home});st._realLive=true;if(d?.game?.awayScore!=null)st.as=Number(d.game.awayScore);if(d?.game?.homeScore!=null)st.hs=Number(d.game.homeScore);st.q=d?.status?.period||st.q||'LIVE';if(/final/i.test(st.q))window.USFinalScores?.accept?.(g,{final:true,awayScore:st.as,homeScore:st.hs});st.clock=d?.status?.clock||st.clock||'';st.pos=d?.situation?.possession||st.pos||'';st.down=d?.situation?.down||st.down||'';st.distance=d?.situation?.distance??st.distance;st.spot=d?.situation?.spot||st.spot||''}
+  function matchSource(x,date){let best=null,score=-999;for(const g of (GAMES||[])){if(g.status==='final')continue;if(date&&g.date!==date)continue;const pd=x.page?.match(/boxscores\/(\d{8})_/)?.[1];if(pd&&pd!==ymd(g.date))continue;let s=0;if(tm(g.away,x.visitor))s+=100;if(tm(g.home,x.home))s+=100;if(tm(g.away,x.home))s-=80;if(tm(g.home,x.visitor))s-=80;if(s>score){score=s;best=g}}return score>=180?best:null}
+  function setLiveState(id,d){const g=game(id);if(!validIdentity(g,d))return;const st=LIVE_STORE.games[id]||(LIVE_STORE.games[id]={id,away:g.away,home:g.home});st._realLive=true;st._feedIdentity=d.identity;if(d?.game?.awayScore!=null)st.as=Number(d.game.awayScore);if(d?.game?.homeScore!=null)st.hs=Number(d.game.homeScore);st.q=d?.status?.period||st.q||'LIVE';if(/final/i.test(st.q))window.USFinalScores?.accept?.(g,{final:true,awayScore:st.as,homeScore:st.hs});st.clock=d?.status?.clock||st.clock||'';st.pos=d?.situation?.possession||st.pos||'';st.down=d?.situation?.down||st.down||'';st.distance=d?.situation?.distance??st.distance;st.spot=d?.situation?.spot||st.spot||''}
   async function discover(force=false){
     if(!L.selected)return null;
     if(!force&&L.source&&now()-L.lastDiscover<30000)return L.source;
-    const g=game(L.selected); if(!g)return null;
+    const selected=L.selected,g=game(selected); if(!g)return null;
     L.lastDiscover=now();
     // Keep a previously proven source forever unless a newer verified one appears.
     const cached=L.source||readSession(sourceKey(L.selected)); if(cached?.page)L.source=cached;
     try{
       const r=await fetch(`/api/live-games?date=${ymd(g.date||today())}&game=${encodeURIComponent(L.selected)}&_=${now()}`,{cache:'no-store'});
       const j=await r.json();
+      if(selected!==L.selected)return null;
       if(j?.ok){
         const pool=[...(j.games||[]),...(j.candidates||[])];
         for(const x of pool){
-          const m=matchSource(x,g.date)||matchSource(x,'');
+          const m=matchSource(x,g.date);
           if(m?.id===L.selected&&x?.page){L.source=x;saveSession(sourceKey(L.selected),x);return x}
         }
       }
@@ -42,23 +46,23 @@
   }
   function sourceIds(g){return {awayId:String(team(g.away).abbr||'').toUpperCase(),homeId:String(team(g.home).abbr||'').toUpperCase()}}
   async function fetchSnap(){
-    if(!L.selected)return null; const g=game(L.selected); if(!g)return null;
+    const selected=L.selected; if(!selected)return null; const g=game(selected); if(!g)return null;
     if(!L.source)L.source=readSession(sourceKey(L.selected));
     const ids=sourceIds(g);
     // Primary path: use the last known good source page.
     const tryPage=async(page)=>{
       if(!page)return null;
-      try{const u=`/api/presto-live?game=${encodeURIComponent(L.selected)}&page=${encodeURIComponent(page)}&awayId=${encodeURIComponent(ids.awayId)}&homeId=${encodeURIComponent(ids.homeId)}&_=${now()}`;const r=await fetch(u,{cache:'no-store'});const j=await r.json();return j?.ok?j:null}catch{return null}
+      try{const u=`/api/presto-live?game=${encodeURIComponent(selected)}&page=${encodeURIComponent(page)}&awayId=${encodeURIComponent(ids.awayId)}&homeId=${encodeURIComponent(ids.homeId)}&_=${now()}`;const r=await fetch(u,{cache:'no-store'});const j=await r.json();return verified(g,j)?j:null}catch{return null}
     };
     let j=await tryPage(L.source?.page);
     if(!j&&g.boxscore)j=await tryPage(g.boxscore);
     // Secondary path: let the server rediscover the source itself. This removes the
     // browser's dependency on /api/live-games succeeding at the exact same moment.
     if(!j){
-      try{const u=`/api/presto-live?game=${encodeURIComponent(L.selected)}&discover=1&date=${ymd(g.date||today())}&away=${encodeURIComponent(g.away)}&home=${encodeURIComponent(g.home)}&awayId=${encodeURIComponent(ids.awayId)}&homeId=${encodeURIComponent(ids.homeId)}&_=${now()}`;const r=await fetch(u,{cache:'no-store'});const z=await r.json();if(z?.ok)j=z}catch(e){console.warn('V104 direct discover',e)}
+      try{const u=`/api/presto-live?game=${encodeURIComponent(selected)}&discover=1&date=${ymd(g.date||today())}&away=${encodeURIComponent(g.away)}&home=${encodeURIComponent(g.home)}&awayId=${encodeURIComponent(ids.awayId)}&homeId=${encodeURIComponent(ids.homeId)}&_=${now()}`;const r=await fetch(u,{cache:'no-store'});const z=await r.json();if(verified(g,z))j=z}catch(e){console.warn('V104 direct discover',e)}
     }
-    if(!j){await discover(true);j=await tryPage(L.source?.page)}
-    if(!j?.ok)return null;
+    if(!j&&selected===L.selected){await discover(true);if(selected===L.selected)j=await tryPage(L.source?.page)}
+    if(!verified(g,j)||selected!==L.selected)return null;
     if(j.page){L.source={...(L.source||{}),page:j.page,visitor:j.visitor||L.source?.visitor,home:j.home||L.source?.home};saveSession(sourceKey(L.selected),L.source)}
     L.snap=j.data||{}; saveSession(snapKey(L.selected),L.snap); setLiveState(L.selected,L.snap); return L.snap;
   }
@@ -88,14 +92,14 @@
   function img(t,cls=''){return t?.logo?`<img class="${cls}" src="${esc2(t.logo)}" alt="" onerror="this.style.display='none'">`:''}
   function possSlug(g,d){const p=norm(d?.situation?.possession);if(!p)return'';if(aliases(g.away).some(v=>p===v||p.includes(v)||v.includes(p)))return g.away;if(aliases(g.home).some(v=>p===v||p.includes(v)||v.includes(p)))return g.home;return''}
   function downText(d){const x=d?.situation||{};const n=Number(x.down);if(!n)return'';return `${n}${n===1?'st':n===2?'nd':n===3?'rd':'th'} & ${x.distance??''}`}
-  function rail(id){const d=game(id)?.date||today();return `<div class="v102-other" id="v102-national-rail">${(GAMES||[]).filter(x=>x.date===d&&x.id!==id).slice(0,10).map(x=>{const s=LIVE_STORE?.games?.[x.id],live=s?._realLive;return `<button onclick="V102_LIVE.open('${x.id}')"><small><span>${esc2(x.conference||'')}</span><span>${live?esc2([s.q,s.clock].filter(Boolean).join(' ')):esc2(x.time||'')}</span></small><b>${esc2(team(x.away).abbr||x.away)} ${live?s.as??0:''} · ${esc2(team(x.home).abbr||x.home)} ${live?s.hs??0:''}</b></button>`}).join('')}</div>`}
+  function rail(id){const d=game(id)?.date||today();return `<div class="v102-other" id="v102-national-rail">${(GAMES||[]).filter(x=>x.date===d&&x.id!==id).slice(0,10).map(x=>{const s=LIVE_STORE?.games?.[x.id],live=s?._realLive&&validIdentity(x,{identity:s._feedIdentity});return `<button onclick="V102_LIVE.open('${x.id}')"><small><span>${esc2(x.conference||'')}</span><span>${live?esc2([s.q,s.clock].filter(Boolean).join(' ')):esc2(x.time||'')}</span></small><b>${esc2(team(x.away).abbr||x.away)} ${live?s.as??'—':''} · ${esc2(team(x.home).abbr||x.home)} ${live?s.hs??'—':''}</b></button>`}).join('')}</div>`}
   function value(v){const m=String(v??'').match(/-?\d+(?:\.\d+)?/);return m?Number(m[0]):0}
   function statRows(d,g){const rows=d?.statComparison||[];if(!rows.length)return '<div class="v102-empty">Live team statistics are waiting on the official gamebook.</div>';return `<div class="v102-statrows">${rows.map(r=>{const av=value(r.away),hv=value(r.home),mx=Math.max(1,Math.abs(av),Math.abs(hv));return `<div class="v102-statrow"><div class="val">${esc2(r.away??'—')}</div><div class="v102-meter"><i style="width:${Math.max(4,Math.abs(av)/mx*100)}%;background:${team(g.away).primary||'#c79b2e'}"></i></div><div class="lab">${esc2(r.label)}</div><div class="v102-meter"><i style="width:${Math.max(4,Math.abs(hv)/mx*100)}%;background:${team(g.home).primary||'#cf1742'}"></i></div><div class="val r">${esc2(r.home??'—')}</div></div>`}).join('')}</div>`}
   function pcat(p){const path=String(p.path||'').toLowerCase();if(/passing/.test(path))return'passing';if(/rushing/.test(path))return'rushing';if(/receiv/.test(path))return'receiving';const z=(path+' '+Object.keys(p.stats||{}).join(' ')).toLowerCase();if(/pass|cmp|comp|attempt/.test(z))return'passing';if(/rush|carr|car\b/.test(z))return'rushing';if(/receiv|\brec\b/.test(z))return'receiving';if(/tack|tkl|sack|def|intercept/.test(z))return'defense';return'other'}
-  function sidePlayer(p,g){if(p.side==='away'||p.side==='home')return p.side;const path=String(p.path||'');if(/\.team\[0\]/.test(path))return'away';if(/\.team\[1\]/.test(path))return'home';const q=norm(p.team);if(q&&aliases(g.away).some(v=>q===v||q.includes(v)||v.includes(q)))return'away';if(q&&aliases(g.home).some(v=>q===v||q.includes(v)||v.includes(q)))return'home';return''}
+  function sidePlayer(p,g){if(p.side==='away'||p.side==='home')return p.side;const path=String(p.path||'');if(/\.team\[0\]/.test(path))return'away';if(/\.team\[1\]/.test(path))return'home';const q=norm(p.team);if(q&&aliases(g.away).some(v=>q===v))return'away';if(q&&aliases(g.home).some(v=>q===v))return'home';return''}
   function statPick(s,keys){for(const k of keys){const z=Object.keys(s||{}).find(x=>x.toLowerCase()===k.toLowerCase());if(z!=null)return s[z]}return null}
   function officialRows(side,cat,d,g){return (d?.playerStats||[]).filter(p=>sidePlayer(p,g)===side&&pcat(p)===cat)}
-  function playSide(p,g,d){const q=norm(p?.possession);if(!q)return'';if(aliases(g.away).some(v=>q===v||q.includes(v)||v.includes(q)))return'away';if(aliases(g.home).some(v=>q===v||q.includes(v)||v.includes(q)))return'home';const src=sideSourceLabels();if(src.away&&q.includes(norm(src.away)))return'away';if(src.home&&q.includes(norm(src.home)))return'home';return''}
+  function playSide(p,g,d){const q=norm(p?.possession);if(!q)return'';if(aliases(g.away).some(v=>q===v))return'away';if(aliases(g.home).some(v=>q===v))return'home';const src=sideSourceLabels();if(src.away&&q.includes(norm(src.away)))return'away';if(src.home&&q.includes(norm(src.home)))return'home';return''}
   function sideSourceLabels(){return {away:L.source?.visitor||'',home:L.source?.home||''}}
   function add(map,name,patch){name=String(name||'').trim().replace(/\s+/g,' ');if(!name||/^team$/i.test(name))return;const r=map.get(name)||{name,att:0,cmp:0,yds:0,td:0,int:0,rec:0,tkl:0,sack:0};for(const [k,v] of Object.entries(patch))r[k]=(r[k]||0)+(Number(v)||0);map.set(name,r)}
   function derivedRows(side,cat,d,g){
@@ -217,7 +221,7 @@
       try{
         const u=`/api/presto-live?game=${encodeURIComponent(g.id)}&page=${encodeURIComponent(page)}&awayId=${encodeURIComponent(ids.awayId)}&homeId=${encodeURIComponent(ids.homeId)}&_=${now()}`;
         const r=await fetch(u,{cache:'no-store'}),j=await r.json();
-        if(j?.ok){if(j.page)saveSession(key,{page:j.page});setLiveState(g.id,j.data||{});return j.data||{}}
+        if(verified(g,j)){if(j.page)saveSession(key,{page:j.page});setLiveState(g.id,j.data||{});return j.data||{}}
       }catch{}
       return null;
     };
@@ -226,7 +230,7 @@
     try{
       const u=`/api/presto-live?game=${encodeURIComponent(g.id)}&discover=1&date=${ymd(g.date||today())}&away=${encodeURIComponent(g.away)}&home=${encodeURIComponent(g.home)}&awayId=${encodeURIComponent(ids.awayId)}&homeId=${encodeURIComponent(ids.homeId)}&_=${now()}`;
       const r=await fetch(u,{cache:'no-store'}),j=await r.json();
-      if(j?.ok){if(j.page)saveSession(key,{page:j.page});setLiveState(g.id,j.data||{});return j.data||{}}
+      if(verified(g,j)){if(j.page)saveSession(key,{page:j.page});setLiveState(g.id,j.data||{});return j.data||{}}
     }catch{}
     return null;
   }
@@ -246,7 +250,7 @@
         if(j?.ok)for(const x of (j.games||[])){
           const g=matchSource(x,date); if(!g)continue;
           const st=LIVE_STORE.games[g.id]||(LIVE_STORE.games[g.id]={id:g.id,away:g.away,home:g.home});
-          st._realLive=true;st.as=Number(x.awayScore??st.as??0);st.hs=Number(x.homeScore??st.hs??0);st.q=x.period||st.q||'LIVE';st.clock=x.clock||st.clock||'';
+          setLiveState(g.id,{identity:{gameId:g.id,date:g.date,away:g.away,home:g.home},game:{awayScore:x.awayScore,homeScore:x.homeScore},status:{period:x.period,clock:x.clock}});
           if(x.page)saveSession(sourceKey(g.id),{page:x.page});
         }
       }catch{}

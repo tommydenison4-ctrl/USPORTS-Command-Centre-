@@ -35,6 +35,12 @@ const rankingHtml=SeasonWatch.render('USPORTS');
 assert(rankingHtml.includes('Top 27'));assert.equal((rankingHtml.match(/Model rating /g)||[]).length,27);
 for(const team of ['laval','montreal','mcgill']){const p=d.profiles[team],r=w.records[team];assert(rankingHtml.includes('<b>'+p.name+'</b> <span>'+r.wins+'–'+r.losses+'</span>'))}
 console.log('Top 27 includes every team, with records matched to all verified finals and separate play coverage');
+const sos=SeasonWatch.scheduleStrength(ranked,w),ratings=new Map(ranked.map(p=>[p.id,p.rating]));
+for(const p of ranked){const expectedOpponents=results.games.filter(g=>g.away===p.id||g.home===p.id).map(g=>g.away===p.id?g.home:g.away);assert.deepEqual(w.opponents[p.id],expectedOpponents);assert.equal(sos[p.id].covered,p.resultGames);assert(Math.abs(sos[p.id].score-expectedOpponents.reduce((sum,id)=>sum+ratings.get(id),0)/expectedOpponents.length)<1e-12)}
+const fixture=SeasonWatch.scheduleStrength([{id:'a',rating:.2},{id:'b',rating:.9},{id:'c',rating:.3}],{opponents:{a:['b','b','c'],b:['a'],c:['missing']}});
+assert(Math.abs(fixture.a.score-.7)<1e-12);assert.equal(fixture.a.rank,1);assert.equal(fixture.c.score,null);
+assert.equal((rankingHtml.match(/<small>SOS /g)||[]).length,27);
+console.log('SOS matches all completed opponents, counts repeat meetings, excludes unknown ratings and appears for all 27 teams');
 for(const p of ranked){const opponents=ranked.filter(o=>o.id!==p.id);const expected=opponents.reduce((sum,o)=>sum+(A.matchupProbability(d,o,p,true).homeWin+1-A.matchupProbability(d,p,o,true).homeWin)/2,0)/opponents.length;assert(Math.abs(p.rating-expected)<1e-12)}
 assert(!['acadia','bishops','mountallison','saintmarys','stfx'].includes(ranked[0].id));
 console.log('AUS 2/10: all five teams, both venues, same-conference invariance and shared Vanier ranking passed; pick:',ranked[0].name);

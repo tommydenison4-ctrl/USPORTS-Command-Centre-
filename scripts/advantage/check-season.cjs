@@ -33,7 +33,7 @@ for(const team of Object.keys(d.profiles)){
 global.SEASON_WATCH=watch;global.AWM_DATA={USPORTS:d};
 const rankingHtml=SeasonWatch.render('USPORTS');
 assert(rankingHtml.includes('Top 27'));assert.equal((rankingHtml.match(/Model rating /g)||[]).length,27);
-for(const team of ['laval','montreal','mcgill']){const p=d.profiles[team],r=w.records[team];assert(rankingHtml.includes('<b>'+p.name+'</b> <span>'+r.wins+'–'+r.losses+'</span>'))}
+for(const team of ['laval','montreal','mcgill']){const p=d.profiles[team],r=w.records[team];assert(rankingHtml.includes(p.name+'</b> <span>'+r.wins+'–'+r.losses+'</span>'))}
 console.log('Top 27 includes every team, with records matched to all verified finals and separate play coverage');
 const sos=SeasonWatch.scheduleStrength(ranked,w),ratings=new Map(ranked.map(p=>[p.id,p.rating]));
 for(const p of ranked){const expectedOpponents=results.games.filter(g=>g.away===p.id||g.home===p.id).map(g=>g.away===p.id?g.home:g.away);assert.deepEqual(w.opponents[p.id],expectedOpponents);assert.equal(sos[p.id].covered,p.resultGames);assert(Math.abs(sos[p.id].score-expectedOpponents.reduce((sum,id)=>sum+ratings.get(id),0)/expectedOpponents.length)<1e-12)}
@@ -83,3 +83,4 @@ for(const a of Object.keys(d.profiles))for(const b of Object.keys(d.profiles))if
  assert.equal(aHome.homeFieldPoints,3);assert.equal(neutral.homeFieldPoints,0);venueChecks++;
 }
 console.log(venueChecks+' pairings: neutral side-swap invariance, both home margins and probabilities improve, three-point venue prior passed');
+

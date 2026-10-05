@@ -9,6 +9,15 @@ ASOF=os.environ.get('AWM_ASOF',datetime.datetime.now(datetime.timezone.utc).date
 def entries(node):
     yield from node.get('standings',{}).get('entries',[])
     for child in node.get('children',[]):yield from entries(child)
+def weight_team_results(rows,records):
+    maximum=max((p['score'] for p in rows),default=0)
+    for p in rows:
+        r=records[p['teamId']];games=r['wins']+r['losses']+r['ties']
+        if not games:raise ValueError('Award candidate has no verified team results: '+p['teamId'])
+        production=p['score'];win_pct=(r['wins']+.5*r['ties'])/games
+        normalized=max(0,production)/maximum if maximum>0 else 0
+        p.update(productionScore=production,productionNormalized=normalized,teamWinPercentage=win_pct,score=round(85*normalized+15*win_pct,2))
+    return maximum
 def build(only=None):
     leagues=json.loads((ROOT/'data/advantage-leagues.json').read_text());bundle=json.loads((ROOT/'data/season-watch.json').read_text()) if only else {}
     if only:leagues=[only]
@@ -82,9 +91,19 @@ def build(only=None):
         stats={'season':2026,'asOf':ASOF,'coveredGames':len(games),'coveredTeams':len(teams),'categories':leaders}
         (ROOT/('data/player-stats-'+league.lower()+'.json')).write_text(json.dumps(stats,allow_nan=False))
         if league=='USPORTS':(ROOT/'player-stats-usports-data.js').write_text('window.FOOTBALL_STATS=window.FOOTBALL_STATS||{};window.FOOTBALL_STATS.USPORTS='+json.dumps(stats,allow_nan=False).replace('<','\\u003c')+';')
+        if league=='USPORTS':
+            records={team:dict(wins=0,losses=0,ties=0) for team in profiles}
+            for g in result['games']:
+                for side,other in [('away','home'),('home','away')]:
+                    r=records[g[side]]
+                    r['wins' if g[side+'Score']>g[other+'Score'] else 'losses' if g[side+'Score']<g[other+'Score'] else 'ties']+=1
+            production_maximum=weight_team_results(rows,records)
         rows.sort(key=lambda p:(-p['score'],p['name']))
         bundle[league]={'season':2026,'asOf':ASOF,'players':rows[:10],'coveredGames':len(games),'coveredTeams':len(teams),'eligibleTeamIds':eligible,'eligibilitySource':eligibility_source,'method':'Offensive production per recorded appearance: passing yards / 25 + rushing and receiving yards / 10 + passing TD × 4 + rushing and receiving TD × 6 − interceptions × 2. At least two recorded game appearances. Not an award-voting model; defense and special teams are not scored. Missing box scores may change the order.'}
         if league=='USPORTS':
+            bundle[league]['productionMaximum']=production_maximum
+            bundle[league]['weights']={'production':.85,'teamWinningPercentage':.15}
+            bundle[league]['method']='Score out of 100 = 85 × normalized offensive production + 15 × team winning percentage. Offensive production per recorded appearance = passing yards / 25 + rushing and receiving yards / 10 + passing TD × 4 + rushing and receiving TD × 6 − interceptions × 2. Normalize against the highest production score among all eligible players; negative production is floored at zero. Team winning percentage = (wins + half of ties) / completed regular-season games. At least two recorded appearances. This weighting rewards winning teams; it does not exclude players on losing teams. Defense and special teams are not scored. Missing box scores may change the order.'
             records={team:dict(wins=0,losses=0,ties=0) for team in profiles}
             opponents={team:[] for team in profiles}
             for g in result['games']:

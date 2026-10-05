@@ -24,6 +24,17 @@ assert.equal(same.homeWin,same.conferenceStrength.baseHomeWin);
 const equal=A.matchupProbability({...d,model:{...d.model,football:{mean:Array(6).fill(0),scale:Array(6).fill(1),coef:Array(7).fill(0),logistic:true},power:{mean:[0,0],scale:[1,1],coef:[0,0,0],logistic:true},form:{mean:[0,0],scale:[1,1],coef:[0,0,0],logistic:true}}},d.profiles.laval,d.profiles.acadia,true);
 assert(Math.abs(equal.homeWin-1/6)<1e-12);
 const w=watch.USPORTS, ranked=SeasonWatch.contenders('USPORTS',d,w);
+const results=JSON.parse(fs.readFileSync(path.join(root,'data/verified-results-usports.json')));
+for(const team of Object.keys(d.profiles)){
+ const games=results.games.filter(g=>g.away===team||g.home===team),record={wins:0,losses:0,ties:0};
+ for(const g of games){const own=g.away===team?g.awayScore:g.homeScore,other=g.away===team?g.homeScore:g.awayScore;record[own>other?'wins':own<other?'losses':'ties']++}
+ assert.deepEqual(w.records[team],record);assert.equal(games.length,d.profiles[team].resultGames);
+}
+global.SEASON_WATCH=watch;global.AWM_DATA={USPORTS:d};
+const rankingHtml=SeasonWatch.render('USPORTS');
+assert(rankingHtml.includes('Top 27'));assert.equal((rankingHtml.match(/Model rating /g)||[]).length,27);
+for(const team of ['laval','montreal','mcgill']){const p=d.profiles[team],r=w.records[team];assert(rankingHtml.includes('<b>'+p.name+'</b> <span>'+r.wins+'–'+r.losses+'</span>'))}
+console.log('Top 27 includes every team, with records matched to all verified finals and separate play coverage');
 for(const p of ranked){const opponents=ranked.filter(o=>o.id!==p.id);const expected=opponents.reduce((sum,o)=>sum+(A.matchupProbability(d,o,p,true).homeWin+1-A.matchupProbability(d,p,o,true).homeWin)/2,0)/opponents.length;assert(Math.abs(p.rating-expected)<1e-12)}
 assert(!['acadia','bishops','mountallison','saintmarys','stfx'].includes(ranked[0].id));
 console.log('AUS 2/10: all five teams, both venues, same-conference invariance and shared Vanier ranking passed; pick:',ranked[0].name);

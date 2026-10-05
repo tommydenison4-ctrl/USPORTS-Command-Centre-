@@ -85,6 +85,12 @@ def build(only=None):
         rows.sort(key=lambda p:(-p['score'],p['name']))
         bundle[league]={'season':2026,'asOf':ASOF,'players':rows[:10],'coveredGames':len(games),'coveredTeams':len(teams),'eligibleTeamIds':eligible,'eligibilitySource':eligibility_source,'method':'Offensive production per recorded appearance: passing yards / 25 + rushing and receiving yards / 10 + passing TD × 4 + rushing and receiving TD × 6 − interceptions × 2. At least two recorded game appearances. Not an award-voting model; defense and special teams are not scored. Missing box scores may change the order.'}
         if league=='USPORTS':
+            records={team:dict(wins=0,losses=0,ties=0) for team in profiles}
+            for g in result['games']:
+                for side,other in [('away','home'),('home','away')]:
+                    row=records[g[side]]
+                    row['wins' if g[side+'Score']>g[other+'Score'] else 'losses' if g[side+'Score']<g[other+'Score'] else 'ties']+=1
+            bundle[league]['records']=records
             bundle[league]['missingBoxscores']=sorted(eligible_games-{g['id'] for g in source['games']})
             bundle[league]['method']+=' Regular-season games only; exhibitions are excluded. Completed games on the update date are included.'
     (ROOT/'data/season-watch.json').write_text(json.dumps(bundle,allow_nan=False))

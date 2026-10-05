@@ -27,7 +27,7 @@ def canonical(s):
 def clean(history,league):
  out={}
  for g in history:
-  if g['date'][:10]>=ASOF:continue
+  if g['date'][:10]>ASOF:continue
   if league=='USPORTS' and not g['date'].startswith('2026-'):continue
   if league=='USPORTS':
    for side in ['away','home']:
@@ -95,7 +95,7 @@ def train(league):
  elo=defaultdict(lambda:1500.);rows=defaultdict(list);results=defaultdict(list);samples=[];names={};dates=defaultdict(list)
  if league=='USPORTS':
   import national
-  indexed={g['id']:national.history_game(g) for g in source['schedule'] if g.get('status')=='final' and g['date']<ASOF and g['date'].startswith('2026-') and not g.get('exhibition') and all(isinstance(g.get(s+'Score'),(int,float)) for s in ('away','home'))}
+  indexed={g['id']:national.history_game(g) for g in source['schedule'] if g.get('status')=='final' and g['date']<=ASOF and g['date'].startswith('2026-') and not g.get('exhibition') and all(isinstance(g.get(s+'Score'),(int,float)) for s in ('away','home'))}
   for g in history:
    if g['id'] in indexed:indexed[g['id']]=g
   result_history=sorted(indexed.values(),key=lambda g:(g['date'],g['id']))

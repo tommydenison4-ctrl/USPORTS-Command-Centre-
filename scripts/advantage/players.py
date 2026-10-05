@@ -51,7 +51,7 @@ def build():
     enriched={g['id']:g for g in source['history']}
     games=[];unresolved=[]
     for indexed in source['schedule']:
-        if indexed.get('status')!='final' or indexed['date']>=train.ASOF:continue
+        if indexed.get('status')!='final' or indexed['date']>train.ASOF:continue
         g=enriched.get(indexed['id'])
         if g is None and indexed.get('boxscore'):
             g=national.history_game(indexed);g['source']=indexed['boxscore']
@@ -119,10 +119,14 @@ def build():
         out=[g for g in out if g.get('id')!=record['id']]+[record]
         unresolved=[id for id in unresolved if id!=record['id']]
     imported={g['id'] for g in out if g.get('id')}
-    unresolved=sorted(g['id'] for g in source['schedule'] if g.get('status')=='final' and g['date']<train.ASOF and g['id'] not in imported)
+    unresolved=sorted(g['id'] for g in source['schedule'] if g.get('status')=='final' and g['date']<=train.ASOF and g['id'] not in imported)
     boxes=ROOT/'data/boxscores';boxes.mkdir(exist_ok=True)
     compact=[]
+    index_by_id={g['id']:g for g in source['schedule']}
     for record in out:
+        indexed=index_by_id.get(record['id'])
+        if indexed and indexed.get('status')=='final':
+            record.update(away=indexed['away'],home=indexed['home'],awayScore=indexed['awayScore'],homeScore=indexed['homeScore'],final=True)
         if record.get('tables') or record.get('pages'):
             (boxes/(record['id']+'.json')).write_text(json.dumps(record))
             record['fullBoxscore']='data/boxscores/'+record['id']+'.json'

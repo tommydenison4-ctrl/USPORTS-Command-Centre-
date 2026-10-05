@@ -12,7 +12,8 @@ for(const g of schedule.filter(g=>g.date>=d.asOf&&g.status==='scheduled')){
  const p=A.project(d,g);assert(p.available,`${g.id}: ${p.reason}`);assert(p.home_win_prob>=0&&p.home_win_prob<=1);
  assert.equal(JSON.stringify(ctx.window.US_AWM.forecast(g)),JSON.stringify(p));
  assert(!ctx.window.US_AWM.card(g).includes('NaN'));counts[g.conference]=(counts[g.conference]||0)+1;
- const {id,...hypothetical}=g;assert.equal(A.project(d,hypothetical).home_win_prob,p.home_win_prob);
+ const {id,...hypothetical}=g;const fresh=A.project(d,hypothetical);assert(fresh.available);assert.equal(fresh.home_win_prob,A.project({...d,frozen:{}},g).home_win_prob);
+ if(d.frozen[id])assert.equal(p.home_win_prob,d.frozen[id].home_win_prob);
  assert.equal(A.project(d,{...g,conference:'ANY'}).home_win_prob,p.home_win_prob);
 }
 assert(['OUA','RSEQ','AUS','CW'].every(c=>counts[c]>0));

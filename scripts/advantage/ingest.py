@@ -12,12 +12,20 @@ ASOF=os.environ.get('AWM_ASOF',datetime.datetime.now(datetime.timezone.utc).date
 errors=[]
 def fetch(url):
     path=CACHE/(hashlib.sha256(url.encode()).hexdigest()+'.txt')
-    if path.exists() and path.stat().st_size>0 and ('/summary?' in url or '/boxscore/' in url or time.time()-path.stat().st_mtime<1800):return path.read_text()
+    def valid(text):
+        return bool(text.strip()) and 'awsWafCookieDomainList' not in text and 'AwsWafIntegration' not in text
+    if path.exists() and path.stat().st_size>0 and ('/summary?' in url or '/boxscore/' in url or time.time()-path.stat().st_mtime<1800):
+        cached=path.read_text(encoding='utf-8')
+        if valid(cached):return cached
     for attempt in range(3):
         try:
-            text=subprocess.check_output(['curl','--fail','--location','--silent','--show-error','--max-time','25','--user-agent','Mozilla/5.0',url],stderr=subprocess.DEVNULL).decode('utf-8',errors='replace')
-            if not text.strip():raise ValueError('Empty feed response: '+url)
-            path.write_text(text);return text
+            try:
+                with urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0','Accept':'text/html,application/json;q=0.9,*/*;q=0.8'}),timeout=25) as response:
+                    text=response.read().decode('utf-8',errors='replace')
+            except Exception:
+                text=subprocess.check_output(['curl','--fail','--location','--silent','--show-error','--max-time','25','--user-agent','Mozilla/5.0',url],stderr=subprocess.DEVNULL).decode('utf-8',errors='replace')
+            if not valid(text):raise ValueError('Source returned an empty response or security challenge: '+url)
+            path.write_text(text,encoding='utf-8');return text
         except Exception:
             if attempt==2:raise
             time.sleep(1+attempt)
@@ -103,7 +111,7 @@ def sidearm(url):
     date=soup.find('dt',string=re.compile(r'^Date:'))
     if not date:return None
     date=dt.datetime.strptime(date.find_next_sibling('dd').get_text(strip=True),'%m/%d/%Y').date().isoformat()
-    if date>=ASOF:return None
+    if date>ASOF:return None
     g={'id':url,'league':'USPORTS','date':date+'T00:00:00Z','source':url,'complete':True,'neutral':False}
     for side in ['away','home']:
         el=head.select_one('.team.'+side)
@@ -159,7 +167,7 @@ def sidearm_history():
 def ingest_usports():
     import national
     schedule,unresolved=national.discover(fetch,batch,int(ASOF[:4]))
-    completed=[g for g in schedule if g['status']=='final' and g['date']<ASOF]
+    completed=[g for g in schedule if g['status']=='final' and g['date']<=ASOF]
     presto_games=batch(lambda g:national.presto(g,fetch,text_play,metrics),completed)
     sidearm_games,_=sidearm_history()
     indexed={(g['date'],national.norm(g['away']),national.norm(g['home'])):g for g in completed}

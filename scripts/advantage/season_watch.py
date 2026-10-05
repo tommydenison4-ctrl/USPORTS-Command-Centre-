@@ -31,12 +31,14 @@ def build(only=None):
         if league=='USPORTS':
             import national
             index=json.loads((ROOT/'data/national-schedule-usports.json').read_text())
-            finals=[g for g in index['games'] if g['status']=='final' and not g.get('exhibition') and g['date']<ASOF]
+            finals=[g for g in index['games'] if g['status']=='final' and not g.get('exhibition') and g['date']<=ASOF]
             result={'season':2026,'asOf':ASOF,'games':[dict(date=g['date'],away=national.norm(g['away']),home=national.norm(g['home']),awayScore=g['awayScore'],homeScore=g['homeScore'],source=g.get('boxscore') or g['source']) for g in finals]}
             (ROOT/'data/verified-results-usports.json').write_text(json.dumps(result,allow_nan=False))
             source=json.loads((ROOT/'data/player-leaders-usports.json').read_text())
+            eligible_games={g['id'] for g in finals}
             for g in source['games']:
-                if not '2026-08-01'<=g['date']<ASOF:continue
+                if g.get('id') not in eligible_games:continue
+                if not '2026-08-01'<=g['date']<=ASOF:continue
                 for team,cats in g['teams'].items():
                     for cat,rows in cats.items():
                         for r in rows:
@@ -82,6 +84,9 @@ def build(only=None):
         if league=='USPORTS':(ROOT/'player-stats-usports-data.js').write_text('window.FOOTBALL_STATS=window.FOOTBALL_STATS||{};window.FOOTBALL_STATS.USPORTS='+json.dumps(stats,allow_nan=False).replace('<','\\u003c')+';')
         rows.sort(key=lambda p:(-p['score'],p['name']))
         bundle[league]={'season':2026,'asOf':ASOF,'players':rows[:10],'coveredGames':len(games),'coveredTeams':len(teams),'eligibleTeamIds':eligible,'eligibilitySource':eligibility_source,'method':'Offensive production per recorded appearance: passing yards / 25 + rushing and receiving yards / 10 + passing TD × 4 + rushing and receiving TD × 6 − interceptions × 2. At least two recorded game appearances. Not an award-voting model; defense and special teams are not scored. Missing box scores may change the order.'}
+        if league=='USPORTS':
+            bundle[league]['missingBoxscores']=sorted(eligible_games-{g['id'] for g in source['games']})
+            bundle[league]['method']+=' Regular-season games only; exhibitions are excluded. Completed games on the update date are included.'
     (ROOT/'data/season-watch.json').write_text(json.dumps(bundle,allow_nan=False))
     (ROOT/'season-watch-data.js').write_text('window.SEASON_WATCH='+json.dumps(bundle,allow_nan=False).replace('<','\\u003c')+';')
     print({k:{'players':len(v['players']),'games':v['coveredGames'],'teams':v['coveredTeams']} for k,v in bundle.items()})

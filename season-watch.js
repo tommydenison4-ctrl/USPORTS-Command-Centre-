@@ -25,9 +25,10 @@
  }
  function player(p,i,records){
   const r=records?.[p.teamId],record=r?' · Team record '+r.wins+'–'+r.losses+(r.ties?'–'+r.ties:''):'';
+  const scoreLine=p.productionScore!==undefined?'<p><strong>Watch score: '+p.score.toFixed(1)+'/100</strong></p>':'';
   const scoring=p.productionScore!==undefined?'Watch score: '+p.score.toFixed(1)+'/100 = '+(85*p.productionNormalized).toFixed(1)+' production points + '+(15*p.teamWinPercentage).toFixed(1)+' team-winning points. Offensive production: '+p.productionScore.toFixed(1)+' per recorded game; team winning percentage: '+(100*p.teamWinPercentage).toFixed(1)+'%.':'Production score: '+p.score.toFixed(1)+' per recorded game.';
   const stats=Object.entries(p.stats).map(([cat,s])=>Math.round(s.yards)+' '+cat+' yards · '+s.touchdowns+' touchdowns'+(cat==='passing'?' · '+s.interceptions+' interceptions':''));
-  return '<article class="season-person"><span class="season-rank">'+(i+1)+'</span><div><h4>'+esc(p.name)+'</h4><p>'+esc(p.team)+esc(record)+' · '+p.games+' recorded games</p><p>'+stats.map(esc).join('<br>')+'</p><details><summary>Why they’re on the watch</summary><p>Ranks '+(i+1)+' by our watch score among the players covered. '+scoring+' Latest appearance: '+esc(p.lastGame)+'.</p>'+sourceLinks(p.sources)+'</details></div></article>';
+  return '<article class="season-person"><span class="season-rank">'+(i+1)+'</span><div><h4>'+esc(p.name)+'</h4><p>'+esc(p.team)+esc(record)+' · '+p.games+' recorded games</p>'+scoreLine+'<p>'+stats.map(esc).join('<br>')+'</p><details><summary>Why they’re on the watch</summary><p>Ranks '+(i+1)+' by our watch score among the players covered. '+scoring+' Latest appearance: '+esc(p.lastGame)+'.</p>'+sourceLinks(p.sources)+'</details></div></article>';
  }
  function render(league){
   const w=root.SEASON_WATCH?.[league],d=root.AWM_DATA?.[league];if(!w||!d)return '';

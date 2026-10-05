@@ -42,7 +42,7 @@
   let page=document.getElementById('watch-page');if(!page){page=document.createElement('main');page.id='watch-page';document.body.append(page)}
   const title=tabs.find(t=>t[0]===league&&t[1]===kind)?.[2]||'Season watch';
   page.innerHTML='<section class="season-watch"><small>2026 FOOTBALL · Updated '+esc(root.SEASON_WATCH?.[league]?.asOf||'unavailable')+'</small><h1>'+esc(title)+'</h1>'+(content?.outerHTML||'<p>Verified data is temporarily unavailable.</p>')+'</section>';
-  alignPanels();if(switching&&isUS)window.scrollTo(0,0);
+  alignPanels();if(switching&&isUS)requestAnimationFrame(()=>window.scrollTo(0,0));
   document.querySelectorAll('[data-watch]').forEach(b=>{if(b.dataset.watch===league+':'+kind)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
  }
  function mount(){
@@ -56,7 +56,7 @@
  function alignPanels(){const top=Math.max(56,document.querySelector('.topbar')?.getBoundingClientRect().bottom||56)+'px';for(const id of ['watch-page','football-tab-page']){const panel=document.getElementById(id);if(panel){if(id==='watch-page'&&isUS){panel.style.top='';panel.style.paddingTop=(parseFloat(top)+20)+'px'}else panel.style.top=top}}}
  document.addEventListener('click',e=>{if(e.target.closest('.nav button,.mainnav [data-jump],[data-watch]')){const header=document.querySelector('.topbar');header?.removeAttribute('data-menu-open');header?.querySelector('.football-menu-toggle')?.setAttribute('aria-expanded','false');requestAnimationFrame(alignPanels)}},true);
  window.addEventListener('resize',alignPanels);
- document.addEventListener('click',e=>{const b=e.target.closest('[data-watch]');if(b){e.preventDefault();e.stopImmediatePropagation();const [l,k]=b.dataset.watch.split(':');history.pushState(null,'','#watch='+l+':'+k);show(l,k);return}if(e.target.closest('.nav button,.mainnav [data-jump],.mobile-header-switch button'))close();},true);
+ document.addEventListener('click',e=>{const b=e.target.closest('[data-watch]');if(b){e.preventDefault();e.stopImmediatePropagation();const [l,k]=b.dataset.watch.split(':');history.pushState(null,'','#watch='+l+':'+k);show(l,k);return}if(e.target.closest('.nav button,.mainnav [data-jump],.mobile-header-switch button,.topbar .brand'))close();},true);
  function routeWatch(){const m=location.hash.match(/^#watch=(NFL|NCAA|USPORTS):(award|title)$/);if(m){mount();show(m[1],m[2]);return true}if(selected)close();return false}
  if(isUS&&typeof root.route==='function'){const old=root.route;root.route=function(){if(!routeWatch())return old.apply(this,arguments)}}
  window.addEventListener('popstate',routeWatch);window.addEventListener('hashchange',routeWatch);

@@ -56,3 +56,14 @@ body{background:#080f17;color:#f1f5fa}
 @media(max-width:700px){.clean-ui .clean-more{position:static}.clean-ui .clean-menu{right:0;top:100%}.clean-ui .clean-header{position:sticky!important}}
 @media(max-width:700px){.clean-ui .clean-menu{position:fixed;left:14px;right:14px;top:114px;width:auto;max-height:calc(100dvh - 130px);overflow-y:auto;box-sizing:border-box}.clean-ui .topbar .nav{min-width:0}.clean-ui .nav>button,.clean-ui .clean-more>summary{font-size:10px;padding:10px 6px!important}.clean-ui .clean-header .brand{margin:0!important}}
 .clean-ui{width:100%!important;box-sizing:border-box!important;margin-left:auto!important;margin-right:auto!important;translate:none!important}
+/* Separate each matchup into an unmistakable card, including during fast scrolling. */
+.clean-ui .gameGrid{gap:30px!important;align-items:start}
+.clean-ui .gameCard{border:2px solid #43566a!important;background:#111e2b!important;box-shadow:0 8px 22px #0005!important;padding:0 20px 20px!important}
+.clean-ui .gameCard:before{height:7px;background:linear-gradient(90deg,var(--game-away,#42678d) 0 49%,#e3e9ef 49% 51%,var(--game-home,#b99a50) 51% 100%);opacity:1}
+.clean-ui .gameCard .gameTop{margin:7px -20px 16px;padding:14px 18px;background:#1d2c3c;border-bottom:1px solid #43566a;gap:10px;flex-wrap:wrap}
+.clean-ui .gameCard .teamRow{padding:10px 0}
+.clean-ui .gameCard .teamRow .name{font-size:17px;line-height:1.25}
+.clean-ui .gameCard .gameAction{margin:18px -20px -20px;padding:14px 20px;background:#192837;border-top:1px solid #43566a}
+.clean-ui .gameCard:hover{border-color:#7c99b5!important;transform:none}
+.clean-ui .dayBlock{padding-top:24px!important;padding-bottom:14px!important;border-top:1px solid #3b4d60}
+@media(max-width:700px){.clean-ui .gameGrid{gap:32px!important}.clean-ui .gameCard{border-width:2px!important}.clean-ui .gameCard .gameTop{font-size:11px;letter-spacing:.04em}}

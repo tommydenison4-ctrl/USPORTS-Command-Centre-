@@ -8,6 +8,14 @@
   if(typeof previous==='function')window.shell=function(content,active){return previous.apply(this,arguments).replace(/<header class="topbar"[\s\S]*?<\/header>/,header(active||'schedule')).replace('class="shell"','class="shell clean-ui"')};
   function fold(node,label){if(!node||node.parentElement?.classList.contains('clean-disclosure'))return;const d=document.createElement('details');d.className='clean-disclosure';const s=document.createElement('summary');s.textContent=label;node.before(d);d.append(s,node)}
   function enhance(){
+    document.querySelectorAll('.gameCard[data-game-id]').forEach(card=>{
+      const game=(typeof GAMES!=='undefined'?GAMES:[]).find(g=>g.id===card.dataset.gameId);
+      if(!game||card.dataset.cleanAccent===game.away+'|'+game.home)return;
+      const teams=typeof TEAM!=='undefined'?TEAM:{};
+      card.style.setProperty('--game-away',teams[game.away]?.primary||'#42678d');
+      card.style.setProperty('--game-home',teams[game.home]?.primary||'#b99a50');
+      card.dataset.cleanAccent=game.away+'|'+game.home;
+    });
     document.querySelectorAll('.shell').forEach(root=>{
       root.classList.add('clean-ui');const old=root.querySelector(':scope > .topbar:not(.clean-header)');if(old){const active=old.querySelector('button.active')?.textContent.trim();const key=items.concat(groups.flatMap(g=>g[1])).find(x=>x[1]===active)?.[0]||'schedule';old.outerHTML=header(key)}
       const calendar=root.querySelector(':scope > .calendar'),hero=root.querySelector(':scope > .featured-game');if(calendar&&hero&&hero.nextElementSibling!==calendar)hero.after(calendar);

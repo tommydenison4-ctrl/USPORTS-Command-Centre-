@@ -1,0 +1,58 @@
+/* A calmer presentation layer; team branding and all underlying data stay intact. */
+body{background:#080f17;color:#f1f5fa}
+.clean-ui{max-width:1440px;padding:0 32px 48px!important}
+.clean-ui .clean-header{height:auto!important;min-height:88px;display:flex!important;align-items:center;justify-content:space-between;gap:24px;padding:18px 0!important;background:rgba(8,15,23,.97)!important;border-bottom:1px solid #253140;z-index:1000;overflow:visible!important}
+.clean-ui .brand{display:flex;gap:13px;align-items:center;background:none;border:0;color:inherit;padding:0;cursor:pointer;text-align:left}
+.clean-ui .brand small{display:block;font-size:10px;letter-spacing:.22em;color:#a0acbb;margin-top:4px}
+.clean-ui .roundel{width:44px;height:44px;font-size:17px;border:2px solid #e4c66d;box-shadow:none}
+.clean-ui .topbar .nav{display:flex!important;align-items:center;flex-wrap:nowrap!important;gap:6px!important;overflow:visible!important;padding:0!important;width:auto!important}
+.clean-ui .nav button,.clean-ui .clean-more>summary{font:inherit;font-size:13px;font-weight:700;letter-spacing:0;color:#aab8c8;padding:12px 16px!important;border:1px solid transparent!important;border-radius:9px;background:transparent;white-space:nowrap;cursor:pointer;line-height:1.2}
+.clean-ui .nav button:hover,.clean-ui .clean-more>summary:hover{background:#172332;color:#fff}
+.clean-ui .nav button.active{background:#ead18a!important;color:#101721!important;border-color:#ead18a!important}
+.clean-ui .football-menu-toggle{display:none!important}
+.clean-ui .clean-more{position:relative;margin:0;padding:0;border:0;background:none}
+.clean-ui .clean-more>summary{display:flex;align-items:center;gap:12px;list-style:none;border-color:#334254!important}
+.clean-ui summary::-webkit-details-marker{display:none}
+.clean-ui .clean-menu{position:absolute;right:0;top:calc(100% + 12px);width:570px;max-width:calc(100vw - 40px);display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:18px;background:#111c29;border:1px solid #334254;border-radius:14px;padding:22px;box-shadow:0 18px 55px #0008}
+.clean-ui .clean-menu-title{display:block;color:#e5cc86;font-size:10px;letter-spacing:.13em;text-transform:uppercase;margin:0 0 12px 12px;font-weight:800}
+.clean-ui .clean-menu button{display:block;width:100%;text-align:left;font-size:12px;padding:11px 12px!important;white-space:normal}
+.clean-ui button:focus-visible,.clean-ui a:focus-visible,.clean-ui summary:focus-visible,.clean-ui input:focus-visible,.clean-ui select:focus-visible{outline:3px solid #e5cc86!important;outline-offset:3px}
+.clean-ui .hero{padding:32px 0!important;gap:28px}
+.clean-ui h1{font-size:clamp(28px,3.4vw,46px)!important;line-height:1.12!important;letter-spacing:-.035em!important}
+.clean-ui h2{font-size:clamp(23px,2.3vw,32px);letter-spacing:-.025em;line-height:1.2}
+.clean-ui .calendar{border-radius:18px;background:#0e1722;box-shadow:none;margin-bottom:28px}
+.clean-ui .calendarTop{padding:24px!important}
+.clean-ui .filters{gap:12px}
+.clean-ui input,.clean-ui select{border-radius:9px!important;background:#111e2b!important;color:#eaf0f7!important;border:1px solid #354356!important;min-height:44px}
+.clean-ui .weekRail{gap:8px;padding:16px 22px}
+.clean-ui .week{border-radius:11px;box-shadow:none}
+.clean-ui .gameGrid{gap:16px!important;padding:0 22px 24px}
+.clean-ui .gameCard,.clean-ui .game-card{border-radius:15px!important;border:1px solid #253343!important;background:#0b141e!important;box-shadow:none!important;padding:20px!important}
+.clean-ui .awm-card{background:#142130;border:1px solid #304257;border-radius:11px;padding:14px;margin-top:16px}
+.clean-ui .awm-card p{line-height:1.55;color:#aebdce}
+.clean-ui .game-card-leaders{border-top:1px solid #263446;padding-top:12px;margin-top:14px}
+.clean-ui .game-card-leaders>small{letter-spacing:.07em;color:#9bafc2}
+.clean-ui .section{margin:28px 0}
+.clean-ui .clean-disclosure{border:1px solid #283645;background:#0d1721;border-radius:13px;margin:12px 0;overflow:hidden}
+.clean-ui .clean-disclosure>summary{display:flex;align-items:center;justify-content:space-between;list-style:none;padding:20px 22px;font-weight:700;font-size:15px;cursor:pointer;color:#dce5ee}
+.clean-ui .clean-disclosure>summary:after{content:'+';color:#e5cc86;font-size:23px;font-weight:400}
+.clean-ui .clean-disclosure[open]>summary:after{content:'−'}
+.clean-ui .clean-disclosure[open]>summary{border-bottom:1px solid #283645}
+.clean-ui .clean-disclosure>section{margin:0!important;padding:22px!important;border:0!important;background:transparent!important}
+.clean-ui .football-tab{background:#0e1823!important;border:1px solid #293849!important;border-radius:18px!important;padding:28px!important;margin:28px auto!important}
+.clean-ui table{border-collapse:collapse;line-height:1.5;font-size:14px}
+.clean-ui th{color:#9badc1!important;font-size:11px!important;text-transform:uppercase;letter-spacing:.055em;padding:14px 12px!important;white-space:nowrap}
+.clean-ui td{padding:14px 12px!important;border-bottom-color:#283645!important}
+.clean-ui tbody tr:hover{background:rgba(111,157,199,.055)}
+.clean-ui .v72-team-pick{background:#101c29;border-color:#304154;border-radius:14px;padding:22px}
+.clean-ui .v72-proj{padding:24px!important;border-radius:16px}
+.clean-ui .podcast-show{background:#101b28;border-color:#2b3b4e;padding:26px;border-radius:17px}
+.clean-ui .podcast-show audio{width:100%;margin-top:12px}
+.clean-ui .footer{margin-top:32px;padding-top:24px;border-top:1px solid #243140;color:#8395a9;font-size:12px}
+@media(max-width:1000px){.clean-ui{padding:0 22px 36px!important}.clean-ui .clean-header{gap:16px}.clean-ui .nav button{padding:11px 12px!important}.clean-ui .gameGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:700px){.clean-ui{padding:0 14px 28px!important}.clean-ui .clean-header{flex-direction:column;align-items:flex-start;gap:14px;padding:15px 0!important}.clean-ui .topbar .nav{width:100%!important;justify-content:space-between;gap:2px!important}.clean-ui .nav button,.clean-ui .clean-more>summary{font-size:11px;padding:10px 8px!important}.clean-ui .clean-menu{width:calc(100vw - 28px);max-width:none;grid-template-columns:1fr 1.25fr;gap:15px;padding:16px}.clean-ui .clean-menu button{font-size:12px}.clean-ui .hero{padding:24px 0!important;grid-template-columns:1fr!important}.clean-ui .gameGrid{grid-template-columns:1fr!important;padding:0 12px 16px}.clean-ui .calendarTop{padding:18px 14px!important}.clean-ui .filters{grid-template-columns:1fr!important}.clean-ui .weekRail{padding:12px}.clean-ui .football-tab{padding:18px 14px!important;margin:20px auto!important;overflow-x:auto}.clean-ui .clean-disclosure>summary{padding:18px 16px}.clean-ui .clean-disclosure>section{padding:16px!important}.clean-ui .v72-match-grid{grid-template-columns:1fr!important}.clean-ui .v72-proj .score{font-size:36px}.clean-ui .awm-player-grid{grid-template-columns:1fr!important}.clean-ui .podcast-show{padding:18px}}
+@media(prefers-reduced-motion:reduce){.clean-ui *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+@media(min-width:701px){.clean-ui .clean-header{flex-direction:row!important;flex-wrap:nowrap!important}.clean-ui .topbar .nav{flex:0 1 auto!important;margin-left:auto!important}.clean-ui .brand{flex:0 0 auto!important}}
+@media(max-width:700px){.clean-ui .clean-more{position:static}.clean-ui .clean-menu{right:0;top:100%}.clean-ui .clean-header{position:sticky!important}}
+@media(max-width:700px){.clean-ui .clean-menu{position:fixed;left:14px;right:14px;top:114px;width:auto;max-height:calc(100dvh - 130px);overflow-y:auto;box-sizing:border-box}.clean-ui .topbar .nav{min-width:0}.clean-ui .nav>button,.clean-ui .clean-more>summary{font-size:10px;padding:10px 6px!important}.clean-ui .clean-header .brand{margin:0!important}}
+.clean-ui{width:100%!important;box-sizing:border-box!important;margin-left:auto!important;margin-right:auto!important;translate:none!important}

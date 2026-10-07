@@ -67,3 +67,17 @@ body{background:#080f17;color:#f1f5fa}
 .clean-ui .gameCard:hover{border-color:#7c99b5!important;transform:none}
 .clean-ui .dayBlock{padding-top:24px!important;padding-bottom:14px!important;border-top:1px solid #3b4d60}
 @media(max-width:700px){.clean-ui .gameGrid{gap:32px!important}.clean-ui .gameCard{border-width:2px!important}.clean-ui .gameCard .gameTop{font-size:11px;letter-spacing:.04em}}
+/* CanU Football brand. Team-specific identity and score/status colours are retained. */
+.clean-ui{--canu-red:#ed1238;--canu-white:#f7f9fc;--canu-navy:#080f17}
+.clean-ui .canu-brand-logo{width:74px;height:60px;object-fit:contain;flex-shrink:0}
+.clean-ui .canu-wordmark{font-size:25px;font-weight:950;letter-spacing:-.05em;white-space:nowrap;line-height:1.1}
+.clean-ui .canu-wordmark strong{font-size:15px;letter-spacing:.035em;color:#ff4661}
+.clean-ui .brand .canu-wordmark small{font-size:8px;letter-spacing:.13em;color:#b2bfcd;margin-top:7px}
+.clean-ui .nav button.active{background:#ed1238!important;border-color:#ff4764!important;color:#fff!important}
+.clean-ui .kicker,.clean-ui .clean-menu-title{color:#ff647a!important}
+.clean-ui .clean-more>summary:hover,.clean-ui .nav button:hover{border-color:#a63049!important}
+.clean-ui .clean-disclosure>summary:after{color:#ff647a}
+.clean-ui button:focus-visible,.clean-ui a:focus-visible,.clean-ui summary:focus-visible,.clean-ui input:focus-visible,.clean-ui select:focus-visible{outline-color:#ff647a!important}
+.clean-ui .week.active,.clean-ui .week.selected{background:#fff!important;color:#101721!important;border-color:#ed1238!important;box-shadow:0 0 0 2px #ed1238!important}
+.clean-ui .game-card-leaders b{color:#ff8595}
+@media(max-width:700px){.clean-ui .canu-brand-logo{width:62px;height:48px}.clean-ui .canu-wordmark{font-size:23px}.clean-ui .brand .canu-wordmark small{font-size:7px}}

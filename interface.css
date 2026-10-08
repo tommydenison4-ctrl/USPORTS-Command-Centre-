@@ -69,7 +69,7 @@ body{background:#080f17;color:#f1f5fa}
 @media(max-width:700px){.clean-ui .gameGrid{gap:32px!important}.clean-ui .gameCard{border-width:2px!important}.clean-ui .gameCard .gameTop{font-size:11px;letter-spacing:.04em}}
 /* CanU Football brand. Team-specific identity and score/status colours are retained. */
 .clean-ui{--canu-red:#ed1238;--canu-white:#f7f9fc;--canu-navy:#080f17}
-.clean-ui .canu-brand-logo{width:90px;height:72px;object-fit:contain;flex-shrink:0}
+.clean-ui .canu-brand-logo{width:180px;height:144px;object-fit:contain;flex-shrink:0}
 .clean-ui .canu-wordmark{font-size:25px;font-weight:950;letter-spacing:-.05em;white-space:nowrap;line-height:1.1}
 .clean-ui .canu-wordmark strong{font-size:15px;letter-spacing:.035em;color:#ff4661}
 .clean-ui .brand .canu-wordmark small{font-size:8px;letter-spacing:.13em;color:#b2bfcd;margin-top:7px}
@@ -80,4 +80,7 @@ body{background:#080f17;color:#f1f5fa}
 .clean-ui button:focus-visible,.clean-ui a:focus-visible,.clean-ui summary:focus-visible,.clean-ui input:focus-visible,.clean-ui select:focus-visible{outline-color:#ff647a!important}
 .clean-ui .week.active,.clean-ui .week.selected{background:#fff!important;color:#101721!important;border-color:#ed1238!important;box-shadow:0 0 0 2px #ed1238!important}
 .clean-ui .game-card-leaders b{color:#ff8595}
-@media(max-width:700px){.clean-ui .canu-brand-logo{width:74px;height:58px}.clean-ui .canu-wordmark{font-size:23px}.clean-ui .brand .canu-wordmark small{font-size:7px}}
+@media(max-width:700px){.clean-ui .canu-brand-logo{width:148px;height:116px}.clean-ui .canu-wordmark{font-size:23px}.clean-ui .brand .canu-wordmark small{font-size:7px}}
+
+@media(min-width:701px) and (max-width:1050px){.clean-ui .clean-header{flex-wrap:wrap!important}.clean-ui .topbar .nav{margin-left:0!important}}
+@media(max-width:700px){.clean-ui .brand{gap:8px}.clean-ui .canu-wordmark{font-size:20px}.clean-ui .canu-wordmark strong{font-size:12px}.clean-ui .brand .canu-wordmark small{font-size:6px}.clean-ui .clean-menu{top:188px;max-height:calc(100dvh - 204px)}}

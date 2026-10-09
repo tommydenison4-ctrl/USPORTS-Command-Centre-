@@ -1,5 +1,6 @@
 
 (()=>{
+  const graphicsStyle=document.createElement('style');graphicsStyle.textContent='.canu-live-event{display:block;color:#ff627b;font-size:11px;font-weight:900;font-style:normal;letter-spacing:.08em;margin:6px 0}.canu-live-event:empty{display:none}.v102-score{position:relative}#canu-selected-event{position:absolute;bottom:2px;left:0;right:0;text-align:center}.canu-ball-trail{position:absolute;top:50%;height:5px;background:#ffca56;border-radius:8px;pointer-events:none;z-index:5;box-shadow:0 0 8px #ffca56}.canu-ball-trail.pass{height:0;border-top:4px dashed #fff;background:none;box-shadow:none}';document.head.appendChild(graphicsStyle);
   const L={selected:'',source:null,snap:null,cat:{away:'passing',home:'passing'},tab:'overview',pbp:false,inflight:false,timer:null,lastDiscover:0,rendered:false,lastUserScroll:0,scrollRAF:0};
   window.V102_LIVE=L;
   try{if('scrollRestoration' in history)history.scrollRestoration='auto'}catch{}
@@ -22,7 +23,31 @@
   function today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
   function ymd(s){return String(s||'').replace(/\D/g,'').slice(0,8)}
   function matchSource(x,date){let best=null,score=-999;for(const g of (GAMES||[])){if(g.status==='final')continue;if(date&&g.date!==date)continue;const pd=x.page?.match(/boxscores\/(\d{8})_/)?.[1];if(pd&&pd!==ymd(g.date))continue;let s=0;if(tm(g.away,x.visitor))s+=100;if(tm(g.home,x.home))s+=100;if(tm(g.away,x.home))s-=80;if(tm(g.home,x.visitor))s-=80;if(s>score){score=s;best=g}}return score>=180?best:null}
-  function setLiveState(id,d){const g=game(id);if(!validIdentity(g,d))return;const st=LIVE_STORE.games[id]||(LIVE_STORE.games[id]={id,away:g.away,home:g.home});st._realLive=true;st._feedIdentity=d.identity;if(d?.game?.awayScore!=null)st.as=Number(d.game.awayScore);if(d?.game?.homeScore!=null)st.hs=Number(d.game.homeScore);st.q=d?.status?.period||st.q||'LIVE';if(/final/i.test(st.q))window.USFinalScores?.accept?.(g,{final:true,awayScore:st.as,homeScore:st.hs});st.clock=d?.status?.clock||st.clock||'';st.pos=d?.situation?.possession||st.pos||'';st.down=d?.situation?.down||st.down||'';st.distance=d?.situation?.distance??st.distance;st.spot=d?.situation?.spot||st.spot||''}
+  // Per-game event state is never shared with the selected game's feed.
+  const liveEvents=new Map(),fieldFrames=new WeakMap();
+  function liveEvent(previous,d,redZone=false){
+    const text=String(d?.plays?.[0]?.description||'').toLowerCase();
+    if(/final|complete/i.test(d?.status?.period||''))return '';
+    if(previous&&((Number(d?.game?.awayScore)>previous.away)||(Number(d?.game?.homeScore)>previous.home)))return 'SCORE UPDATE';
+    if(!/no[ -]play|nullified|overturned|reversed/.test(text)&&(/intercept|turnover on downs|fumble.*(?:lost|recovered by)/.test(text))){
+      if(/intercept|turnover on downs|fumble.*lost/.test(text)||previous?.pos&&d?.situation?.possession&&previous.pos!==d.situation.possession)return 'TURNOVER';
+    }
+    return redZone?'RED ZONE':'';
+  }
+  function trailTransition(prev,next,text){
+    return !!prev&&prev.id===next.id&&!!next.poss&&prev.poss===next.poss&&prev.key!==next.key&&prev.x!==next.x&&/rush|run|pass|complete/.test(text)&&!/no[ -]play|nullified|overturned|reversed|intercept|fumble|punt|kick/.test(text);
+  }
+  function recordEvent(g,d){
+    if(!d.situation&&!d.plays)return;
+    const prev=liveEvents.get(g.id),pos=possSlug(g,d),m=String(d.situation?.spot||'').replace(/[^a-z0-9]/gi,'').match(/^([a-z]+)(\d+)$/i);
+    const opponent=pos===g.away?g.home:pos===g.home?g.away:'';
+    const red=!!opponent&&!!m&&aliases(opponent).some(v=>v.replace(/ /g,'')===norm(m[1]).replace(/ /g,''))&&Number(m[2])<=20;
+    const key=JSON.stringify(d.plays?.[0]||{}),changed=!prev||prev.key!==key||prev.away!==Number(d.game?.awayScore)||prev.home!==Number(d.game?.homeScore);
+    let label=changed?liveEvent(prev,d,red):prev.label;
+    if(!changed&&prev.until<Date.now())label=red?'RED ZONE':'';
+    liveEvents.set(g.id,{away:Number(d.game?.awayScore),home:Number(d.game?.homeScore),pos:d.situation?.possession,key,label,until:changed?Date.now()+15000:prev.until});
+  }
+  function setLiveState(id,d){const g=game(id);if(!validIdentity(g,d))return;recordEvent(g,d);const st=LIVE_STORE.games[id]||(LIVE_STORE.games[id]={id,away:g.away,home:g.home});st._realLive=true;st._feedIdentity=d.identity;if(d?.game?.awayScore!=null)st.as=Number(d.game.awayScore);if(d?.game?.homeScore!=null)st.hs=Number(d.game.homeScore);st.q=d?.status?.period||st.q||'LIVE';if(/final/i.test(st.q))window.USFinalScores?.accept?.(g,{final:true,awayScore:st.as,homeScore:st.hs});st.clock=d?.status?.clock||st.clock||'';st.pos=d?.situation?.possession||st.pos||'';st.down=d?.situation?.down||st.down||'';st.distance=d?.situation?.distance??st.distance;st.spot=d?.situation?.spot||st.spot||''}
   async function discover(force=false){
     if(!L.selected)return null;
     if(!force&&L.source&&now()-L.lastDiscover<30000)return L.source;
@@ -92,7 +117,7 @@
   function img(t,cls=''){return t?.logo?`<img class="${cls}" src="${esc2(t.logo)}" alt="" onerror="this.style.display='none'">`:''}
   function possSlug(g,d){const p=norm(d?.situation?.possession);if(!p)return'';if(aliases(g.away).some(v=>p===v||p.includes(v)||v.includes(p)))return g.away;if(aliases(g.home).some(v=>p===v||p.includes(v)||v.includes(p)))return g.home;return''}
   function downText(d){const x=d?.situation||{};const n=Number(x.down);if(!n)return'';return `${n}${n===1?'st':n===2?'nd':n===3?'rd':'th'} & ${x.distance??''}`}
-  function rail(id){const d=game(id)?.date||today();return `<div class="v102-other" id="v102-national-rail">${(GAMES||[]).filter(x=>x.date===d&&x.id!==id).slice(0,10).map(x=>{const s=LIVE_STORE?.games?.[x.id],live=s?._realLive&&validIdentity(x,{identity:s._feedIdentity});return `<button onclick="V102_LIVE.open('${x.id}')"><small><span>${esc2(x.conference||'')}</span><span>${live?esc2([s.q,s.clock].filter(Boolean).join(' ')):esc2(x.time||'')}</span></small><b>${esc2(team(x.away).abbr||x.away)} ${live?s.as??'—':''} · ${esc2(team(x.home).abbr||x.home)} ${live?s.hs??'—':''}</b></button>`}).join('')}</div>`}
+  function rail(id){const d=game(id)?.date||today();return `<div class="v102-other" id="v102-national-rail">${(GAMES||[]).filter(x=>x.date===d&&x.id!==id).slice(0,10).map(x=>{const s=LIVE_STORE?.games?.[x.id],active=!/final|complete/i.test(s?.q||x.status||''),live=s?._realLive&&validIdentity(x,{identity:s._feedIdentity});return `<button onclick="V102_LIVE.open('${x.id}')"><small><span>${esc2(x.conference||'')}</span><span>${live?esc2([s.q,s.clock].filter(Boolean).join(' ')):esc2(x.time||'')}</span></small><b>${live&&active&&possSlug(x,{situation:{possession:s.pos}})===x.away?'<span aria-label="Possession">🏈</span> ':''}${esc2(team(x.away).abbr||x.away)} ${live?s.as??'—':''} · ${live&&active&&possSlug(x,{situation:{possession:s.pos}})===x.home?'<span aria-label="Possession">🏈</span> ':''}${esc2(team(x.home).abbr||x.home)} ${live?s.hs??'—':''}</b>${liveEvents.get(x.id)?.label?`<em class="canu-live-event">${esc2(liveEvents.get(x.id).label)}</em>`:''}</button>`}).join('')}</div>`}
   function value(v){const m=String(v??'').match(/-?\d+(?:\.\d+)?/);return m?Number(m[0]):0}
   function statRows(d,g){const rows=d?.statComparison||[];if(!rows.length)return '<div class="v102-empty">Live team statistics are waiting on the official gamebook.</div>';return `<div class="v102-statrows">${rows.map(r=>{const av=value(r.away),hv=value(r.home),mx=Math.max(1,Math.abs(av),Math.abs(hv));return `<div class="v102-statrow"><div class="val">${esc2(r.away??'—')}</div><div class="v102-meter"><i style="width:${Math.max(4,Math.abs(av)/mx*100)}%;background:${team(g.away).primary||'#c79b2e'}"></i></div><div class="lab">${esc2(r.label)}</div><div class="v102-meter"><i style="width:${Math.max(4,Math.abs(hv)/mx*100)}%;background:${team(g.home).primary||'#cf1742'}"></i></div><div class="val r">${esc2(r.home??'—')}</div></div>`}).join('')}</div>`}
   function pcat(p){if(p.category)return p.category;const path=String(p.path||'').toLowerCase();if(/(?:^|\.)(?:pass|passing)(?:\[|\.|$)/.test(path))return'passing';if(/(?:^|\.)(?:rush|rushing)(?:\[|\.|$)/.test(path))return'rushing';if(/(?:^|\.)(?:rcv|receive|receiving)(?:\[|\.|$)/.test(path))return'receiving';if(/defense|defence|tackle/.test(path))return'defense';const keys=Object.keys(p.stats||{});if(keys.some(k=>/^(?:cmp|comp|completions|pass_yds|pass_att)$/i.test(k)))return'passing';if(keys.some(k=>/^(?:car|carries|rush_yds|rush_att)$/i.test(k)))return'rushing';if(keys.some(k=>/^(?:rec|receptions|rec_yds)$/i.test(k)))return'receiving';return'other';}
@@ -159,11 +184,14 @@
     const spot=String(x.spot||L.snap?.plays?.[0]?.spot||'').toUpperCase().replace(/\s+/g,'').replace(/-/g,'');
     patchText('v102-fieldstate',[downText(L.snap),spot].filter(Boolean).join(' • '));
     const hud=document.getElementById('fieldHudV9');
-    const poss=possSlug(g,L.snap);
+    const poss=/final|complete/i.test(L.snap.status?.period||'')?'':possSlug(g,L.snap);
     const pab=document.getElementById('v107-pos-away'),phb=document.getElementById('v107-pos-home');
     if(pab)pab.classList.toggle('on',poss===g.away);
     if(phb)phb.classList.toggle('on',poss===g.home);
     if(hud)hud.textContent=[poss?(team(poss).abbr||poss).toUpperCase()+' BALL':'',downText(L.snap),spot].filter(Boolean).join(' • ')||'LIVE';
+    let badge=document.getElementById('canu-selected-event');
+    if(!badge){badge=document.createElement('div');badge.id='canu-selected-event';badge.className='canu-live-event';badge.setAttribute('role','status');document.querySelector('.v102-score')?.appendChild(badge)}
+    if(badge)badge.textContent=liveEvents.get(g.id)?.label||'';
     const m=spot.match(/^([A-Z]{2,8})(\d{1,3})$/); if(!m)return;
     const code=m[1],yd=Math.max(0,Math.min(55,Number(m[2]))); if(!Number.isFinite(yd))return;
     const awayCodes=[team(g.away).abbr,g.away,gm.awayId].map(v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,''));
@@ -174,7 +202,18 @@
     if(coord==null)return;
     const pct=c=>13.333+(Math.max(0,Math.min(110,c))/110)*73.334;
     const bx=pct(coord),ball=document.getElementById('fieldBallV9'),los=document.getElementById('losLineV9'),first=document.getElementById('firstLineV9');
-    if(ball){ball.style.display='block';ball.style.left=bx+'%'}
+    if(ball){
+      const viewport=ball.parentElement,prev=fieldFrames.get(viewport),play=L.snap.plays?.[0],key=JSON.stringify(play||{}),text=String(play?.description||'').toLowerCase();
+      let trail=viewport.querySelector('.canu-ball-trail');
+      if(!trail){trail=document.createElement('div');trail.className='canu-ball-trail';viewport.appendChild(trail)}
+      if(prev?.id!==g.id||prev?.poss!==poss||prev?.key!==key)trail.style.display='none';
+      if(!/final|complete/i.test(L.snap.status?.period||'')&&trailTransition(prev,{id:g.id,poss,key,x:bx},text)){
+        trail.style.display='block';trail.style.left=Math.min(prev.x,bx)+'%';trail.style.width=Math.abs(prev.x-bx)+'%';trail.classList.toggle('pass',/pass|complete/.test(text));
+        trail.setAttribute('aria-label',/pass|complete/.test(text)?'Passing play trail':'Running play trail');
+        if(!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)ball.animate?.([{left:prev.x+'%'},{left:bx+'%'}],{duration:900,easing:'ease-out'});
+      }
+      fieldFrames.set(viewport,{id:g.id,poss,key,x:bx});ball.style.display='block';ball.style.left=bx+'%';
+    }
     if(los){los.style.display='block';los.style.left=bx+'%'}
     const losStick=document.getElementById('v107-chain-los'),downBox=document.getElementById('v107-downbox');
     const dn=Number(x.down);if(downBox)downBox.textContent=Number.isFinite(dn)&&dn>0?String(dn):'•';

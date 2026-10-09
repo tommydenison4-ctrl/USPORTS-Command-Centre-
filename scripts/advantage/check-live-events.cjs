@@ -1,0 +1,25 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const src=fs.readFileSync('live-gamecast.js','utf8'),ctx={};vm.runInNewContext(src.match(/  function liveEvent\([\s\S]*?(?=  function recordEvent)/)[0],ctx);
+const data=(text,as=0,hs=0)=>({plays:[{description:text}],game:{awayScore:as,homeScore:hs},status:{period:'Q2'},situation:{possession:'home'}});
+assert.equal(ctx.liveEvent({away:0,home:0},data('Touchdown',7)),'SCORE UPDATE');
+assert.equal(ctx.liveEvent(null,data('Pass intercepted')),'TURNOVER');
+assert.equal(ctx.liveEvent(null,data('Pass intercepted, play reversed')),'');
+assert.equal(ctx.liveEvent({pos:'home'},data('Fumble recovered by home')),'');
+assert.equal(ctx.liveEvent({pos:'away'},data('Fumble recovered by home')),'TURNOVER');
+assert.equal(ctx.liveEvent(null,data('Sacked')),'');
+assert.equal(ctx.liveEvent(null,data('Rush'),true),'RED ZONE');
+const final=data('Touchdown',7);final.status.period='FINAL';assert.equal(ctx.liveEvent({away:0,home:0},final),'');
+console.log('Score changes, red zone, confirmed turnovers, reversals and finals classified correctly');
+
+vm.runInNewContext(src.match(/  function trailTransition\([\s\S]*?(?=  function recordEvent)/)[0],ctx);
+const before={id:'game-a',poss:'away',key:'p1',x:30},after={id:'game-a',poss:'away',key:'p2',x:45};
+assert.equal(ctx.trailTransition(before,after,'pass complete for 20 yards'),true);
+assert.equal(ctx.trailTransition(before,{...after,x:20},'rush for loss of 10 yards'),true);
+for(const next of [{...after,id:'game-b'},{...after,poss:'home'},{...after,key:'p1'}])assert.equal(ctx.trailTransition(before,next,'rush for 20 yards'),false);
+assert.equal(ctx.trailTransition(before,after,'pass intercepted'),false);
+assert.equal(ctx.trailTransition(before,after,'pass complete no play'),false);
+console.log('Run/pass trails preserve direction and reject game changes, possession changes, repeated and reversed plays');
+ctx.GAMES=[{id:'one',date:'2026-10-09',away:'a',home:'b'},{id:'two',date:'2026-10-09',away:'c',home:'d'},{id:'three',date:'2026-10-09',away:'e',home:'f'}];ctx.game=id=>ctx.GAMES.find(g=>g.id===id);ctx.team=id=>({abbr:id.toUpperCase()});ctx.esc2=String;ctx.validIdentity=(g,d)=>d.identity?.gameId===g.id;ctx.possSlug=(g,d)=>d.situation.possession;ctx.liveEvents=new Map([['two',{label:'TURNOVER'}]]);ctx.LIVE_STORE={games:{two:{_realLive:true,_feedIdentity:{gameId:'two'},pos:'c',as:7,hs:3},three:{_realLive:true,_feedIdentity:{gameId:'WRONG'},pos:'e',as:99,hs:99}}};
+vm.runInNewContext(src.match(/  function rail\([\s\S]*?(?=  function value)/)[0],ctx);
+const rail=ctx.rail('one');assert.match(rail,/Possession/);assert.match(rail,/TURNOVER/);assert.match(rail,/C 7/);assert.doesNotMatch(rail,/99/);
+console.log('Top scoreboard uses each game’s own verified scores, possession and event');

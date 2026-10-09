@@ -30,7 +30,7 @@ window.US_AWM=(()=>{
   const verifiedLive=complete||(
     Number.isFinite(awayScore)&&Number.isFinite(homeScore)&&
     !/^(pre|pregame|scheduled)$/i.test(period.trim())&&
-    ((q>=1&&q<=4&&!!t)||Array.isArray(d?.plays)&&d.plays.length>0||st?._realLive)
+    ((q>=1&&q<=4&&!!t)||/OT/i.test(period))
   );
   if(verifiedLive){
    const remaining=q&&t?(4-q)*900+Number(t[1])*60+Number(t[2]):null;

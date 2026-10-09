@@ -14,6 +14,7 @@
     changes.forEach(n=>{n.nodeValue=n.nodeValue.replace(/The forecast uses the shared Advantage model[\s\S]*/,'').replace(/Available imported box scores:[\s\S]*/,'')});
 
     document.querySelectorAll('p').forEach(n=>{if(/Hypothetical forecasts use the same Advantage/.test(n.textContent))n.textContent='Choose two teams and a venue.';else if(/fitted league coefficients|Available imported box scores:|Complete passing\/rushing totals:/.test(n.textContent))n.remove()});
+    document.querySelectorAll('.awm-metrics>div').forEach(n=>{if(/80% ERROR BAND[\s\S]*Not supplied/i.test(n.textContent))n.remove()});
     document.querySelectorAll('.season-note').forEach(n=>n.remove());
     document.querySelectorAll('details').forEach(n=>{const label=n.querySelector(':scope > summary')?.textContent||'';if(/Why this position|What could change the pick|Model and source details/.test(label))n.remove()});
     document.querySelectorAll('.season-watch p,.awm-card p').forEach(n=>{if(/model weights|Ranking method|editorial AUS|strength-based winner pick|playoff-bracket simulation|Early-season estimate|Projected score reconciled/.test(n.textContent))n.remove()});

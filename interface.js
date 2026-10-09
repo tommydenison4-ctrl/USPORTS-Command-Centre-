@@ -4,6 +4,7 @@
   const groups=[['Statistics',[['leaders','Players & Leaders','showLeaders()'],['teamstats','Team Stats','showTeamStats()']]],['Season',[['rankings','Top 10','rankingsPage65()'],['playoffs','Playoffs','playoffs72()'],['award','Hec Crighton Watch','', 'USPORTS:award'],['title','Vanier Cup Watch','', 'USPORTS:title'],['conferences','Conferences','showConferences()']]],['Coverage',[['media','Media','showMedia()'],['highlights','Highlights','highlights65()'],['podcasts','Podcasts','podcasts83()']]]];
   function button(x,active){return `<button type="button" class="${x[0]===active?'active':''}" ${x[3]?`data-watch="${x[3]}"`:`onclick="${x[2]}"`} ${x[0]===active?'aria-current="page"':''}>${x[1]}</button>`}
   function header(active){return `<header class="topbar clean-header"><button class="brand" type="button" onclick="goHome()" aria-label="Can-U Football home"><img class="canu-brand-logo" src="assets/canu-football.png" alt="Can-U Football maple leaf and football"><span class="canu-wordmark">Can-U <strong>FOOTBALL</strong><small>CANADIAN UNIVERSITY FOOTBALL</small></span></button><nav class="nav" aria-label="Primary navigation">${items.map(x=>button(x,active)).join('')}<details class="clean-more"><summary>Explore <span aria-hidden="true">⌄</span></summary><div class="clean-menu">${groups.map(g=>`<div><span class="clean-menu-title">${g[0]}</span>${g[1].map(x=>button(x,active)).join('')}</div>`).join('')}</div></details></nav></header>`}
+  const stripMarkup=new WeakMap();
   const previous=window.shell;
   if(typeof previous==='function')window.shell=function(content,active){return previous.apply(this,arguments).replace(/<header class="topbar"[\s\S]*?<\/header>/,header(active||'schedule')).replace('class="shell"','class="shell clean-ui"')};
   function fold(node,label){if(!node||node.parentElement?.classList.contains('clean-disclosure'))return;const d=document.createElement('details');d.className='clean-disclosure';const s=document.createElement('summary');s.textContent=label;node.before(d);d.append(s,node)}
@@ -30,7 +31,7 @@
       if(top&&window.V102_LIVE?.scoreboardHtml){
         const html='<div class="canu-scoreboard-label">THIS WEEK · SCOREBOARD</div>'+V102_LIVE.scoreboardHtml();let strip=root.querySelector(':scope > .canu-scoreboard');
         if(!strip){strip=document.createElement('section');strip.className='canu-scoreboard';top.after(strip)}
-        if(strip.innerHTML!==html)strip.innerHTML=html;
+        if(stripMarkup.get(strip)!==html){stripMarkup.set(strip,html);strip.innerHTML=html;}
       }
       const match=location.hash.match(/^#(?:game|live)=(.+)$/);
       if(match&&window.V102_LIVE?.renderHistory){

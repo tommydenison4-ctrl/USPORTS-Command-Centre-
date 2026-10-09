@@ -117,7 +117,12 @@
   function img(t,cls=''){return t?.logo?`<img class="${cls}" src="${esc2(t.logo)}" alt="" onerror="this.style.display='none'">`:''}
   function possSlug(g,d){const p=norm(d?.situation?.possession);if(!p)return'';if(aliases(g.away).some(v=>p===v||p.includes(v)||v.includes(p)))return g.away;if(aliases(g.home).some(v=>p===v||p.includes(v)||v.includes(p)))return g.home;return''}
   function downText(d){const x=d?.situation||{};const n=Number(x.down);if(!n)return'';return `${n}${n===1?'st':n===2?'nd':n===3?'rd':'th'} & ${x.distance??''}`}
-  function rail(id){const d=game(id)?.date||today();return `<div class="v102-other" id="v102-national-rail">${(GAMES||[]).filter(x=>x.date===d&&x.id!==id).slice(0,10).map(x=>{const s=LIVE_STORE?.games?.[x.id],active=!/final|complete/i.test(s?.q||x.status||''),live=s?._realLive&&validIdentity(x,{identity:s._feedIdentity});return `<button onclick="V102_LIVE.open('${x.id}')"><small><span>${esc2(x.conference||'')}</span><span>${live?esc2([s.q,s.clock].filter(Boolean).join(' ')):esc2(x.time||'')}</span></small><b>${live&&active&&possSlug(x,{situation:{possession:s.pos}})===x.away?'<span aria-label="Possession">🏈</span> ':''}${esc2(team(x.away).abbr||x.away)} ${live?s.as??'—':''} · ${live&&active&&possSlug(x,{situation:{possession:s.pos}})===x.home?'<span aria-label="Possession">🏈</span> ':''}${esc2(team(x.home).abbr||x.home)} ${live?s.hs??'—':''}</b>${liveEvents.get(x.id)?.label?`<em class="canu-live-event">${esc2(liveEvents.get(x.id).label)}</em>`:''}</button>`}).join('')}</div>`}
+  function scoreboardWeek(date,anchor){
+    const start=new Date(anchor+'T12:00:00');start.setDate(start.getDate()-(start.getDay()+6)%7);
+    const end=new Date(start);end.setDate(end.getDate()+7);
+    const value=new Date(date+'T12:00:00');return value>=start&&value<end;
+  }
+  function rail(id){const dates=(GAMES||[]).map(g=>g.date).sort();const d=game(id)?.date||(dates.includes(today())?today():dates.find(d=>d>today())||dates.at(-1)||today());return `<div class="v102-other" id="v102-national-rail">${(GAMES||[]).filter(x=>(id?x.date===d:scoreboardWeek(x.date,d))&&x.id!==id).map(x=>{const s=LIVE_STORE?.games?.[x.id],active=!/final|complete/i.test(s?.q||x.status||''),live=s?._realLive&&validIdentity(x,{identity:s._feedIdentity});return `<button onclick="V102_LIVE.open('${x.id}')"><small><span>${esc2(x.conference||'')} · ${esc2(x.date.slice(5))}</span><span>${live?esc2([s.q,s.clock].filter(Boolean).join(' ')):esc2(x.status==='final'?'FINAL':x.time||'')}</span></small><b>${live&&active&&possSlug(x,{situation:{possession:s.pos}})===x.away?'<span aria-label="Possession">🏈</span> ':''}${esc2(team(x.away).abbr||x.away)} ${live?s.as??'—':x.status==='final'?x.awayScore??'—':'—'} · ${live&&active&&possSlug(x,{situation:{possession:s.pos}})===x.home?'<span aria-label="Possession">🏈</span> ':''}${esc2(team(x.home).abbr||x.home)} ${live?s.hs??'—':x.status==='final'?x.homeScore??'—':'—'}</b>${liveEvents.get(x.id)?.label?`<em class="canu-live-event">${esc2(liveEvents.get(x.id).label)}</em>`:''}</button>`}).join('')}</div>`}
   function value(v){const m=String(v??'').match(/-?\d+(?:\.\d+)?/);return m?Number(m[0]):0}
   function statRows(d,g){const rows=d?.statComparison||[];if(!rows.length)return '<div class="v102-empty">Live team statistics are waiting on the official gamebook.</div>';return `<div class="v102-statrows">${rows.map(r=>{const av=value(r.away),hv=value(r.home),mx=Math.max(1,Math.abs(av),Math.abs(hv));return `<div class="v102-statrow"><div class="val">${esc2(r.away??'—')}</div><div class="v102-meter"><i style="width:${Math.max(4,Math.abs(av)/mx*100)}%;background:${team(g.away).primary||'#c79b2e'}"></i></div><div class="lab">${esc2(r.label)}</div><div class="v102-meter"><i style="width:${Math.max(4,Math.abs(hv)/mx*100)}%;background:${team(g.home).primary||'#cf1742'}"></i></div><div class="val r">${esc2(r.home??'—')}</div></div>`}).join('')}</div>`}
   function pcat(p){if(p.category)return p.category;const path=String(p.path||'').toLowerCase();if(/(?:^|\.)(?:pass|passing)(?:\[|\.|$)/.test(path))return'passing';if(/(?:^|\.)(?:rush|rushing)(?:\[|\.|$)/.test(path))return'rushing';if(/(?:^|\.)(?:rcv|receive|receiving)(?:\[|\.|$)/.test(path))return'receiving';if(/defense|defence|tackle/.test(path))return'defense';const keys=Object.keys(p.stats||{});if(keys.some(k=>/^(?:cmp|comp|completions|pass_yds|pass_att)$/i.test(k)))return'passing';if(keys.some(k=>/^(?:car|carries|rush_yds|rush_att)$/i.test(k)))return'rushing';if(keys.some(k=>/^(?:rec|receptions|rec_yds)$/i.test(k)))return'receiving';return'other';}
@@ -253,7 +258,7 @@
   }
   async function fetchNationalGame(g){
     if(!g||g.status==='final')return null;
-    if(g.id===L.selected&&L.snap){setLiveState(g.id,L.snap);return L.snap}
+    if(g.id===L.selected&&L.snap&&location.hash==='#live='+g.id){setLiveState(g.id,L.snap);return L.snap}
     const ids=sourceIds(g),key=sourceKey(g.id),cached=readSession(key);
     const tryPage=async(page)=>{
       if(!page)return null;
@@ -300,6 +305,13 @@
   async function tick(){if(L.inflight||!L.selected||document.visibilityState==='hidden'||location.hash!=='#live='+L.selected||!document.querySelector('.v102-live'))return;const selected=L.selected;L.inflight=true;try{const d=await fetchSnap();if(selected!==L.selected||location.hash!=='#live='+selected||!document.querySelector('.v102-live'))return;if(d){patch()}else{if(now()-L.lastDiscover>8000)discover(true);/* keep the last good snapshot on screen */}pollNational()}finally{L.inflight=false}}
   function startTimer(){clearInterval(L.timer);L.timer=setInterval(tick,4000)}
   function open(id,push=true){const g=game(id);if(!g)return;const same=L.selected===id&&document.querySelector('.v102-live');if(same){if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);tick();startTimer();return}L.selected=id;L.source=readSession(sourceKey(id));L.snap=readSession(snapKey(id));L.rendered=false;LIVE_STORE.selected=id;if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);render();tick();pollNational(true);startTimer()}
+  L.scoreboardHtml=()=>rail('').replace('id="v102-national-rail"','id="canu-top-scores" aria-label="National football scoreboard"');
+  let topBusy=false;
+  L.refreshScoreboard=async()=>{
+    if(topBusy||document.visibilityState==='hidden')return;
+    topBusy=true;
+    try{await Promise.allSettled((GAMES||[]).filter(g=>g.date===today()&&g.status!=='final').map(fetchNationalGame));window.dispatchEvent(new Event('canu-scores-updated'));}finally{topBusy=false}
+  };
   L.open=open;L.tick=tick;L.discover=discover;
   const initialPlayerCategories=L.cat;
   L.cat=(side,cat)=>{L.cat[side]=cat;for(const e of document.querySelectorAll(`[id="v102-${side}-players"]`))if(L.snap)e.innerHTML=playerTable(side,cat,L.snap,game(L.selected));document.querySelectorAll(`.v102-playergrid .v102-card:nth-child(${side==='away'?1:2}) .v102-ptabs button`).forEach(b=>b.classList.toggle('active',b.textContent.trim().toLowerCase()===cat))};

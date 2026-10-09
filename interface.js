@@ -18,10 +18,19 @@
     });
     document.querySelectorAll('.shell').forEach(root=>{
       root.classList.add('clean-ui');const footer=root.querySelector(':scope > .footer');if(footer&&footer.textContent!=='Can-U Football · Canadian University Football')footer.textContent='Can-U Football · Canadian University Football';const old=root.querySelector(':scope > .topbar:not(.clean-header)');if(old){const active=old.querySelector('button.active')?.textContent.trim();const key=items.concat(groups.flatMap(g=>g[1])).find(x=>x[1]===active)?.[0]||'schedule';old.outerHTML=header(key)}
+      const top=root.querySelector(':scope > .clean-header');
+      if(top&&window.V102_LIVE?.scoreboardHtml){
+        const html='<div class="canu-scoreboard-label">THIS WEEK · SCOREBOARD</div>'+V102_LIVE.scoreboardHtml();let strip=root.querySelector(':scope > .canu-scoreboard');
+        if(!strip){strip=document.createElement('section');strip.className='canu-scoreboard';top.after(strip)}
+        if(strip.innerHTML!==html)strip.innerHTML=html;
+      }
       const calendar=root.querySelector(':scope > .calendar'),hero=root.querySelector(':scope > .featured-game');if(calendar&&hero&&hero.nextElementSibling!==calendar)hero.after(calendar);
       if(calendar){fold(root.querySelector(':scope > #socialPulseV24'),'Around the league · social updates');fold(root.querySelector(':scope > #us-standings-live'),'Conference standings');fold(root.querySelector(':scope > #us-news-live'),'Latest football news');fold(root.querySelector(':scope > #home-news-v20'),'More football coverage');fold(root.querySelector(':scope > #teams'),'Explore teams');Array.from(root.children).filter(n=>n.matches('section.section')&&!n.id).forEach(n=>fold(n,n.querySelector('h2,h3')?.textContent.trim()||'More from U SPORTS'))}
     });
   }
+  window.addEventListener('canu-scores-updated',enhance);
+  setInterval(()=>window.V102_LIVE?.refreshScoreboard?.(),15000);
+  window.V102_LIVE?.refreshScoreboard?.();
   let queued=false;new MutationObserver(()=>{if(!queued){queued=true;requestAnimationFrame(()=>{queued=false;enhance()})}}).observe(document.body,{childList:true,subtree:true});enhance();
   document.addEventListener('click',e=>{const menu=document.querySelector('.clean-more[open]');if(!menu)return;if(!menu.contains(e.target)||e.target.closest('button'))queueMicrotask(()=>menu.removeAttribute('open'))},true);
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){const m=document.querySelector('.clean-more[open]');if(m){m.removeAttribute('open');m.querySelector('summary').focus()}}});

@@ -23,3 +23,8 @@ ctx.GAMES=[{id:'one',date:'2026-10-09',away:'a',home:'b'},{id:'two',date:'2026-1
 vm.runInNewContext(src.match(/  function rail\([\s\S]*?(?=  function value)/)[0],ctx);
 const rail=ctx.rail('one');assert.match(rail,/Possession/);assert.match(rail,/TURNOVER/);assert.match(rail,/C 7/);assert.doesNotMatch(rail,/99/);
 console.log('Top scoreboard uses each game’s own verified scores, possession and event');
+vm.runInNewContext(src.match(/  function scoreboardWeek\([\s\S]*?(?=  function rail)/)[0],ctx);
+assert.equal(ctx.scoreboardWeek('2026-10-10','2026-10-09'),true);
+assert.equal(ctx.scoreboardWeek('2026-10-03','2026-10-09'),false);
+assert.equal(ctx.scoreboardWeek('2026-10-12','2026-10-09'),false);
+console.log('Shared scoreboard includes the full current week, including tomorrow’s games');

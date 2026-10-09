@@ -84,3 +84,7 @@ body{background:#080f17;color:#f1f5fa}
 
 @media(min-width:701px) and (max-width:1050px){.clean-ui .clean-header{flex-wrap:wrap!important}.clean-ui .topbar .nav{margin-left:0!important}}
 @media(max-width:700px){.clean-ui .brand{gap:8px}.clean-ui .canu-wordmark{font-size:20px}.clean-ui .canu-wordmark strong{font-size:12px}.clean-ui .brand .canu-wordmark small{font-size:6px}.clean-ui .clean-menu{top:188px;max-height:calc(100dvh - 204px)}}
+
+.canu-scoreboard{margin:0 0 22px;border-bottom:1px solid #293545;padding:10px 0;background:#0b131d}.canu-scoreboard .v102-other{display:flex;overflow-x:auto;gap:10px;margin:0;padding:4px}.canu-scoreboard button{flex:0 0 230px;min-height:82px;text-align:left;border:1px solid #344255;border-radius:10px;background:#111d2a;color:#fff;padding:10px 14px;cursor:pointer}.canu-scoreboard small{display:flex;justify-content:space-between;color:#9aadc3;font-size:10px;margin-bottom:8px}.canu-scoreboard b{font-size:14px}.clean-ui .v102-live #v102-national-rail{display:none}
+
+.canu-scoreboard-label{font-size:10px;font-weight:800;letter-spacing:.12em;color:#9aadc3;padding:0 4px 8px}

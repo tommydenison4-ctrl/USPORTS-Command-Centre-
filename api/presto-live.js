@@ -539,7 +539,9 @@ module.exports=async function handler(req,res){
       const lr=await fetchLive(source,c,boot.cookie||'');
       attempts.push({kind:c.kind,status:lr.status,url:lr.url,body:lr.body});
       if(lr.ok&&isLivePayload(lr.json)){
-        return send(res,200,{ok:true,game,page:source.page,visitor:boot.visitor,home:boot.home,identity,upstreamStatus:lr.status,cadenceSeconds:10,sourcePage:source.page,bootstrapStatus:boot.status,credentialMode:c.kind,data:{...normalize(lr.json,{...source,awayLogo:boot.visitorLogo||'',homeLogo:boot.homeLogo||''}),identity}});
+        const normalized={...normalize(lr.json,{...source,awayLogo:boot.visitorLogo||'',homeLogo:boot.homeLogo||''}),identity};
+        let archiveSaved=false;try{await require('../internal/live-history.cjs').capture(game,normalized,lr.json);archiveSaved=true}catch(e){console.warn('Live archive unavailable',e.name||'StorageError')}
+        return send(res,200,{ok:true,archiveSaved,game,page:source.page,visitor:boot.visitor,home:boot.home,identity,upstreamStatus:lr.status,cadenceSeconds:10,sourcePage:source.page,bootstrapStatus:boot.status,credentialMode:c.kind,data:normalized});
       }
       if(lr.json?.error){ attempts[attempts.length-1].upstreamError=String(lr.json.error); }
     }catch(e){ attempts.push({kind:c.kind,status:null,error:String(e?.message||e)}); }

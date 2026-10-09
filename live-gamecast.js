@@ -104,17 +104,15 @@
     const qm=qtxt.match(/(?:Q|QUARTER\s*)?(\d+)/i); const q=qm?Math.max(1,Math.min(4,Number(qm[1]))):0;
     const cm=String(d?.status?.clock||'').match(/(\d+):(\d+)/); const sec=cm?Math.max(0,Math.min(900,Number(cm[1])*60+Number(cm[2]))):900;
     // Before the feed reports an actual quarter, stay neutral rather than showing device-specific cached priors.
+    if(/final|complete/i.test(qtxt))return as===hs?.5:as>hs?1:0;
     if(!q) return .5;
-    const remain=Math.max(1,(4-q)*900+sec);
-    const homeMargin=hs-as;
-    // Same score + same clock = exactly the same probability on every device.
-    // Margin gains leverage as time expires; a 17-point halftime lead is roughly a 90% proposition.
-    const scale=10*Math.sqrt(remain/3600 + .15);
-    const logit=homeMargin/Math.max(3.25,scale);
-    const home=Math.max(.01,Math.min(.99,1/(1+Math.exp(-logit))));
-    return 1-home; // existing UI expects AWAY probability
+    const prior=US_AWM.forecast(g);if(!prior.available)return NaN;
+    if(/final|complete/i.test(qtxt))return as===hs?.5:as>hs?1:0;
+    const remain=Math.max(0,(4-q)*900+sec),r=remain/3600,p=Math.max(.001,Math.min(.999,prior.home_win_prob));
+    const home=1/(1+Math.exp(-(Math.log(p/(1-p))+(hs-as)/Math.max(2.75,10*Math.sqrt(r+.08)))));
+    return 1-home;
   }
-  function img(t,cls=''){return t?.logo?`<img class="${cls}" src="${esc2(t.logo)}" alt="" onerror="this.style.display='none'">`:''}
+  function img(t,cls=''){const src=(typeof REMOTE_TEAM_LOGOS!=='undefined'&&REMOTE_TEAM_LOGOS[t?.slug])||t?.logo;return src?`<img class="${cls}" src="${esc2(src)}" alt="${esc2(t?.short||t?.name||'Team')} logo" onerror="this.style.display='none'">`:''}
   function possSlug(g,d){const p=norm(d?.situation?.possession);if(!p)return'';if(aliases(g.away).some(v=>p===v||p.includes(v)||v.includes(p)))return g.away;if(aliases(g.home).some(v=>p===v||p.includes(v)||v.includes(p)))return g.home;return''}
   function downText(d){const x=d?.situation||{};const n=Number(x.down);if(!n)return'';return `${n}${n===1?'st':n===2?'nd':n===3?'rd':'th'} & ${x.distance??''}`}
   function scoreboardWeek(date,anchor){
@@ -122,7 +120,30 @@
     const end=new Date(start);end.setDate(end.getDate()+7);
     const value=new Date(date+'T12:00:00');return value>=start&&value<end;
   }
-  function rail(id){const dates=(GAMES||[]).map(g=>g.date).sort();const d=game(id)?.date||(dates.includes(today())?today():dates.find(d=>d>today())||dates.at(-1)||today());return `<div class="v102-other" id="v102-national-rail">${(GAMES||[]).filter(x=>(id?x.date===d:scoreboardWeek(x.date,d))&&x.id!==id).map(x=>{const s=LIVE_STORE?.games?.[x.id],active=!/final|complete/i.test(s?.q||x.status||''),live=s?._realLive&&validIdentity(x,{identity:s._feedIdentity});return `<button onclick="V102_LIVE.open('${x.id}')"><small><span>${esc2(x.conference||'')} · ${esc2(x.date.slice(5))}</span><span>${live?esc2([s.q,s.clock].filter(Boolean).join(' ')):esc2(x.status==='final'?'FINAL':x.time||'')}</span></small><b>${live&&active&&possSlug(x,{situation:{possession:s.pos}})===x.away?'<span aria-label="Possession">🏈</span> ':''}${esc2(team(x.away).abbr||x.away)} ${live?s.as??'—':x.status==='final'?x.awayScore??'—':'—'} · ${live&&active&&possSlug(x,{situation:{possession:s.pos}})===x.home?'<span aria-label="Possession">🏈</span> ':''}${esc2(team(x.home).abbr||x.home)} ${live?s.hs??'—':x.status==='final'?x.homeScore??'—':'—'}</b>${liveEvents.get(x.id)?.label?`<em class="canu-live-event">${esc2(liveEvents.get(x.id).label)}</em>`:''}</button>`}).join('')}</div>`}
+  function rail(id){
+    const dates=(GAMES||[]).map(g=>g.date).sort(),d=game(id)?.date||(dates.includes(today())?today():dates.find(d=>d>today())||dates.at(-1)||today());
+    return `<div class="v102-other" id="v102-national-rail">${(GAMES||[]).filter(x=>(id?x.date===d:scoreboardWeek(x.date,d))&&x.id!==id).map(x=>{
+      const st=LIVE_STORE?.games?.[x.id],verified=st?._realLive&&validIdentity(x,{identity:st._feedIdentity}),final=/final|complete/i.test(verified?st.q:x.status||''),live=verified&&!final,pos=live?possSlug(x,{situation:{possession:st.pos}}):'',event=liveEvents.get(x.id)?.label||'';
+      return `<button class="canu-game-chip ${live?'is-live':''} ${event?'has-event':''} ${x.id===L.selected?'is-selected':''}" onclick="V102_LIVE.open('${x.id}')"><small><span>${esc2(x.conference||'')} · ${esc2(x.date.slice(5))}</span><span>${final?'FINAL':live?esc2([st.q,st.clock].filter(Boolean).join(' ')):esc2(x.time||'')}</span></small>${['away','home'].map(side=>`<span class="canu-chip-team"><span>${img(team(x[side]),'canu-chip-logo')}<b>${esc2(team(x[side]).short||team(x[side]).abbr||x[side])}</b>${pos===x[side]?'<span aria-label="Possession">🏈</span>':''}</span><strong class="canu-chip-score">${verified?(side==='away'?st.as:st.hs)??'—':final?(side==='away'?x.awayScore:x.homeScore)??'—':'—'}</strong></span>`).join('')}${event?`<em class="canu-live-event">${esc2(event)}</em>`:''}</button>`;
+    }).join('')}</div>`;
+  }
+  const chartCache=new Map();
+  function chartHtml(g,history){
+    const points=(history?.points||[]).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.p)&&p.p>=0&&p.p<=1);
+    if(!points.length)return '<h3>Win probability</h3><p>Game history is updating.</p>';
+    const end=Math.max(3600,points.at(-1).x),x=v=>42+v/end*540,y=v=>22+(1-v)*150;
+    const line=home=>points.map((p,i)=>{const px=x(p.x),py=y(home?p.p:1-p.p);if(!i)return `M${px},${py}`;const prev=points[i-1],ax=x(prev.x),ay=y(home?prev.p:1-prev.p),mid=(ax+px)/2;return `C${mid},${ay} ${mid},${py} ${px},${py}`}).join(' ');
+    const latest=points.at(-1),a=team(g.away),h=team(g.home);
+    const grid=[0,.25,.5,.75,1].map(p=>`<line x1="42" x2="582" y1="${y(p)}" y2="${y(p)}" stroke="#294354" stroke-dasharray="3 4"/><text x="36" y="${y(p)+4}" text-anchor="end" fill="#9ab0c0" font-size="10">${p*100}%</text>`).join('');
+    return `<h3>Win probability</h3><div class="canu-chart-legend"><span style="color:#ffad66">${img(a,'canu-chip-logo')}${esc2(a.short||g.away)} ${((1-latest.p)*100).toFixed(1)}%</span><span style="color:#76caff">${img(h,'canu-chip-logo')}${esc2(h.short||g.home)} ${(latest.p*100).toFixed(1)}%</span></div><svg viewBox="0 0 610 205" role="img" aria-label="Win probability from pregame through ${esc2(latest.final?'the final score':'the current game')}">${grid}${[0,900,1800,2700,3600].map((v,i)=>`<text x="${x(v)}" y="193" text-anchor="middle" fill="#9ab0c0" font-size="10">${['Pregame','End Q1','Half','End Q3','Final'][i]}</text>`).join('')}<path fill="none" stroke="#ffad66" stroke-width="2.5" d="${line(false)}"/><path fill="none" stroke="#76caff" stroke-width="2.5" d="${line(true)}"/>${points.map(p=>`<circle cx="${x(p.x)}" cy="${y(p.p)}" r="6" fill="transparent"><title>${esc2(p.label)} · ${esc2(h.short)} ${(p.p*100).toFixed(1)}% · ${esc2(a.short)} ${((1-p.p)*100).toFixed(1)}%</title></circle>`).join('')}</svg><small>Pregame: ${esc2(a.short)} ${((1-points[0].p)*100).toFixed(1)}% · ${esc2(h.short)} ${(points[0].p*100).toFixed(1)}%${latest.final?' · Final':''}</small>`;
+  }
+  L.renderHistory=async(host,id)=>{
+    const g=game(id);if(!g||!host)return;
+    let cache=chartCache.get(id);if(!cache){cache={at:0,data:null,busy:false};chartCache.set(id,cache)}
+    htmlIfChanged(host,chartHtml(g,cache.data));
+    if(cache.busy||Date.now()-cache.at<10000)return;cache.busy=true;cache.at=Date.now();
+    try{const r=await fetch('/api/live-history?game='+encodeURIComponent(id),{cache:'no-store'});if(!r.ok)throw Error();const data=await r.json();if(data.gameId!==id)throw Error();cache.data=data;if(host.isConnected&&host.dataset.gameId===id)htmlIfChanged(host,chartHtml(g,data));}catch{}finally{cache.busy=false}
+  };
   function value(v){const m=String(v??'').match(/-?\d+(?:\.\d+)?/);return m?Number(m[0]):0}
   function statRows(d,g){const rows=d?.statComparison||[];if(!rows.length)return '<div class="v102-empty">Live team statistics are waiting on the official gamebook.</div>';return `<div class="v102-statrows">${rows.map(r=>{const av=value(r.away),hv=value(r.home),mx=Math.max(1,Math.abs(av),Math.abs(hv));return `<div class="v102-statrow"><div class="val">${esc2(r.away??'—')}</div><div class="v102-meter"><i style="width:${Math.max(4,Math.abs(av)/mx*100)}%;background:${team(g.away).primary||'#c79b2e'}"></i></div><div class="lab">${esc2(r.label)}</div><div class="v102-meter"><i style="width:${Math.max(4,Math.abs(hv)/mx*100)}%;background:${team(g.home).primary||'#cf1742'}"></i></div><div class="val r">${esc2(r.home??'—')}</div></div>`}).join('')}</div>`}
   function pcat(p){if(p.category)return p.category;const path=String(p.path||'').toLowerCase();if(/(?:^|\.)(?:pass|passing)(?:\[|\.|$)/.test(path))return'passing';if(/(?:^|\.)(?:rush|rushing)(?:\[|\.|$)/.test(path))return'rushing';if(/(?:^|\.)(?:rcv|receive|receiving)(?:\[|\.|$)/.test(path))return'receiving';if(/defense|defence|tackle/.test(path))return'defense';const keys=Object.keys(p.stats||{});if(keys.some(k=>/^(?:cmp|comp|completions|pass_yds|pass_att)$/i.test(k)))return'passing';if(keys.some(k=>/^(?:car|carries|rush_yds|rush_att)$/i.test(k)))return'rushing';if(keys.some(k=>/^(?:rec|receptions|rec_yds)$/i.test(k)))return'receiving';return'other';}

@@ -52,10 +52,7 @@
   }
   return {homeWin,components,neutralMargin,margin,total,scoreReconciled,homeFieldPoints:us?(neutral?0:3):null,conferenceStrength:us?{away,home,baseHomeWin:base,neutralHomeWin:neutralWin,method:'Editorial strength ratio applied to neutral win odds; AUS 2/10, other conferences 10/10 baseline.'}:null};
  }
- function strengthNote(p){
-  const s=p?.conferenceStrength;if(!p?.available||!s)return '';
-  return `<p class="awm-strength"><b>Venue:</b> ${p.homeFieldPoints?esc(p.homeName)+' home · provisional +3 points':'Neutral field · no home advantage'}. <b>Conference strength:</b> ${esc(p.awayName)} ${s.away}/10 · ${esc(p.homeName)} ${s.home}/10. ${s.away===s.home?'Equal conference strength: no adjustment.':`Applied to win probability and projected score. ${esc(p.awayName)} neutral win chance: ${((1-s.baseHomeWin)*100).toFixed(1)}% before → ${((1-s.neutralHomeWin)*100).toFixed(1)}% after.`}</p>`;
- }
+ function strengthNote(p){return "";}
  function project(data,game){
   if(!data||!game)return {available:false,reason:'Model data is not loaded.'};
   if(game.league&&game.league!==data.league)return {available:false,reason:'League does not match the model.'};
@@ -143,16 +140,16 @@
 
  function logo(url,name){return typeof url==='string'&&(/^(https?:\/\/|\/|logos\/|assets\/|data:image\/)/.test(url))?`<img class="awm-logo" src="${esc(url)}" alt="${esc(name)} logo" loading="lazy" onerror="this.hidden=true">`:'';}
  function card(p,detail=false,data=null){
-  if(!p?.available)return `<section class="awm-card"><small>ADVANTAGE WINNER MODEL</small><b>Prediction unavailable</b><p>${esc(p?.reason||'Verified history is not yet available.')}</p></section>`;
+  if(!p?.available)return `<section class="awm-card"><small>ADVANTAGE WINNER MODEL</small><b>Prediction unavailable</b><p>Check back for this matchup.</p></section>`;
   const home=p.home_win_prob>=.5,winner=home?p.homeName:p.awayName,prob=Math.max(p.home_win_prob,p.away_win_prob);
-  let html=`<section class="awm-card"><small>ADVANTAGE WINNER MODEL · PREGAME</small><div class="awm-matchup-logos">${logo(p.awayLogo,p.awayName)}<span>${esc(p.awayName)} · ${esc(p.homeName)}</span>${logo(p.homeLogo,p.homeName)}</div><b>${esc(winner)} <span>${(prob*100).toFixed(1)}%</span></b><p>${esc(p.awayName)} ${p.away_score.toFixed(1)} – ${p.home_score.toFixed(1)} ${esc(p.homeName)}</p><div class="awm-bar"><i style="width:${p.away_win_prob*100}%"></i></div><p>Expected total ${p.total.toFixed(1)} · ${esc(p.confidence)}</p>`;
+  let html=`<section class="awm-card"><small>ADVANTAGE WINNER MODEL · PREGAME</small><div class="awm-matchup-logos">${logo(p.awayLogo,p.awayName)}<span>${esc(p.awayName)} · ${esc(p.homeName)}</span>${logo(p.homeLogo,p.homeName)}</div><b>${esc(winner)} <span>${(prob*100).toFixed(1)}%</span></b><p>${esc(p.awayName)} ${p.away_score.toFixed(1)} – ${p.home_score.toFixed(1)} ${esc(p.homeName)}</p><div class="awm-bar"><i style="width:${p.away_win_prob*100}%"></i></div><p>Expected total ${p.total.toFixed(1)}</p>`;
   if(detail){
-   if(p.scoreReconciled)html+='<p>Projected score reconciled with the final win probability; expected total preserved.</p>';
-   if(data?.model?.provisional)html+='<p>Early-season estimate fitted only to 2026 games. The sample is small; win probabilities are not yet calibrated. No prior-season data is used.</p>';
+
+
    html+=`<div class="awm-metrics"><div><small>HOME MARGIN</small><b>${p.margin>=0?'+':''}${p.margin.toFixed(1)}</b></div><div><small>80% ERROR BAND</small><b>${p.marginInterval?p.marginInterval.map(x=>x.toFixed(1)).join(' to '):'Not supplied'}</b></div></div>`;
    if(p.expected)html+=`<table><thead><tr><th>Expected matchup</th><th>${esc(p.awayName)}</th><th>${esc(p.homeName)}</th></tr></thead><tbody>${[['tempo','Eligible plays'],['explosives','Explosive plays'],['median','Median yards'],['neg','Negative play rate']].map(([k,label])=>`<tr><td>${label}</td>${['away','home'].map(side=>`<td>${finite(p.expected[side]?.[k])?(p.expected[side][k]*(k==='neg'?100:1)).toFixed(1)+(k==='neg'?'%':''):'—'}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
-   html+=winGuide(data,p);
-   html+=`<details><summary>Model and source details</summary><p>${esc(p.modelVersion)}. ${p.components?'60% football matchup, 35% power, 5% current form.':'Frozen workbook result.'} ${p.conferenceStrength?esc(p.conferenceStrength.method)+' Projected margin also includes the conference adjustment; the expected total is unchanged.':''} Market lines are excluded. Forecast scores and targets are estimates, not observed statistics.</p>${p.report?`<p>Chronological holdout: ${p.report.testGames} games · Brier ${p.report.brier.toFixed(3)} · margin MAE ${p.report.marginMAE.toFixed(1)} points. Validation is limited to the collected games.</p>`:''}${(p.sources||[]).map((s,i)=>/^https:\/\//.test(s)?`<a href="${esc(s)}" target="_blank" rel="noopener">Gamebook ${i+1}</a> `:`<p>${esc(s)}</p>`).join('')}</details>`;
+
+
   }return html+'</section>';
  }
  return {VERSION,calculate,features,team,conferenceStrength,matchupProbability,strengthNote,project,scenario,winGuide,countTail,live,espnState,card,logo,esc,canonical:canon};

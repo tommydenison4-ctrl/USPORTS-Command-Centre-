@@ -18,6 +18,18 @@
     },
     "api/podcasts.js": {
       "maxDuration": 30
+    },
+    "api/live-history.js": {
+      "includeFiles": "{internal/**,data/**}",
+      "maxDuration": 60
+    },
+    "api/presto-live.js": {
+      "includeFiles": "{internal/**,data/**}",
+      "maxDuration": 60
+    },
+    "api/capture-live-history.js": {
+      "includeFiles": "{internal/**,data/**}",
+      "maxDuration": 60
     }
   },
   "headers": [
@@ -38,6 +50,12 @@
           "value": "public, max-age=0, must-revalidate"
         }
       ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/capture-live-history",
+      "schedule": "* * * * *"
     }
   ]
 }

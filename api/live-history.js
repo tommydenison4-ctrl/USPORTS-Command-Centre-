@@ -1,0 +1,2 @@
+const H=require('../internal/live-history.cjs');
+module.exports=async(req,res)=>{res.setHeader('Cache-Control','no-store');if(req.method!=='GET')return res.status(405).json({error:'GET only'});const id=String(req.query.game||'');if(!H.game(id))return res.status(404).json({error:'Unknown game'});try{return res.status(200).json(await H.history(id));}catch{return res.status(503).json({error:'Shared live history temporarily unavailable',points:[]});}};

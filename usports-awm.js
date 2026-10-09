@@ -56,8 +56,8 @@ window.US_AWM=(()=>{
     }
    }
    const liveCard=l
-    ?`<section class="awm-card awm-live-only"><small>ADVANTAGE · LIVE WIN PROBABILITY</small><b>${A.esc(TEAM[g.home].short)} ${(l.homeWin*100).toFixed(1)}% · ${A.esc(TEAM[g.away].short)} ${((1-l.homeWin)*100).toFixed(1)}%</b><p>${A.esc(l.mode||'Final result')}</p></section>`
-    :`<section class="awm-card awm-live-only"><small>ADVANTAGE · LIVE WIN PROBABILITY</small><b>Live probability updating</b><p>The verified live feed is active. Waiting for the next usable clock state.</p></section>`;
+    ?`<section class="awm-card awm-live-only"><small>ADVANTAGE · LIVE WIN PROBABILITY</small><b>${A.esc(TEAM[g.home].short)} ${(l.homeWin*100).toFixed(1)}% · ${A.esc(TEAM[g.away].short)} ${((1-l.homeWin)*100).toFixed(1)}%</b></section>`
+    :`<section class="awm-card awm-live-only"><small>ADVANTAGE · LIVE WIN PROBABILITY</small><b>Live probability updating</b></section>`;
    // Once kickoff is verified, pregame scenarios and projected player leaders disappear.
    // Actual team/player statistics are rendered by the live GameCast directly below.
    return '<div id="us-awm-panel" data-game-state="live">'+liveCard+'</div>';

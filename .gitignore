@@ -6,3 +6,6 @@ scripts/advantage/__pycache__/
 
 scripts/advantage/*-model.json
 scripts/advantage/*-holdout.json
+
+node_modules/
+.env*

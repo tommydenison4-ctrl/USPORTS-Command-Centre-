@@ -8,6 +8,14 @@
   if(typeof previous==='function')window.shell=function(content,active){return previous.apply(this,arguments).replace(/<header class="topbar"[\s\S]*?<\/header>/,header(active||'schedule')).replace('class="shell"','class="shell clean-ui"')};
   function fold(node,label){if(!node||node.parentElement?.classList.contains('clean-disclosure'))return;const d=document.createElement('details');d.className='clean-disclosure';const s=document.createElement('summary');s.textContent=label;node.before(d);d.append(s,node)}
   function enhance(){
+    const copy=document.createTreeWalker(document.getElementById('app')||document.body,NodeFilter.SHOW_TEXT);let textNode;const changes=[];
+    while(textNode=copy.nextNode()){if(/The forecast uses the shared Advantage model|Available imported box scores:/.test(textNode.nodeValue))changes.push(textNode)}
+    changes.forEach(n=>{n.nodeValue=n.nodeValue.replace(/The forecast uses the shared Advantage model[\s\S]*/,'').replace(/Available imported box scores:[\s\S]*/,'')});
+
+    document.querySelectorAll('p').forEach(n=>{if(/Hypothetical forecasts use the same Advantage/.test(n.textContent))n.textContent='Choose two teams and a venue.';else if(/fitted league coefficients|Available imported box scores:|Complete passing\/rushing totals:/.test(n.textContent))n.remove()});
+    document.querySelectorAll('.season-note').forEach(n=>n.remove());
+    document.querySelectorAll('details').forEach(n=>{const label=n.querySelector(':scope > summary')?.textContent||'';if(/Why this position|What could change the pick|Model and source details/.test(label))n.remove()});
+    document.querySelectorAll('.season-watch p,.awm-card p').forEach(n=>{if(/model weights|Ranking method|editorial AUS|strength-based winner pick|playoff-bracket simulation|Early-season estimate|Projected score reconciled/.test(n.textContent))n.remove()});
     document.querySelectorAll('.gameCard[data-game-id]').forEach(card=>{
       const game=(typeof GAMES!=='undefined'?GAMES:[]).find(g=>g.id===card.dataset.gameId);
       if(!game||card.dataset.cleanAccent===game.away+'|'+game.home)return;
@@ -23,6 +31,12 @@
         const html='<div class="canu-scoreboard-label">THIS WEEK · SCOREBOARD</div>'+V102_LIVE.scoreboardHtml();let strip=root.querySelector(':scope > .canu-scoreboard');
         if(!strip){strip=document.createElement('section');strip.className='canu-scoreboard';top.after(strip)}
         if(strip.innerHTML!==html)strip.innerHTML=html;
+      }
+      const match=location.hash.match(/^#(?:game|live)=(.+)$/);
+      if(match&&window.V102_LIVE?.renderHistory){
+        let host=root.querySelector('#canu-probability-history');
+        if(!host){host=document.createElement('section');host.id='canu-probability-history';host.className='panel canu-history-chart';const score=root.querySelector('.v102-score');if(score)score.after(host);else root.querySelector(':scope > .footer')?.before(host)}
+        if(host){host.dataset.gameId=match[1];V102_LIVE.renderHistory(host,match[1])}
       }
       const calendar=root.querySelector(':scope > .calendar'),hero=root.querySelector(':scope > .featured-game');if(calendar&&hero&&hero.nextElementSibling!==calendar)hero.after(calendar);
       if(calendar){fold(root.querySelector(':scope > #socialPulseV24'),'Around the league · social updates');fold(root.querySelector(':scope > #us-standings-live'),'Conference standings');fold(root.querySelector(':scope > #us-news-live'),'Latest football news');fold(root.querySelector(':scope > #home-news-v20'),'More football coverage');fold(root.querySelector(':scope > #teams'),'Explore teams');Array.from(root.children).filter(n=>n.matches('section.section')&&!n.id).forEach(n=>fold(n,n.querySelector('h2,h3')?.textContent.trim()||'More from U SPORTS'))}

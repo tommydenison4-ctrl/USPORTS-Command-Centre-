@@ -1,0 +1,11 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const code=fs.readFileSync('live-gamecast.js','utf8');
+const g={id:'2026-10-03-guelph-toronto',date:'2026-10-03',away:'guelph',home:'toronto',status:'final',awayScore:28,homeScore:14};
+const stale={game:{awayScore:21,homeScore:14},status:{period:'Q4',clock:'3:12'},situation:{possession:'Toronto',down:2,distance:7,spot:'TOR40'},plays:[{q:'Q4',clock:'3:12',description:'Rush'}]};
+const ctx={};vm.runInNewContext(code.slice(code.indexOf('  function isFinal'),code.indexOf('  function saveScroll')),ctx);
+const d=ctx.finalSnapshot(g,stale);assert.equal(d.status.period,'FINAL');assert.equal(d.status.clock,'');assert.equal(d.status.complete,true);assert.equal(d.game.awayScore,28);assert.equal(Object.keys(d.situation).length,0);assert.equal(d.plays[0].clock,'3:12','Historical play timestamps survive');assert.equal(stale.status.clock,'3:12','Original snapshot is not mutated');
+assert.equal(ctx.finalSnapshot({...g,status:'scheduled'},stale),stale,'Live clocks stay intact');assert.equal(ctx.finalSnapshot({...g,status:'scheduled'},{...stale,status:{complete:true,period:'Q4',clock:'3:12'}}).status.period,'FINAL');
+const nodes={},store={games:{[g.id]:{_realLive:true,q:'Q4',clock:'3:12',spot:'TOR40'}}};Object.assign(ctx,{L:{selected:g.id,snap:stale,rendered:true,pbp:false,cat:{}},game:()=>g,LIVE_STORE:store,document:{querySelector:()=>({classList:{toggle(){}}}),getElementById:()=>null,querySelectorAll:()=>[]},patchRibbon(){},patchText:(id,value)=>nodes[id]=value,downText:()=>'',possSlug:()=>'',htmlIfChanged(){},statRows(){},drive(){},prob:()=>1,team:()=>({}),patchField(){}});
+vm.runInNewContext(code.slice(code.indexOf('  function patch(){'),code.indexOf('  async function fetchNationalGame')),ctx);ctx.patch();assert.equal(nodes['v102-status'],'FINAL');assert.equal(nodes['v102-sit'],'');assert.equal(nodes['v102-as'],28);
+const final=require('../../final-scores');const liveGame={status:'scheduled'};assert.equal(final.apply(liveGame,{status:{complete:true,period:'Q4'},awayScore:0,homeScore:14}),true);
+console.log('Final status overrides stale clock, possession and scores; complete flags work; historical timestamps and live clocks survive.');

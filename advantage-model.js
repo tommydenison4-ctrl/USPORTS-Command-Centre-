@@ -1,4 +1,4 @@
-(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.AdvantageModel=api;})(typeof globalThis!=='undefined'?globalThis:this,()=>{
+(function(root,factory){const api=factory(root);if(typeof module==='object'&&module.exports)module.exports=api;root.AdvantageModel=api;})(typeof globalThis!=='undefined'?globalThis:this,(root)=>{
  'use strict';
  const VERSION='AWM-V3-reconstructed-1';
  const finite=v=>typeof v==='number'&&Number.isFinite(v);
@@ -53,7 +53,7 @@
   return {homeWin,components,neutralMargin,margin,total,scoreReconciled,homeFieldPoints:us?(neutral?0:3):null,conferenceStrength:us?{away,home,baseHomeWin:base,neutralHomeWin:neutralWin,method:'Editorial strength ratio applied to neutral win odds; AUS 2/10, other conferences 10/10 baseline.'}:null};
  }
  function strengthNote(p){return "";}
- function project(data,game){
+ function baseProject(data,game){
   if(!data||!game)return {available:false,reason:'Model data is not loaded.'};
   if(game.league&&game.league!==data.league)return {available:false,reason:'League does not match the model.'};
   if(data.league==='USPORTS'&&(data.dataPolicy?.season!==2026||data.dataPolicy?.trainingSeason!==2026||!data.model))return {available:false,reason:data.modelStatus||'Only 2026 data is permitted. Verified 2026-only model inputs are not ready.'};
@@ -79,6 +79,11 @@
   const margin=data.league==='USPORTS'?probability.margin:scoreReconciled?total*(2*hp-1):adjustedMargin;
   const hs=Math.max(0,(total+margin)/2),as=Math.max(0,(total-margin)/2),age=Math.max(...[a,h].map(p=>(Date.parse(date)-Date.parse(p.lastGame))/86400000));
   return {available:true,league:data.league,gameId:String(game.id||''),date,asOf:data.asOf,modelVersion:data.modelVersion+(data.league==='USPORTS'?'+venue-symmetric-v4':''),awayName:a.name,homeName:h.name,away_score:as,home_score:hs,home_win_prob:hp,away_win_prob:1-hp,homeFieldPoints:probability.homeFieldPoints,margin:hs-as,total:hs+as,marginInterval:finite(m.marginInterval80)?[margin-m.marginInterval80,margin+m.marginInterval80]:null,expected:f.expected,components,conferenceStrength:probability.conferenceStrength,scoreAdjustment,scoreReconciled:data.league==='USPORTS'?probability.scoreReconciled:scoreReconciled,confidence:m.provisional?'Provisional · 2026 only · '+m.trainingGames+' training games':age>120?'Prior-season data':data.league==='USPORTS'?'Limited validation sample':'Historical-feed model',source:'Advantage Winner Model V3',sources:[...new Set([...a.sources,...h.sources])],profileDates:{away:a.lastGame,home:h.lastGame},powerGap:f.power[0],ageDays:age,report:m.report};
+ }
+ function project(data,game){
+  const p=baseProject(data,game),u=root.US_PLAYER_AVAILABILITY?.[game?.id];
+  if(!p.available||data?.league!=='USPORTS'||game.status==='final'||!u||u.date!==game.date||canon(u.away)!==canon(game.away)||canon(u.home)!==canon(game.home))return p;
+  return {...p,...u};
  }
  function scenario(data,p,side,target,turnoverDiff=0){
   if(!p?.available||!p.expected?.away||!p.expected?.home||!finite(p.powerGap)||!data?.model?.scenario||!['away','home'].includes(side))return null;
@@ -142,7 +147,8 @@
  function card(p,detail=false,data=null){
   if(!p?.available)return `<section class="awm-card"><small>ADVANTAGE WINNER MODEL</small><b>Prediction unavailable</b><p>Check back for this matchup.</p></section>`;
   const home=p.home_win_prob>=.5,winner=home?p.homeName:p.awayName,prob=Math.max(p.home_win_prob,p.away_win_prob);
-  let html=`<section class="awm-card"><small>ADVANTAGE WINNER MODEL · PREGAME</small><div class="awm-matchup-logos">${logo(p.awayLogo,p.awayName)}<span>${esc(p.awayName)} · ${esc(p.homeName)}</span>${logo(p.homeLogo,p.homeName)}</div><b>${esc(winner)} <span>${(prob*100).toFixed(1)}%</span></b><p>${esc(p.awayName)} ${p.away_score.toFixed(1)} – ${p.home_score.toFixed(1)} ${esc(p.homeName)}</p><div class="awm-bar"><i style="width:${p.away_win_prob*100}%"></i></div><p>Expected total ${p.total.toFixed(1)}</p>`;
+  let html=`<section class="awm-card" data-awm-game="${esc(p.gameId||'')}" data-awm-detail="${detail?'1':'0'}"><small>ADVANTAGE WINNER MODEL · PREGAME</small><div class="awm-matchup-logos">${logo(p.awayLogo,p.awayName)}<span>${esc(p.awayName)} · ${esc(p.homeName)}</span>${logo(p.homeLogo,p.homeName)}</div><b>${esc(winner)} <span>${(prob*100).toFixed(1)}%</span></b><p>${esc(p.awayName)} ${p.away_score.toFixed(1)} – ${p.home_score.toFixed(1)} ${esc(p.homeName)}</p><div class="awm-bar"><i style="width:${p.away_win_prob*100}%"></i></div><p>Expected total ${p.total.toFixed(1)}</p>`;
+  if(p.availability?.length)html+='<p class="awm-availability">Availability update: '+p.availability.map(r=>esc(r.player)+' confirmed out').join('; ')+'. Forecast adjusted.</p>';
   if(detail){
 
 

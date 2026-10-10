@@ -30,6 +30,9 @@
     "api/capture-live-history.js": {
       "includeFiles": "{internal/**,data/**}",
       "maxDuration": 60
+    },
+    "api/player-availability.js": {
+      "includeFiles": "{internal/**,data/**}"
     }
   },
   "headers": [

@@ -18,10 +18,12 @@ function point(d,p){
  return {x,p:final?(Number(h)===Number(a)?.5:Number(h)>Number(a)?1:0):1/(1+Math.exp(-logit)),label:final?'Final':d.status.period+' '+d.status.clock,awayScore:Number(a),homeScore:Number(h),final,modelVersion:VERSION};
 }
 async function capture(id,d,raw){const g=game(id);if(!g||d?.identity?.gameId!==id||d.identity.date!==g.date||d.identity.away!==g.away||d.identity.home!==g.home)throw Error('Feed identity mismatch');const p=await baseline(id),pt=p?point(d,p):null;
+ const capturedAt=new Date().toISOString(),adjusted=p?.forecast?require('./player-availability.cjs').adjust(p.forecast,g,capturedAt):null;
+ const livePoint=adjusted?.availabilityAdjusted?point(d,{...p,p:adjusted.home_win_prob}):pt;
  const stable={data:d,raw},hash=crypto.createHash('sha256').update(JSON.stringify(stable)).digest('hex').slice(0,24);
  // Probability and clock in the filename let charts list points without reading every full feed.
- const name=pt?`${pt.x}_${pt.p.toFixed(8)}_${pt.awayScore}_${pt.homeScore}_${pt.final?1:0}`:'feed';
- await write(prefix(id)+'snapshots/'+name+'_'+hash+'.json',{gameId:id,capturedAt:new Date().toISOString(),point:pt,...stable});return pt;
+ const name=livePoint?`${livePoint.x}_${livePoint.p.toFixed(8)}_${livePoint.awayScore}_${livePoint.homeScore}_${livePoint.final?1:0}`:'feed';
+ await write(prefix(id)+'snapshots/'+name+'_'+hash+'.json',{gameId:id,capturedAt,point:livePoint,...stable});return livePoint;
 }
 async function history(id){
  const g=game(id);if(!g)return null;

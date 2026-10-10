@@ -74,3 +74,17 @@ window.US_AWM=(()=>{
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',panels,{once:true});else panels();
 })();
 
+
+// Availability comes from explicit official reports; never infer it from a blank stat row.
+(function(){
+ let busy=false,last='';
+ async function refresh(){
+  if(busy||document.visibilityState==='hidden')return;busy=true;
+  try{const r=await fetch('/api/player-availability',{cache:'no-store',signal:AbortSignal.timeout(10000)});if(!r.ok)return;const j=await r.json();if(!j.forecasts||typeof j.forecasts!=='object')return;
+   const signature=JSON.stringify(j.forecasts);if(signature===last)return;last=signature;window.US_PLAYER_AVAILABILITY=j.forecasts;
+   document.querySelectorAll('.awm-card[data-awm-game]').forEach(node=>{const g=typeof GAMES!=='undefined'?GAMES.find(g=>g.id===node.dataset.awmGame):null;if(g&&g.status!=='final')node.outerHTML=window.AdvantageModel.card(window.US_AWM.forecast(g),node.dataset.awmDetail==='1',window.US_AWM.data);});
+   window.dispatchEvent(new Event('canu-scores-updated'));
+  }catch{}finally{busy=false}
+ }
+ refresh();setInterval(refresh,60000);document.addEventListener('visibilitychange',refresh);
+})();

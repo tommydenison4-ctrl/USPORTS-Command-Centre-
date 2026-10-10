@@ -4,11 +4,15 @@
  const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
  function resolve(g,info={},media={}){
   const home=homes[g.home],stadium=String(g.venue||info.stadium||'').trim(),site=String(info.site||'').trim(),text=stadium||site;
-  const candidates=[home,...Object.values(homes),...Object.values(media)].filter(Boolean);
-  const match=candidates.find(v=>[v.name,...(v.aliases||[])].some(n=>norm(text).includes(norm(n))));
-  if(stadium||match)return {...match,name:stadium||match.name,city:match?.city||site,fallback:false,site,source:match?.source||home?.source};
+  const candidates=[...(home?[home]:[]),...Object.values(homes),...Object.values(media)].filter(Boolean);
+  const equal=v=>[v.name,...(v.aliases||[])].some(n=>norm(text)===norm(n));
+  const match=candidates.find(equal)||candidates.find(v=>[v.name,...(v.aliases||[])].some(n=>norm(text).includes(norm(n))));
+  // Media metadata carries capacities/photos; merge it even when home-venue resolution wins.
+  const details=Object.values(media).find(v=>norm(v.name)===norm(match?.name||text))||{};
+  const resolved=match?{...match,...details}:null;
+  if(stadium||resolved)return {...resolved,name:stadium||resolved.name||text,city:resolved?.city||site,fallback:false,site,source:resolved?.source||home?.source};
   const city=home?.city?.split(',')[0];
-  if(home&&!g.neutral&&(!site||norm(site).includes(norm(city))))return {...home,fallback:true,site};
+  if(home&&!g.neutral&&(!site||norm(site).includes(norm(city))))return {...home,...(Object.values(media).find(v=>norm(v.name)===norm(home.name))||{}),fallback:true,site};
   return {name:site||'Venue to be confirmed',city:'',site,fallback:false};
  }
  const api={homes,resolve};root.USGameVenues=api;if(typeof module==='object'&&module.exports)module.exports=api;

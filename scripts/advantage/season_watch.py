@@ -1,5 +1,5 @@
 """2026 offensive award watch from sourced box scores, not award voting odds."""
-import json,os,datetime,hashlib
+import json,os,datetime,hashlib,subprocess
 from pathlib import Path
 from collections import defaultdict
 import ingest
@@ -9,14 +9,16 @@ ASOF=os.environ.get('AWM_ASOF',datetime.datetime.now(datetime.timezone.utc).date
 def entries(node):
     yield from node.get('standings',{}).get('entries',[])
     for child in node.get('children',[]):yield from entries(child)
-def weight_team_results(rows,records):
+def weight_team_results(rows,records,rankings=None):
     maximum=max((p['score'] for p in rows),default=0)
     for p in rows:
         r=records[p['teamId']];games=r['wins']+r['losses']+r['ties']
         if not games:raise ValueError('Award candidate has no verified team results: '+p['teamId'])
         production=p['score'];win_pct=(r['wins']+.5*r['ties'])/games
         normalized=max(0,production)/maximum if maximum>0 else 0
-        p.update(productionScore=production,productionNormalized=normalized,teamWinPercentage=win_pct,score=round(85*normalized+15*win_pct,2))
+        rank=(rankings or {}).get(p['teamId']);count=len(rankings or {});strength=(count-rank)/(count-1) if rank and count>1 else 0
+        base=75*normalized+15*win_pct+10*strength;penalty=min(1,.1*max(0,r['losses']-1))
+        p.update(productionScore=production,productionNormalized=normalized,teamWinPercentage=win_pct,teamRank=rank,teamRankingNormalized=strength,teamLosses=r['losses'],lossPenalty=penalty,baseScore=base,score=round(base*(1-penalty),2))
     return maximum
 def build(only=None):
     leagues=json.loads((ROOT/'data/advantage-leagues.json').read_text());bundle=json.loads((ROOT/'data/season-watch.json').read_text()) if only else {}
@@ -97,13 +99,16 @@ def build(only=None):
                 for side,other in [('away','home'),('home','away')]:
                     r=records[g[side]]
                     r['wins' if g[side+'Score']>g[other+'Score'] else 'losses' if g[side+'Score']<g[other+'Score'] else 'ties']+=1
-            production_maximum=weight_team_results(rows,records)
+            rankings=json.loads(subprocess.check_output(['node','-e',"global.AdvantageModel=require('./advantage-model.js');require('./season-watch.js');const fs=require('fs'),d=JSON.parse(fs.readFileSync('data/advantage-usports.json'));console.log(JSON.stringify(Object.fromEntries(SeasonWatch.contenders('USPORTS',d,{}).map((t,i)=>[t.id,i+1]))));"],cwd=ROOT))
+            production_maximum=weight_team_results(rows,records,rankings)
         rows.sort(key=lambda p:(-p['score'],p['name']))
         bundle[league]={'season':2026,'asOf':ASOF,'players':rows[:10],'coveredGames':len(games),'coveredTeams':len(teams),'eligibleTeamIds':eligible,'eligibilitySource':eligibility_source,'method':'Offensive production per recorded appearance: passing yards / 25 + rushing and receiving yards / 10 + passing TD × 4 + rushing and receiving TD × 6 − interceptions × 2. At least two recorded game appearances. Not an award-voting model; defense and special teams are not scored. Missing box scores may change the order.'}
         if league=='USPORTS':
             bundle[league]['productionMaximum']=production_maximum
-            bundle[league]['weights']={'production':.85,'teamWinningPercentage':.15}
-            bundle[league]['method']='Score out of 100 = 85 × normalized offensive production + 15 × team winning percentage. Offensive production per recorded appearance = passing yards / 25 + rushing and receiving yards / 10 + passing TD × 4 + rushing and receiving TD × 6 − interceptions × 2. Normalize against the highest production score among all eligible players; negative production is floored at zero. Team winning percentage = (wins + half of ties) / completed regular-season games. At least two recorded appearances. This weighting rewards winning teams; it does not exclude players on losing teams. Defense and special teams are not scored. Missing box scores may change the order.'
+            bundle[league]['eligiblePlayers']=rows
+            bundle[league]['weights']={'production':.75,'teamWinningPercentage':.15,'teamRanking':.10}
+            bundle[league]['lossPolicy']={'freeLosses':1,'reductionPerAdditionalLoss':.10,'minimumMultiplier':0}
+            bundle[league]['method']='Base score out of 100 = 75 × normalized offensive production + 15 × team winning percentage + 10 × normalized team strength rank. Rank is the same all-team Advantage ranking used by Vanier Cup Watch; rank normalization = (team count − rank) / (team count − 1). Final watch score = base score × max(0, 1 − 0.10 × max(0, team losses − 1)); the first loss is free and reductions add together. Offensive production per recorded appearance = passing yards / 25 + rushing and receiving yards / 10 + passing TD × 4 + rushing and receiving TD × 6 − interceptions × 2. Normalize against the highest production score among all eligible players; negative production is floored at zero. Team winning percentage = (wins + half of ties) / completed regular-season games. At least two recorded appearances. This weighting rewards winning teams; it does not exclude players on losing teams. Defense and special teams are not scored. Missing box scores may change the order.'
             records={team:dict(wins=0,losses=0,ties=0) for team in profiles}
             opponents={team:[] for team in profiles}
             for g in result['games']:

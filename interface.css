@@ -262,3 +262,52 @@ body{background:#080f17;color:#f1f5fa}
 .clean-ui .awm-pregame .v102-crumb{font-size:11px}.clean-ui .awm-pregame .v102-rail{display:none}
 @media(max-width:900px){.pregame-summary-layout{grid-template-columns:minmax(0,1fr)}.pregame-sidebar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}.pregame-sidebar .postgame-side-news{grid-column:1/-1}}
 @media(max-width:600px){.pregame-summary-layout{gap:14px}.pregame-sidebar{display:flex}.clean-ui .awm-pregame .v102-predict{padding:14px 10px}.clean-ui .awm-pregame .v102-team h2{font-size:13px}.clean-ui .pregame-main>.awm-card{padding:14px}.pregame-main .awm-player-grid{grid-template-columns:1fr}}
+
+/* Mobile-first game summaries: desktop presentation remains untouched. */
+@media(max-width:680px){
+ .clean-ui{padding-left:12px!important;padding-right:12px!important}
+ .clean-ui.postgame-shell .clean-header{padding:9px 0!important;flex-wrap:wrap;gap:8px}
+ .clean-ui.postgame-shell .canu-brand-logo{width:55px;height:42px}
+ .clean-ui.postgame-shell .canu-wordmark{font-size:16px}
+ .clean-ui.postgame-shell .topbar .nav{max-width:100%;overflow-x:auto!important;scrollbar-width:none;gap:3px!important}
+ .clean-ui.postgame-shell .nav>button,.clean-ui.postgame-shell .clean-more>summary{padding:8px 9px!important;min-height:39px;font-size:11px}
+ .clean-ui.postgame-shell .canu-scoreboard{margin:0 -12px 12px;padding:9px 12px;overflow:hidden}
+ .clean-ui.postgame-shell .canu-game-chip{min-width:156px}
+ .clean-ui .postgame-page .gameHero6{overflow:hidden}
+ .clean-ui .postgame-page .match6{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:5px;padding:14px 9px}
+ .clean-ui .postgame-page .team6,.clean-ui .postgame-page .team6.home{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;gap:7px;text-align:center}
+ .clean-ui .postgame-page .team6.home{flex-direction:column-reverse}
+ .clean-ui .postgame-page .team6 img{width:44px!important;height:44px!important;object-fit:contain}
+ .clean-ui .postgame-page .team6 h2{font-size:11px!important;line-height:1.24!important;overflow-wrap:normal;word-break:normal;hyphens:none;text-wrap:balance}
+ .clean-ui .postgame-page .score6{font-size:clamp(29px,8vw,40px)!important;white-space:nowrap;letter-spacing:-.06em}
+ .clean-ui .postgame-page .score6 small{font-size:9px;letter-spacing:.035em;white-space:nowrap}
+ .clean-ui .postgame-page .postgame-quarter{width:100%;max-width:none}
+ .clean-ui .postgame-page .postgame-quarter th,.clean-ui .postgame-page .postgame-quarter td{padding:7px 4px!important;font-size:11px!important}
+ .postgame-tabs{position:sticky;top:0;z-index:24;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;background:#080f17;margin:12px 0 14px;border-bottom:1px solid #344355}
+ .postgame-tabs button{min-height:46px;padding:10px 4px!important;font-size:13px;white-space:nowrap;text-align:center}
+ .postgame-summary-layout{display:flex;flex-direction:column;gap:14px}
+ .postgame-summary-content,.postgame-sidebar{width:100%;min-width:0}
+ .clean-ui .postgame-summary-content>.panel,.clean-ui .postgame-summary-content>section{padding:16px!important;margin-bottom:12px;border-radius:12px}
+ .postgame-summary-content #game-home-recap p{font-size:14px;line-height:1.55}
+ .postgame-sidebar{display:flex;flex-direction:column;gap:12px}
+ .postgame-side-card{padding:14px;border-radius:12px}
+ .postgame-stadium-photo{width:calc(100% + 28px);margin:0 -14px 14px;height:auto;aspect-ratio:16/9;object-fit:cover}
+ .postgame-stat-row{grid-template-columns:minmax(52px,1fr) minmax(0,1.3fr) minmax(52px,1fr);font-size:13px}
+ .postgame-sidebar #canu-probability-history{padding:14px!important;overflow:hidden}
+ .postgame-sidebar #canu-probability-history svg,.postgame-sidebar .canu-history-chart svg{max-width:100%;height:auto}
+ .postgame-side-news{max-height:360px;overflow:auto}
+ /* Transform the narrow four-column prediction table into two readable game cards. */
+ #locked-pregame-comparison{min-width:0}
+ #locked-pregame-comparison .football-scroll{overflow:visible!important}
+ #locked-pregame-comparison table,#locked-pregame-comparison tbody{display:block;width:100%;min-width:0!important}
+ #locked-pregame-comparison thead{display:none}
+ #locked-pregame-comparison tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px;padding:12px 0;border-bottom:1px solid #354253}
+ #locked-pregame-comparison tbody tr:last-child{border-bottom:0}
+ #locked-pregame-comparison .statsTable td{display:block!important;width:auto!important;min-width:0;white-space:normal!important;text-align:left!important;padding:4px!important;border:0!important;overflow-wrap:normal;word-break:normal}
+ #locked-pregame-comparison .statsTable td:first-child{grid-column:1/-1;font-size:16px!important;font-weight:800}
+ #locked-pregame-comparison .statsTable td:nth-child(2):before{content:'Projected';}
+ #locked-pregame-comparison .statsTable td:nth-child(3):before{content:'Final';}
+ #locked-pregame-comparison .statsTable td:nth-child(4):before{content:'Win chance';}
+ #locked-pregame-comparison .statsTable td:not(:first-child):before{display:block;color:#a9b8cc;font-size:10px;font-weight:700;margin-bottom:5px}
+ #locked-pregame-comparison .statsTable td:nth-child(4){font-weight:800}
+}

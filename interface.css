@@ -109,3 +109,14 @@ body{background:#080f17;color:#f1f5fa}
  .clean-ui .us-standing-short{display:inline;text-decoration:none}
  .clean-ui .us-table-scroll small{font-size:9px;margin-top:3px}
 }
+
+.game-podcast-reaction{min-width:0}
+.game-podcast-reaction header{display:flex;align-items:center;gap:14px}
+.game-podcast-reaction header img{width:56px;height:56px;object-fit:cover;border-radius:12px}
+.game-podcast-reaction header h2{font-size:20px;margin:5px 0}
+.game-podcast-reaction header p,.game-podcast-reaction .podcast-window{font-size:12px;color:#a8bbce;margin:5px 0}
+.game-podcast-reaction header small{color:#9cd5f5;font-weight:800;font-size:10px;letter-spacing:.08em}
+.game-podcast-video{display:block;width:100%;aspect-ratio:16/9;min-height:200px;border:0;border-radius:12px;margin:14px 0;background:#000}
+.podcast-segment-credit{font-size:12px;line-height:1.5;color:#a8bbce}.podcast-segment-credit a{color:#9cd5f5}
+.podcast-segment-replay{background:#172332;color:#eaf0f7;border:1px solid #334254;border-radius:8px;padding:10px 14px;cursor:pointer;font-weight:700}
+@media(max-width:500px){.game-podcast-reaction header img{width:44px;height:44px}.game-podcast-reaction header h2{font-size:18px}}

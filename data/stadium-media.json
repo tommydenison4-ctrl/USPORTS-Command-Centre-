@@ -1,7 +1,9 @@
 {
   "McMahon Stadium": {
     "name": "McMahon Stadium",
-    "source": "https://en.wikipedia.org/wiki/McMahon_Stadium"
+    "source": "https://en.wikipedia.org/wiki/McMahon_Stadium",
+    "capacity": 35650,
+    "capacitySource": "https://en.wikipedia.org/wiki/List_of_Canadian_Football_League_stadiums"
   },
   "Princess Auto Stadium": {
     "name": "Princess Auto Stadium",
@@ -21,41 +23,57 @@
   },
   "Telus Stadium": {
     "name": "Telus Stadium",
-    "source": "https://en.wikipedia.org/wiki/Telus_Stadium"
+    "source": "https://en.wikipedia.org/wiki/Telus_Stadium",
+    "capacity": 12257,
+    "capacitySource": "https://en.wikipedia.org/wiki/List_of_Canadian_football_stadiums"
   },
   "Alumni Stadium": {
     "name": "Alumni Stadium",
-    "source": "https://en.wikipedia.org/wiki/Alumni_Stadium"
+    "source": "https://en.wikipedia.org/wiki/Alumni_Stadium",
+    "capacity": 8500,
+    "capacitySource": "https://en.wikipedia.org/wiki/List_of_Canadian_football_stadiums"
   },
   "Richardson Memorial Stadium": {
     "name": "Richardson Memorial Stadium",
-    "source": "https://en.wikipedia.org/wiki/Richardson_Memorial_Stadium"
+    "source": "https://en.wikipedia.org/wiki/Richardson_Memorial_Stadium",
+    "capacity": 8500,
+    "capacitySource": "https://en.wikipedia.org/wiki/List_of_Canadian_football_stadiums"
   },
   "Western Alumni Stadium": {
     "name": "Western Alumni Stadium",
-    "source": "https://en.wikipedia.org/wiki/Western_Alumni_Stadium"
+    "source": "https://en.wikipedia.org/wiki/Western_Alumni_Stadium",
+    "capacity": 8000,
+    "capacitySource": "https://en.wikipedia.org/wiki/List_of_Canadian_football_stadiums"
   },
   "Griffiths Stadium": {
     "name": "Griffiths Stadium",
-    "source": "https://en.wikipedia.org/wiki/Griffiths_Stadium"
+    "source": "https://en.wikipedia.org/wiki/Griffiths_Stadium",
+    "capacity": 6171,
+    "capacitySource": "https://en.wikipedia.org/wiki/List_of_Canadian_football_stadiums"
   },
   "University Stadium": {
     "name": "University Stadium",
-    "source": "https://en.wikipedia.org/wiki/University_Stadium_(Waterloo)"
+    "source": "https://en.wikipedia.org/wiki/University_Stadium_(Waterloo)",
+    "capacity": 6000,
+    "capacitySource": "https://en.wikipedia.org/wiki/List_of_Canadian_football_stadiums"
   },
   "Ronald V. Joyce Stadium": {
     "name": "Ronald V. Joyce Stadium",
-    "source": "https://en.wikipedia.org/wiki/Ronald_V._Joyce_Stadium"
+    "source": "https://en.wikipedia.org/wiki/Ronald_V._Joyce_Stadium",
+    "capacity": 6000,
+    "capacitySource": "https://en.wikipedia.org/wiki/List_of_Canadian_football_stadiums"
   },
   "CEPSUM Stadium": {
     "name": "CEPSUM Stadium",
-    "source": "https://en.wikipedia.org/wiki/CEPSUM_Stadium"
+    "source": "https://en.wikipedia.org/wiki/CEPSUM_Stadium",
+    "capacity": 5100,
+    "capacitySource": "https://en.wikipedia.org/wiki/List_of_Canadian_football_stadiums"
   },
   "Varsity Stadium": {
     "name": "Varsity Stadium",
     "source": "https://en.wikipedia.org/wiki/Varsity_Stadium",
     "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/26/Varsity_Stadium_aerial_view.jpg/960px-Varsity_Stadium_aerial_view.jpg",
-    "credit": "City of Toronto \u00b7 2010",
+    "credit": "City of Toronto · 2010",
     "license": "CC BY 2.0",
     "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
     "imageSource": "https://commons.wikimedia.org/wiki/File:Varsity_Stadium_aerial_view.jpg"
@@ -80,8 +98,8 @@
     "name": "Gee-Gees Field",
     "source": "https://en.wikipedia.org/wiki/Gee-Gees_Field"
   },
-  "Universit\u00e9 de Sherbrooke Stadium": {
-    "name": "Universit\u00e9 de Sherbrooke Stadium",
+  "Université de Sherbrooke Stadium": {
+    "name": "Université de Sherbrooke Stadium",
     "source": "https://en.wikipedia.org/wiki/Universit%C3%A9_de_Sherbrooke_Stadium"
   },
   "Coulter Field": {
@@ -95,5 +113,10 @@
   "Raymond Field": {
     "name": "Raymond Field",
     "source": "https://en.wikipedia.org/wiki/Raymond_Field"
+  },
+  "Warrior Field": {
+    "name": "Warrior Field",
+    "capacity": 5400,
+    "capacitySource": "https://en.wikipedia.org/wiki/List_of_Canadian_football_stadiums"
   }
 }

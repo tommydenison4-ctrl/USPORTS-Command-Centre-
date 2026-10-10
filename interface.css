@@ -210,3 +210,19 @@ body{background:#080f17;color:#f1f5fa}
  .clean-ui .postgame-page .statsTable th,.clean-ui .postgame-page .statsTable td{padding:7px 8px}
  .postgame-tabs{gap:22px;margin-bottom:12px}
 }
+/* Override the shared roomy table rules only within completed-game views. */
+.clean-ui .postgame-page .statsTable th,.clean-ui .postgame-page .statsTable td{padding:7px 10px!important}
+.clean-ui .postgame-page .statsTable th{font-size:10px!important}
+.clean-ui .postgame-page .postgame-quarter th,.clean-ui .postgame-page .postgame-quarter td{padding:4px 10px!important}
+.clean-ui .postgame-page .team6 img{width:48px!important;height:48px!important;box-sizing:border-box}
+.clean-ui .postgame-page{padding-top:0}
+.postgame-tabs button{font-family:inherit;font-size:13px;font-weight:600}
+.postgame-summary-content{display:flex;flex-direction:column}
+.postgame-summary-content>#game-home-recap{order:1}
+.postgame-summary-content>#game-podcast-reaction{order:2}
+.postgame-summary-content>#canu-probability-history{order:3}
+.postgame-summary-content>#locked-pregame-comparison{order:4}
+@media(max-width:680px){
+ .clean-ui .postgame-page .statsTable th,.clean-ui .postgame-page .statsTable td{padding:7px 8px!important}
+ .clean-ui .postgame-page .team6 img{width:36px!important;height:36px!important}
+}

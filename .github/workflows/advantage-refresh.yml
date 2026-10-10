@@ -4,6 +4,8 @@ on:
     paths:
       - '.github/workflows/advantage-refresh.yml'
       - 'scripts/advantage/national.py'
+      - 'scripts/advantage/players.py'
+      - 'scripts/advantage/ingest.py'
   workflow_dispatch:
   schedule:
     - cron: '*/5 * * * *'

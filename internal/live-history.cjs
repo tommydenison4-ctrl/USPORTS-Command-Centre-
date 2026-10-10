@@ -26,6 +26,7 @@ async function capture(id,d,raw){const g=game(id);if(!g||d?.identity?.gameId!==i
 async function history(id){
  const g=game(id);if(!g)return null;
  let p;try{p=await baseline(id)}catch{const forecast=prior(id);if(forecast)p={gameId:id,p:forecast.home_win_prob,x:0,label:'Pregame',lockedAt:forecast.lockedAt||forecast.asOf,modelVersion:forecast.modelVersion};}
+ if(!p)p=require('../data/historical-priors-usports.json').priors[id];
  if(p){try{const record=require('../data/boxscores/'+id+'.json'),reconstruction=require('./historical-game-events.cjs').reconstruct(record,p,point);if(reconstruction)return {gameId:id,away:g.away,home:g.home,...reconstruction,modelVersion:VERSION};}catch{}}
  const points=p?[{...p,forecast:undefined}]:[];let cursor;
  try{do{const r=await blob().list({prefix:prefix(id)+'snapshots/',limit:1000,cursor});for(const b of r.blobs){const m=b.pathname.split('/').at(-1).match(/^(\d+)_([\d.]+)_(\d+)_(\d+)_([01])_/);if(m)points.push({x:Number(m[1]),p:Number(m[2]),awayScore:Number(m[3]),homeScore:Number(m[4]),final:m[5]==='1',capturedAt:b.uploadedAt,label:m[5]==='1'?'Final':`Q${Math.min(4,Math.floor(Number(m[1])/900)+1)} · ${Math.floor(Number(m[1])/60)} min elapsed`});}cursor=r.hasMore?r.cursor:undefined;}while(cursor);}catch{}

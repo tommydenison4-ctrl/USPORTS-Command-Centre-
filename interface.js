@@ -44,7 +44,7 @@
       if(postgame){
         root.classList.add('postgame-shell');
         const target=postgame.querySelector('.postgame-summary-content');
-        ['#game-home-recap','#canu-probability-history','#locked-pregame-comparison','#game-podcast-reaction'].forEach(sel=>{const node=root.querySelector(sel);if(node&&target&&!target.contains(node))target.append(node)});
+        ['#game-home-recap','#canu-probability-history','#locked-pregame-comparison','#game-podcast-reaction'].forEach(sel=>{const node=root.querySelector(sel);const destination=sel==='#canu-probability-history'?(postgame.querySelector('.postgame-sidebar')||target):target;if(node&&destination&&!destination.contains(node))destination.append(node)});
         const grid=postgame.querySelector('.postgame-player-grid');
         if(grid&&!grid.dataset.paired){const nodes=Array.from(grid.children);['passing','rushing','receiving'].forEach(cat=>nodes.filter(n=>n.dataset.category===cat).forEach(n=>grid.append(n)));grid.dataset.paired='true'}
       }

@@ -1,0 +1,99 @@
+{
+  "McMahon Stadium": {
+    "name": "McMahon Stadium",
+    "source": "https://en.wikipedia.org/wiki/McMahon_Stadium"
+  },
+  "Princess Auto Stadium": {
+    "name": "Princess Auto Stadium",
+    "source": "https://en.wikipedia.org/wiki/Princess_Auto_Stadium"
+  },
+  "Mosaic Stadium": {
+    "name": "Mosaic Stadium",
+    "source": "https://en.wikipedia.org/wiki/Mosaic_Stadium"
+  },
+  "TD Place Stadium": {
+    "name": "TD Place Stadium",
+    "source": "https://en.wikipedia.org/wiki/TD_Place_Stadium"
+  },
+  "Percival Molson Stadium": {
+    "name": "Percival Molson Stadium",
+    "source": "https://en.wikipedia.org/wiki/Percival_Molson_Stadium"
+  },
+  "Telus Stadium": {
+    "name": "Telus Stadium",
+    "source": "https://en.wikipedia.org/wiki/Telus_Stadium"
+  },
+  "Alumni Stadium": {
+    "name": "Alumni Stadium",
+    "source": "https://en.wikipedia.org/wiki/Alumni_Stadium"
+  },
+  "Richardson Memorial Stadium": {
+    "name": "Richardson Memorial Stadium",
+    "source": "https://en.wikipedia.org/wiki/Richardson_Memorial_Stadium"
+  },
+  "Western Alumni Stadium": {
+    "name": "Western Alumni Stadium",
+    "source": "https://en.wikipedia.org/wiki/Western_Alumni_Stadium"
+  },
+  "Griffiths Stadium": {
+    "name": "Griffiths Stadium",
+    "source": "https://en.wikipedia.org/wiki/Griffiths_Stadium"
+  },
+  "University Stadium": {
+    "name": "University Stadium",
+    "source": "https://en.wikipedia.org/wiki/University_Stadium_(Waterloo)"
+  },
+  "Ronald V. Joyce Stadium": {
+    "name": "Ronald V. Joyce Stadium",
+    "source": "https://en.wikipedia.org/wiki/Ronald_V._Joyce_Stadium"
+  },
+  "CEPSUM Stadium": {
+    "name": "CEPSUM Stadium",
+    "source": "https://en.wikipedia.org/wiki/CEPSUM_Stadium"
+  },
+  "Varsity Stadium": {
+    "name": "Varsity Stadium",
+    "source": "https://en.wikipedia.org/wiki/Varsity_Stadium",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/26/Varsity_Stadium_aerial_view.jpg/960px-Varsity_Stadium_aerial_view.jpg",
+    "credit": "City of Toronto \u00b7 2010",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "imageSource": "https://commons.wikimedia.org/wiki/File:Varsity_Stadium_aerial_view.jpg"
+  },
+  "Concordia Stadium": {
+    "name": "Concordia Stadium",
+    "source": "https://en.wikipedia.org/wiki/Concordia_Stadium"
+  },
+  "York Lions Stadium": {
+    "name": "York Lions Stadium",
+    "source": "https://en.wikipedia.org/wiki/York_Lions_Stadium"
+  },
+  "Foote Field": {
+    "name": "Foote Field",
+    "source": "https://en.wikipedia.org/wiki/Foote_Field"
+  },
+  "Thunderbird Stadium": {
+    "name": "Thunderbird Stadium",
+    "source": "https://en.wikipedia.org/wiki/Thunderbird_Stadium"
+  },
+  "Gee-Gees Field": {
+    "name": "Gee-Gees Field",
+    "source": "https://en.wikipedia.org/wiki/Gee-Gees_Field"
+  },
+  "Universit\u00e9 de Sherbrooke Stadium": {
+    "name": "Universit\u00e9 de Sherbrooke Stadium",
+    "source": "https://en.wikipedia.org/wiki/Universit%C3%A9_de_Sherbrooke_Stadium"
+  },
+  "Coulter Field": {
+    "name": "Coulter Field",
+    "source": "https://en.wikipedia.org/wiki/Coulter_Field"
+  },
+  "MNP Park": {
+    "name": "MNP Park",
+    "source": "https://en.wikipedia.org/wiki/MNP_Park"
+  },
+  "Raymond Field": {
+    "name": "Raymond Field",
+    "source": "https://en.wikipedia.org/wiki/Raymond_Field"
+  }
+}

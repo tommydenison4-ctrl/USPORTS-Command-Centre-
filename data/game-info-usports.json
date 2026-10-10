@@ -1,0 +1,493 @@
+{
+  "2026-08-22-mcgill-toronto": {
+    "source": "https://mcgillathletics.ca/sports/football/stats/2026-27/toronto-/boxscore/12457",
+    "site": "Toronto ON",
+    "stadium": "Varsity Stadium",
+    "attendance": "820",
+    "kickoff time": "12:00 PM EDT",
+    "end of game": "2:08 PM",
+    "duration": "02:08"
+  },
+  "2026-08-23-regina-calgary": {
+    "source": "https://www.reginacougars.com/sports/football/stats/2026/calgary/boxscore/11431",
+    "site": "Medicine Hat AB",
+    "attendance": "575",
+    "kickoff time": "06:30 PM EDT",
+    "end of game": "7:25 PM",
+    "duration": "00:55"
+  },
+  "2026-08-27-alberta-saskatchewan": {
+    "source": "https://huskies.usask.ca/documents/2026/8/28/boxscore_20260828_1058.pdf"
+  },
+  "2026-08-29-carleton-york": {
+    "source": "https://yorkulions.ca/sports/football/stats/2026/carleton-ravens/boxscore/8016",
+    "site": "York Lions Stadium, Toronto",
+    "attendance": "550",
+    "kickoff time": "01:00 PM EDT",
+    "end of game": "3:45 PM",
+    "duration": "02:45"
+  },
+  "2026-08-29-guelph-laurier": {
+    "source": "https://gryphons.ca/sports/football/stats/2026-27/laurier-golden-hawks/boxscore/9557",
+    "site": "University Stadium, Waterloo",
+    "attendance": "2150",
+    "kickoff time": "06:00 PM EDT",
+    "end of game": "9:49 PM",
+    "duration": "03:49"
+  },
+  "2026-08-29-mount-allison-acadia": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260829_vwy8.xml"
+  },
+  "2026-08-29-ottawa-waterloo": {
+    "source": "https://athletics.uwaterloo.ca/sports/football/stats/2026-27/ottawa-gee-gees/boxscore/9404",
+    "site": "Warrior Field, Waterloo",
+    "attendance": "812",
+    "kickoff time": "01:00 PM EDT",
+    "end of game": "3:44 PM",
+    "duration": "02:44"
+  },
+  "2026-08-29-windsor-mcmaster": {
+    "source": "https://golancers.ca/sports/football/stats/2026/mcmaster-marauders/boxscore/6117",
+    "site": "Ron Joyce Stadium, Hamilton Ont.",
+    "attendance": "0",
+    "kickoff time": "07:00 PM EDT",
+    "end of game": "9:50 PM",
+    "duration": "02:50"
+  },
+  "2026-08-30-queens-toronto": {
+    "source": "https://gogaelsgo.com/sports/football/stats/2026-2027/toronto-varsity-blues/boxscore/13806",
+    "site": "Varsity Stadium, Toronto",
+    "attendance": "3829",
+    "kickoff time": "07:00 PM EDT",
+    "end of game": "9:43 PM",
+    "duration": "02:43"
+  },
+  "2026-09-04-acadia-mount-allison": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260904_m54m.xml"
+  },
+  "2026-09-04-montreal-sherbrooke": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260904_9j1y.xml"
+  },
+  "2026-09-04-regina-alberta": {
+    "source": "https://bearsandpandas.ca/sports/football/stats/2026/university-of-regina-rams/boxscore/8945",
+    "site": "Edmonton, AB",
+    "stadium": "Foote Field",
+    "attendance": "5160",
+    "kickoff time": "7:00 PM",
+    "end of game": "9:19 PM",
+    "duration": "2:19",
+    "weather": "Cloudy"
+  },
+  "2026-09-04-ubc-calgary": {
+    "source": "https://godinos.com/sports/football/stats/2026/ubc/boxscore/15526",
+    "site": "Calgary, AB",
+    "stadium": "McMahon Stadium",
+    "attendance": "5234",
+    "kickoff time": "5:30 pm",
+    "end of game": "8:10 pm",
+    "duration": "2:40",
+    "weather": "Cloudy"
+  },
+  "2026-09-05-concordia-laval": {
+    "source": "https://rougeetor.ulaval.ca/wp-content/uploads/2022/05/boxscore-20260905-concordia-laval.pdf"
+  },
+  "2026-09-05-mcgill-bishops": {
+    "source": "https://mcgillathletics.ca/sports/football/stats/2026-27/bishop-s/boxscore/12458",
+    "attendance": "0",
+    "kickoff time": "01:00 PM EDT"
+  },
+  "2026-09-05-saint-marys-stfx": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260905_olce.xml"
+  },
+  "2026-09-05-saskatchewan-manitoba": {
+    "source": "https://gobisons.ca/sports/football/stats/2026/saskatchewan-huskies/boxscore/9300",
+    "site": "Winnipeg, MB",
+    "stadium": "Princess Auto Stadium",
+    "attendance": "300",
+    "kickoff time": "2:00",
+    "end of game": "5:03",
+    "duration": "3:03"
+  },
+  "2026-09-05-toronto-ottawa": {
+    "source": "https://varsityblues.ca/sports/football/stats/2026/university-of-ottawa/boxscore/12854",
+    "attendance": "0",
+    "kickoff time": "01:00 PM EDT",
+    "end of game": "4:42 PM",
+    "duration": "03:42"
+  },
+  "2026-09-06-laurier-windsor": {
+    "source": "https://golancers.ca/sports/football/stats/2026/laurier-golden-hawks/boxscore/6118",
+    "site": "Alumni Stadium, Windsor Ontario",
+    "attendance": "6300",
+    "kickoff time": "06:00 PM EDT",
+    "end of game": "9:10 PM",
+    "duration": "03:10"
+  },
+  "2026-09-06-mcmaster-guelph": {
+    "source": "https://gryphons.ca/sports/football/stats/2026-27/mcmaster-marauders/boxscore/9558",
+    "site": "Alumni Stadium, Guelph Ontario",
+    "attendance": "6012",
+    "kickoff time": "01:00 PM EDT",
+    "end of game": "3:50 PM",
+    "duration": "02:50"
+  },
+  "2026-09-06-waterloo-carleton": {
+    "source": "https://athletics.uwaterloo.ca/sports/football/stats/2026-27/carleton-ravens/boxscore/9405",
+    "site": "TAAG Park, Ottawa Ontario",
+    "attendance": "0",
+    "kickoff time": "03:00 PM EDT",
+    "end of game": "6:27 PM",
+    "duration": "03:27"
+  },
+  "2026-09-06-york-western": {
+    "source": "https://westernmustangs.ca/sports/football/stats/2026-27/york-lions/boxscore/17092",
+    "site": "Western Alumni Stadium, London Ontario",
+    "attendance": "10865",
+    "kickoff time": "07:00 PM EDT",
+    "end of game": "9:50 PM",
+    "duration": "02:50"
+  },
+  "2026-09-11-alberta-ubc": {
+    "source": "https://bearsandpandas.ca/sports/football/stats/2026/university-of-british-columbia/boxscore/8947",
+    "site": "Vancouver, BC",
+    "stadium": "Thunderbird Statdium",
+    "attendance": "2912",
+    "kickoff time": "6:00 PM",
+    "end of game": "9:08 PM",
+    "duration": "3:08",
+    "weather": "Slightly overcast"
+  },
+  "2026-09-11-calgary-saskatchewan": {
+    "source": "https://godinos.com/sports/football/stats/2026/saskatchewan/boxscore/15527",
+    "site": "Saskatoon, SK",
+    "stadium": "Griffiths Stadium",
+    "attendance": "8052",
+    "kickoff time": "7:00 PM",
+    "end of game": "9:59 pm",
+    "duration": "2:59",
+    "weather": "Cloudy"
+  },
+  "2026-09-11-laval-mcgill": {
+    "source": "https://mcgillathletics.ca/sports/football/stats/2026-27/laval-tva-/boxscore/12459",
+    "site": "Montreal, QC",
+    "stadium": "Percival Molson Stadium",
+    "attendance": "5112",
+    "kickoff time": "07:08 PM EDT",
+    "end of game": "9:53",
+    "duration": "2:45"
+  },
+  "2026-09-11-manitoba-regina": {
+    "source": "https://gobisons.ca/sports/football/stats/2026/regina-rams/boxscore/9301",
+    "site": "Regina, SK",
+    "stadium": "Leibel Field",
+    "attendance": "1800",
+    "kickoff time": "7:07 pm",
+    "end of game": "9:47 pm",
+    "duration": "2:40",
+    "weather": "Some showers"
+  },
+  "2026-09-11-mount-allison-saint-marys": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260911_aecb.xml"
+  },
+  "2026-09-12-acadia-stfx": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260912_s8sj.xml"
+  },
+  "2026-09-12-carleton-guelph": {
+    "source": "https://gryphons.ca/sports/football/stats/2026-27/carleton-ravens/boxscore/9559",
+    "site": "Alumni Stadium, Guelph Ontario",
+    "attendance": "0",
+    "kickoff time": "01:00 PM EDT"
+  },
+  "2026-09-12-mcmaster-york": {
+    "source": "https://marauders.ca/sports/football/stats/2026/york-university/boxscore/14055",
+    "site": "York Lions Stadium, Toronto Ontario",
+    "attendance": "0",
+    "kickoff time": "01:00 PM EDT"
+  },
+  "2026-09-12-montreal-concordia": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260912_ppda.xml"
+  },
+  "2026-09-12-ottawa-laurier": {
+    "source": "https://laurierathletics.com/sports/football/stats/2026/ottawa/boxscore/10587",
+    "site": "University Stadium, Waterloo Ontario",
+    "attendance": "2635",
+    "kickoff time": "01:00 PM EDT",
+    "end of game": "3:45 PM",
+    "duration": "02:45"
+  },
+  "2026-09-12-sherbrooke-bishops": {
+    "source": "https://gaiters.ca/sports/football/stats/2026-27/universit-de-sherbrooke/boxscore/3050",
+    "site": "Coulter FIeld,",
+    "attendance": "2472",
+    "kickoff time": "01:00 PM EDT",
+    "end of game": "3:49 PM",
+    "duration": "02:49"
+  },
+  "2026-09-12-waterloo-queens": {
+    "source": "https://gogaelsgo.com/sports/football/stats/2026-2027/waterloo-warriors/boxscore/13807",
+    "site": "Richardson Stadium, Kingston Ontario",
+    "attendance": "4093",
+    "kickoff time": "05:00 PM EDT",
+    "end of game": "7:53 PM",
+    "duration": "02:53"
+  },
+  "2026-09-12-western-windsor": {
+    "source": "https://golancers.ca/sports/football/stats/2026/western-mustangs/boxscore/6119",
+    "site": "Alumni Stadium, Windsor Ontario",
+    "attendance": "5900",
+    "kickoff time": "01:00 PM EDT",
+    "end of game": "3:58 PM",
+    "duration": "02:58"
+  },
+  "2026-09-18-bishops-montreal": {
+    "source": "https://gaiters.ca/sports/football/stats/2026-27/universit-de-montr-al/boxscore/3051",
+    "attendance": "4236",
+    "kickoff time": "07:00 PM EDT",
+    "end of game": "9:51 PM",
+    "duration": "02:51"
+  },
+  "2026-09-18-regina-ubc": {
+    "source": "https://www.reginacougars.com/sports/football/stats/2026/ubc/boxscore/11425",
+    "site": "Vancouver, BC",
+    "stadium": "Thunderbird Stadium",
+    "attendance": "8080",
+    "kickoff time": "6:00 PM",
+    "end of game": "9:55 PM",
+    "duration": "3:55",
+    "weather": "Clear"
+  },
+  "2026-09-18-saskatchewan-alberta": {
+    "source": "https://bearsandpandas.ca/sports/football/stats/2026/university-of-saskatchewan/boxscore/8948",
+    "site": "Edmonton, AB",
+    "stadium": "Foote Field",
+    "attendance": "1527",
+    "kickoff time": "6:30 PM",
+    "end of game": "9:34 P",
+    "duration": "3:34",
+    "weather": "Clear"
+  },
+  "2026-09-19-calgary-manitoba": {
+    "source": "https://gobisons.ca/sports/football/stats/2026/calgary-dinos-played-at-dakota-collegiate-/boxscore/9302",
+    "site": "Winnipeg, MB",
+    "stadium": "Murray Field",
+    "attendance": "300",
+    "kickoff time": "2:00",
+    "end of game": "5:00",
+    "duration": "3:00",
+    "weather": "mostly sunny"
+  },
+  "2026-09-19-guelph-ottawa": {
+    "source": "https://gryphons.ca/sports/football/stats/2026-27/ottawa-gee-gees/boxscore/9560",
+    "site": "Gee-Gees Field, Ottawa Ontario",
+    "attendance": "0",
+    "kickoff time": "01:00 PM EDT",
+    "end of game": "9:21 PM",
+    "duration": "08:21"
+  },
+  "2026-09-19-laurier-mcmaster": {
+    "source": "https://laurierathletics.com/sports/football/stats/2026/mcmaster/boxscore/10588",
+    "site": "Ron Joyce Stadium, Hamilton ON",
+    "attendance": "5497",
+    "kickoff time": "01:00 PM EDT",
+    "end of game": "3:34 PM",
+    "duration": "02:34"
+  },
+  "2026-09-19-mcgill-concordia": {
+    "source": "https://mcgillathletics.ca/sports/football/stats/2026-27/concordia-shaughnessy-cup-/boxscore/12460",
+    "site": "Montreal",
+    "stadium": "Concordia Stadium",
+    "attendance": "1876",
+    "kickoff time": "01:00 PM EDT",
+    "end of game": "3:59 PM",
+    "duration": "02:59"
+  },
+  "2026-09-19-queens-carleton": {
+    "source": "https://gogaelsgo.com/sports/football/stats/2026-2027/carleton-ravens/boxscore/13808",
+    "site": "TAAG Park, Ottawa Ontario",
+    "attendance": "2000",
+    "kickoff time": "01:00 PM EDT",
+    "end of game": "4:25 PM",
+    "duration": "03:25"
+  },
+  "2026-09-19-saint-marys-acadia": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260919_vzdr.xml"
+  },
+  "2026-09-19-sherbrooke-laval": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260919_yf7q.xml"
+  },
+  "2026-09-19-stfx-mount-allison": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260919_2r1j.xml"
+  },
+  "2026-09-19-western-toronto": {
+    "source": "https://varsityblues.ca/sports/football/stats/2026/western-university/boxscore/12855",
+    "site": "Varsity Stadium, Toronto Ontario",
+    "attendance": "1826",
+    "kickoff time": "01:00 PM EDT",
+    "end of game": "3:30 PM",
+    "duration": "02:30"
+  },
+  "2026-09-19-windsor-waterloo": {
+    "source": "https://athletics.uwaterloo.ca/sports/football/stats/2026-27/windsor-lancers/boxscore/9407",
+    "site": "Warrior Field, Waterloo Ontario",
+    "attendance": "2921",
+    "kickoff time": "01:00 PM EDT",
+    "end of game": "4:01 PM",
+    "duration": "03:01"
+  },
+  "2026-09-25-alberta-calgary": {
+    "source": "https://bearsandpandas.ca/sports/football/stats/2026/university-of-calgary/boxscore/8949",
+    "site": "Calgary, AB",
+    "stadium": "McMahon Stadium",
+    "attendance": "2681",
+    "kickoff time": "7:05 pm",
+    "end of game": "10:03 pm",
+    "duration": "1:58",
+    "weather": "Windy, clear"
+  },
+  "2026-09-26-concordia-bishops": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260926_shbp.xml"
+  },
+  "2026-09-26-mcgill-sherbrooke": {
+    "source": "https://mcgillathletics.ca/sports/football/stats/2026-27/sherbrooke/boxscore/12461",
+    "site": "Sherbrooke Que",
+    "stadium": "Stade U de S",
+    "attendance": "3889",
+    "kickoff time": "01:00 PM UTC?4",
+    "end of game": "3:46 PM",
+    "duration": "02:46"
+  },
+  "2026-09-26-mcmaster-western": {
+    "source": "https://marauders.ca/sports/football/stats/2026/western-university/boxscore/14057",
+    "attendance": "14241",
+    "kickoff time": "01:00 PM EDT",
+    "end of game": "4:22 PM",
+    "duration": "03:22"
+  },
+  "2026-09-26-montreal-laval": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260926_3enl.xml"
+  },
+  "2026-09-26-ottawa-queens": {
+    "source": "https://gogaelsgo.com/sports/football/stats/2026-2027/ottawa-gee-gees/boxscore/13809",
+    "attendance": "0",
+    "kickoff time": "03:00 PM EDT"
+  },
+  "2026-09-26-saint-marys-mount-allison": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260926_e8ye.xml"
+  },
+  "2026-09-26-saskatchewan-regina": {
+    "source": "https://huskies.usask.ca/sports/football/stats/2026-27/regina-rams/boxscore/6998",
+    "site": "Regina, SK",
+    "stadium": "Mosaic Stadium",
+    "attendance": "1775",
+    "kickoff time": "2:07 pm",
+    "end of game": "4:44 pm",
+    "duration": "2:37",
+    "weather": "Partly cloudy"
+  },
+  "2026-09-26-stfx-acadia": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260926_6175.xml"
+  },
+  "2026-09-26-toronto-windsor": {
+    "source": "https://golancers.ca/sports/football/stats/2026/toronto-varsity-blues/boxscore/6121",
+    "attendance": "1833",
+    "kickoff time": "01:00 PM EDT",
+    "end of game": "3:39 PM",
+    "duration": "02:39"
+  },
+  "2026-09-26-ubc-manitoba": {
+    "source": "https://gobisons.ca/sports/football/stats/2026/ubc-thunderbirds/boxscore/9303",
+    "site": "Winnipeg, MB",
+    "stadium": "Princess Auto Stadium",
+    "attendance": "575",
+    "kickoff time": "5:06",
+    "end of game": "7:53",
+    "duration": "2:47",
+    "weather": "light rain"
+  },
+  "2026-09-26-waterloo-guelph": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260926_pvm1.xml"
+  },
+  "2026-09-26-york-laurier": {
+    "source": "https://laurierathletics.com/sports/football/stats/2026/york/boxscore/10589",
+    "attendance": "4750",
+    "kickoff time": "01:00 PM GMT-4",
+    "end of game": "7:49 PM",
+    "duration": "06:49"
+  },
+  "2026-10-02-acadia-saint-marys": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261002_b8gs.xml"
+  },
+  "2026-10-02-manitoba-alberta": {
+    "source": "https://bearsandpandas.ca/sports/football/stats/2026/university-of-manitoba/boxscore/8950",
+    "site": "Edmonton, AB",
+    "stadium": "Foote Field",
+    "attendance": "500",
+    "kickoff time": "6:30 PM",
+    "end of game": "8:55 PM",
+    "duration": "2:25",
+    "weather": "Partly cloudy"
+  },
+  "2026-10-03-guelph-toronto": {
+    "source": "https://gryphons.ca/sports/football/stats/2026-27/toronto-varsity-blues/boxscore/9562",
+    "site": "Varsity Stadium, Toronto ON",
+    "attendance": "1374",
+    "kickoff time": "01:00 PM EDT",
+    "end of game": "3:44 PM",
+    "duration": "02:44"
+  },
+  "2026-10-03-laurier-waterloo": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_3xzq.xml"
+  },
+  "2026-10-03-laval-concordia": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_xhzw.xml"
+  },
+  "2026-10-03-mount-allison-stfx": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_n4x7.xml"
+  },
+  "2026-10-03-queens-western": {
+    "source": "https://gogaelsgo.com/sports/football/stats/2026-2027/western-mustangs/boxscore/13810",
+    "attendance": "1745",
+    "kickoff time": "01:00 PM EDT",
+    "end of game": "4:06 PM",
+    "duration": "03:06"
+  },
+  "2026-10-03-regina-calgary": {
+    "source": "https://godinos.com/sports/football/stats/2026/regina/boxscore/15530",
+    "site": "Calgary, AB",
+    "stadium": "McMahon Stadium",
+    "attendance": "1338",
+    "kickoff time": "1:05pm",
+    "end of game": "3:35pm",
+    "duration": "2:30",
+    "weather": "sunny, light winds"
+  },
+  "2026-10-03-sherbrooke-montreal": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_zz6y.xml"
+  },
+  "2026-10-03-ubc-saskatchewan": {
+    "source": "https://huskies.usask.ca/sports/football/stats/2026-27/ubc-thunderbirds/boxscore/6999",
+    "attendance": "4516",
+    "kickoff time": "09:00 PM EDT",
+    "end of game": "11:24 PM",
+    "duration": "02:24"
+  },
+  "2026-10-03-york-windsor": {
+    "source": "https://golancers.ca/sports/football/stats/2026/york-lions/boxscore/6122",
+    "attendance": "6000",
+    "kickoff time": "07:00 PM EDT"
+  },
+  "2026-10-04-bishops-mcgill": {
+    "source": "https://mcgillathletics.ca/sports/football/stats/2026-27/bishop-s/boxscore/12462",
+    "site": "Percival Molson Stadum, Montreal QC",
+    "attendance": "1979",
+    "kickoff time": "02:00 PM EDT",
+    "end of game": "5:02 PM",
+    "duration": "03:02"
+  },
+  "2026-10-04-carleton-ottawa": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261004_yqpv.xml"
+  },
+  "2026-10-09-toronto-mcmaster": {
+    "source": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261009_44ma.xml"
+  }
+}

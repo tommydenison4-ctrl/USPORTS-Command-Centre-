@@ -226,3 +226,23 @@ body{background:#080f17;color:#f1f5fa}
  .clean-ui .postgame-page .statsTable th,.clean-ui .postgame-page .statsTable td{padding:7px 8px!important}
  .clean-ui .postgame-page .team6 img{width:36px!important;height:36px!important}
 }
+/* Summary uses the desktop margins for concise game context. */
+.clean-ui.postgame-shell{max-width:1320px}
+.clean-ui .postgame-page{max-width:1240px}
+.postgame-summary-layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
+.postgame-summary-content,.postgame-sidebar{min-width:0}
+.postgame-sidebar{display:flex;flex-direction:column;gap:14px}
+.postgame-side-card{background:#111923;border:1px solid #283442;border-radius:8px;overflow:hidden;padding:16px}
+.postgame-side-card h2{font-size:15px;margin:0 0 14px}
+.postgame-side-stats{order:1}.postgame-side-info{order:2}.postgame-sidebar>#canu-probability-history{order:3;margin:0!important;padding:14px!important}.postgame-side-news{order:4}
+.postgame-stat-head{display:flex;justify-content:space-between;font-size:11px;color:#9eafc1;margin-bottom:6px}
+.postgame-stat-row{display:grid;grid-template-columns:52px 1fr 52px;gap:5px;align-items:center;padding:9px 0;border-top:1px solid #26313e;font-size:12px;font-variant-numeric:tabular-nums;text-align:center}
+.postgame-stat-row span{color:#a8b8c9;font-size:11px}.postgame-stat-row b:first-child{text-align:left}.postgame-stat-row b:last-child{text-align:right}
+.postgame-stadium-photo{width:calc(100% + 32px);margin:0 -16px 12px;height:160px;object-fit:cover}
+.postgame-venue-name{font-size:13px;font-weight:600;margin:0 0 8px}
+.postgame-side-card a{color:#a4cce9}.postgame-venue-link,.postgame-facts-source{display:block;font-size:11px;margin-top:8px}
+.postgame-side-card dl{font-size:12px;margin:12px 0}.postgame-side-card dl>div{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #26313e;padding:9px 0}.postgame-side-card dt{color:#99aabc}.postgame-side-card dd{margin:0;text-align:right}
+.postgame-news-item{display:block;padding:12px 0;border-top:1px solid #26313e;text-decoration:none}.postgame-news-item:first-of-type{border-top:0;padding-top:0}.postgame-news-item small{display:block;color:#93a7bc;font-size:10px;margin-bottom:5px}.postgame-news-item strong{font-size:12px;line-height:1.45;display:block;color:#e4ecf6}
+.postgame-sidebar .canu-history-note{font-size:10px}.postgame-sidebar .canu-history-chart h2{font-size:15px}
+@media(max-width:900px){.postgame-summary-layout{grid-template-columns:minmax(0,1fr)}.postgame-sidebar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}}
+@media(max-width:600px){.postgame-sidebar{display:flex}.postgame-summary-layout{gap:14px}}

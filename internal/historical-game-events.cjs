@@ -59,12 +59,23 @@ function scoringOnly(record){
  if(!events.length||a!==record.awayScore||h!==record.homeScore)return null;
  return {events,sides,coverage:'scoring-only',source:record.source};
 }
-function reconstruct(record,prior,point){
- if(!prior||!Number.isFinite(prior.p)||String(prior.lockedAt||'').slice(0,10)>record.date)return null;
- const parsed=extract(record)||scoringOnly(record);if(!parsed)return null;
- const points=[{...prior,forecast:undefined,label:'Pregame',reconstructed:true}],events=parsed.events;
- for(const e of events){const p=point({game:{awayScore:e.awayScore,homeScore:e.homeScore},status:{period:'Q'+e.q,clock:e.clock}},prior);if(p)points.push({...p,label:'Q'+e.q+' '+e.clock+' · '+(e.kind==='score'?'Score':e.kind==='turnover'?'Turnover':'Play'),description:e.description,kind:e.kind,reconstructed:true});}
- const final=point({game:{awayScore:record.awayScore,homeScore:record.homeScore},status:{period:'FINAL',clock:''}},prior);if(final)points.push({...final,reconstructed:true});
- return {points,reconstructed:true,coverage:parsed.coverage,source:parsed.source,complete:true};
+function quarterOnly(record){
+ let rows=record.tables?.find(t=>/team score by quarter/i.test(t.title)||t.rows[0]?.[0]==='Scoring'&&t.rows[0]?.at(-1)==='Final')?.rows?.slice(1,3);
+ if(!rows?.length&&record.pages?.length){const page=record.pages[0],part=page.split(/SCORING 1 2 3 4 FINAL/i)[1]?.split(/PRD TIME|OTHER INFORMATION/i)[0];if(part)rows=part.split('\n').map(line=>line.match(/^(.*?)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s*$/)).filter(Boolean).slice(0,2).map(m=>m.slice(1));}
+ if(!rows||rows.length!==2)return null;
+ const scores=rows.map(r=>r.slice(1).map(v=>/^\d+$/.test(String(v).trim())?Number(v):NaN));
+ if(scores.some(r=>r.length<5||r.some(v=>!Number.isFinite(v))))return null;
+ if(scores.some((r,i)=>r.slice(0,-1).reduce((a,b)=>a+b,0)!==[record.awayScore,record.homeScore][i]||r.at(-1)!==[record.awayScore,record.homeScore][i]))return null;
+ const n=scores[0].length-1;if(scores[1].length-1!==n)return null;
+ let a=0,h=0;const events=[];for(let i=0;i<n;i++){a+=scores[0][i];h+=scores[1][i];events.push({x:(i+1)*900,q:Math.min(i+1,4),clock:'00:00',label:i<4?['End Q1','Halftime','End Q3',n>4?'End regulation':'Final'][i]:'End OT'+(i-3),description:'Verified period score: '+a+'–'+h,kind:'period',awayScore:a,homeScore:h});}
+ return {events,coverage:'quarter-only',source:record.source,duration:Math.max(3600,n*900)};
 }
-module.exports={elapsed,extract,scoringOnly,reconstruct};
+function reconstruct(record,prior,point){
+ if(!prior||!Number.isFinite(prior.p)||(prior.priorKind!=='estimated'&&String(prior.lockedAt||'').slice(0,10)>record.date))return null;
+ const parsed=extract(record)||scoringOnly(record)||quarterOnly(record);if(!parsed)return null;
+ const points=[{...prior,forecast:undefined,label:'Pregame',reconstructed:true}],events=parsed.events;
+ for(const e of events){const p=point({game:{awayScore:e.awayScore,homeScore:e.homeScore},status:{period:'Q'+e.q,clock:e.clock}},prior);if(p)points.push({...p,x:e.x,label:e.label||'Q'+e.q+' '+e.clock+' · '+(e.kind==='score'?'Score':e.kind==='turnover'?'Turnover':'Play'),description:e.description,kind:e.kind,reconstructed:true});}
+ const final=point({game:{awayScore:record.awayScore,homeScore:record.homeScore},status:{period:'FINAL',clock:''}},prior);if(final)points.push({...final,x:parsed.duration||3600,reconstructed:true});
+ return {points,reconstructed:true,coverage:parsed.coverage,source:parsed.source,priorKind:prior.priorKind||'locked',priorMethod:prior.method,complete:true};
+}
+module.exports={elapsed,extract,scoringOnly,quarterOnly,reconstruct};

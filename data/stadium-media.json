@@ -36,8 +36,11 @@
   "Richardson Memorial Stadium": {
     "name": "Richardson Memorial Stadium",
     "source": "https://en.wikipedia.org/wiki/Richardson_Memorial_Stadium",
-    "capacity": 8500,
-    "capacitySource": "https://en.wikipedia.org/wiki/List_of_Canadian_football_stadiums"
+    "capacity": 8000,
+    "capacitySource": "https://en.wikipedia.org/wiki/List_of_Canadian_football_stadiums",
+    "image": "https://images.sidearmdev.com/convert?type=webp&url=https%3A%2F%2Fdxbhsrqyrr690.cloudfront.net%2Fsidearm.nextgen.sites%2Fqueenrec.sidearmsports.com%2Fimages%2F2021%2F8%2F12%2Fstadium1.jpg",
+    "imageSource": "https://rec.gogaelsgo.com/sports/richardson-stadium",
+    "credit": "Queen's University"
   },
   "Western Alumni Stadium": {
     "name": "Western Alumni Stadium",

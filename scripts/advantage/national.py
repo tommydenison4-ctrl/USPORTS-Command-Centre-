@@ -59,13 +59,24 @@ def discover(fetch,batch,season):
     html=fetch(COMPOSITE)
     dates=sorted(set(re.findall(r'composite\?d=('+str(season)+r'-\d{2}-\d{2})',html)))
     if not dates:raise ValueError('National composite returned no season dates; retaining last verified schedule')
-    # Every date must succeed: a partial index must never replace the national schedule.
+    # Retain previously verified dates if a single national composite page times out.
+    # Fresh successful dates can still advance without discarding older verified results.
     pages=batch(lambda date:(date,parse_composite(fetch(COMPOSITE+'?d='+date),date)),dates)
-    if len(pages)!=len(dates):raise ValueError('National composite date fetch failed; retaining last verified schedule')
+    fetched={date:(rows,unknown) for date,(rows,unknown) in pages}
+    missing=set(dates)-set(fetched)
+    previous_path=ROOT/'data/national-schedule-usports.json'
+    previous=json.loads(previous_path.read_text()) if previous_path.exists() else {}
+    previous_dates={date for date in (g.get('date') for g in previous.get('games',[])) if date}
+    if missing-previous_dates:
+        raise ValueError('National composite missing unverified dates: '+', '.join(sorted(missing-previous_dates)))
     games={};unresolved=[]
-    for date,(rows,unknown) in sorted(pages):
+    for date,(rows,unknown) in sorted(fetched.items()):
         for g in rows:games[g['id']]=g
         unresolved.extend(unknown)
+    for g in previous.get('games',[]):
+        if g.get('date') in missing:games[g['id']]=g
+    unresolved.extend(g for g in previous.get('unresolved',[]) if g.get('date') in missing)
+    if missing:print('Retained verified fallback dates:',', '.join(sorted(missing)),flush=True)
     conferences={g['conference'] for g in games.values()}
     if not {'OUA','RSEQ','AUS','CW'}<=conferences:raise ValueError('National composite is missing a conference')
     return sorted(games.values(),key=lambda g:(g['date'],g['id'])),unresolved

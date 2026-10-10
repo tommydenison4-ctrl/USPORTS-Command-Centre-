@@ -15,6 +15,21 @@ module.exports=async function handler(req,res){
    if(image&&/^https:\/\//.test(image))memo.set(title,image);
   }
   if(image&&/^https:\/\//.test(image))return res.redirect(302,image);
- }catch(e){console.warn('Stadium image unavailable',name,e.message)}
+ }catch(e){console.warn('Stadium page image unavailable',name,e.message)}
+ // For venues with no Wikipedia lead image, search Wikimedia Commons for the actual venue.
+ try{
+  const commons='https://commons.wikimedia.org/w/api.php?';
+  const search= name+' football stadium';
+  const data=await fetchJson(commons+new URLSearchParams({action:'query',generator:'search',gsrsearch:'filetype:bitmap '+search,gsrnamespace:'6',gsrlimit:'20',prop:'imageinfo',iiprop:'url|size',iiurlwidth:'960',format:'json',formatversion:'2'}));
+  const significant=name.toLowerCase().split(/\\s+/).filter(w=>w.length>=4&&!['stadium','field','memorial','alumni','university'].includes(w));
+  const pages=(data.query?.pages||[]).filter(p=>/\\.(?:jpe?g|png|webp)$/i.test(p.title||'')&&(p.imageinfo?.[0]?.width||0)>=500);
+  pages.sort((a,b)=>{
+   const score=p=>significant.filter(word=>(p.title||'').toLowerCase().includes(word)).length*5-(/logo|crest|badge|map|diagram|illustration|poster|render/i.test(p.title||'')?30:0);
+   return score(b)-score(a);
+  });
+  const best=pages.find(p=>significant.some(word=>(p.title||'').toLowerCase().includes(word)));
+  const image=best?.imageinfo?.[0]?.thumburl||best?.imageinfo?.[0]?.url;
+  if(image&&/^https:\\/\\//.test(image))return res.redirect(302,image);
+ }catch(e){console.warn('Stadium Commons search unavailable',name,e.message)}
  return res.status(404).end();
 };

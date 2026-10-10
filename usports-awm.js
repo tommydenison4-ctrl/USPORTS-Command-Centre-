@@ -62,8 +62,8 @@ window.US_AWM=(()=>{
    // Actual team/player statistics are rendered by the live GameCast directly below.
    return '<div id="us-awm-panel" data-game-state="live">'+liveCard+'</div>';
   }
-  const html=A.card(p,true,data)+(window.USScoreSimulation?.card(p)||'')+(window.US_PlayerLeaders?.card(window.US_PLAYER_DATA,g)||'')+(window.USGameCardDetails?.watch(g)||'')+(window.USGameCardDetails?.watchSchedule(g)||'');
-  return '<div id="us-awm-panel" data-game-state="pregame">'+html+'</div>';
+  const html=A.card(p,true,data)+(window.US_PlayerLeaders?.card(window.US_PLAYER_DATA,g)||'')+(window.USScoreSimulation?.card(p)?'<details class="pregame-simulation"><summary>Explore projected scores</summary>'+window.USScoreSimulation.card(p)+'</details>':'');
+  return '<div id="us-awm-panel" data-game-state="pregame"><div class="pregame-summary-layout"><main class="pregame-main">'+html+'</main><aside class="postgame-sidebar pregame-sidebar" aria-label="Pregame information and news"></aside></div></div>';
  }
  return {forecast,panel,newsLogos,card:g=>A.card(forecast(g)),data};
 })();

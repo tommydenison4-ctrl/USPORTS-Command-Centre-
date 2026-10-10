@@ -246,3 +246,19 @@ body{background:#080f17;color:#f1f5fa}
 .postgame-sidebar .canu-history-note{font-size:10px}.postgame-sidebar .canu-history-chart h2{font-size:15px}
 @media(max-width:900px){.postgame-summary-layout{grid-template-columns:minmax(0,1fr)}.postgame-sidebar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}}
 @media(max-width:600px){.postgame-sidebar{display:flex}.postgame-summary-layout{gap:14px}}
+/* Shared pregame and postgame information layout. */
+.clean-ui .awm-pregame{max-width:1240px;margin:0 auto}
+.pregame-summary-layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
+.pregame-main{min-width:0;display:flex;flex-direction:column;gap:14px}
+.clean-ui .pregame-main>.awm-card{margin:0;background:#111923;border-color:#283442;border-radius:8px;padding:18px}
+.clean-ui .pregame-main .awm-card>small{font-size:10px}.clean-ui .pregame-main .awm-card>b{font-size:24px}
+.pregame-main .awm-player-grid{gap:16px}.pregame-main .awm-player-grid>div>b{font-size:11px}
+.pregame-simulation{border:1px solid #283442;border-radius:8px;background:#111923;overflow:hidden}.pregame-simulation>summary{padding:15px 18px;cursor:pointer;font-size:13px;font-weight:600}.pregame-simulation .awm-card{margin:0;border:0;border-radius:0;background:transparent}
+.pregame-watch-card{order:0}.pregame-sidebar .postgame-side-info{order:1}.pregame-sidebar .postgame-side-news{order:2}
+.pregame-venue-city{font-size:12px;color:#a5b7ca;margin:0 0 9px}.venue-default-label{color:#9caec0;font-size:10px;display:block;margin-bottom:9px}
+.clean-ui .awm-pregame .v102-predict{padding:18px 20px;margin:0 0 16px;background:#101720;border:1px solid #283442;border-radius:10px}
+.clean-ui .awm-pregame .v102-team h2{font-size:18px}.clean-ui .awm-pregame .v102-team img{width:48px;height:48px!important}
+.clean-ui .awm-pregame>.v102-score,.clean-ui .awm-pregame>.v102-tabs,.clean-ui .awm-pregame>#v102-overview,.clean-ui .awm-pregame>#v102-box,.clean-ui .awm-pregame>#v102-drives-section{display:none!important}
+.clean-ui .awm-pregame .v102-crumb{font-size:11px}.clean-ui .awm-pregame .v102-rail{display:none}
+@media(max-width:900px){.pregame-summary-layout{grid-template-columns:minmax(0,1fr)}.pregame-sidebar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}.pregame-sidebar .postgame-side-news{grid-column:1/-1}}
+@media(max-width:600px){.pregame-summary-layout{gap:14px}.pregame-sidebar{display:flex}.clean-ui .awm-pregame .v102-predict{padding:14px 10px}.clean-ui .awm-pregame .v102-team h2{font-size:13px}.clean-ui .pregame-main>.awm-card{padding:14px}.pregame-main .awm-player-grid{grid-template-columns:1fr}}

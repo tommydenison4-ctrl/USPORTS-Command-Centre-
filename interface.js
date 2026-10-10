@@ -35,7 +35,8 @@
         if(stripMarkup.get(strip)!==html){stripMarkup.set(strip,html);strip.innerHTML=html;}
       }
       const match=location.hash.match(/^#(?:game|live)=(.+)$/);
-      if(match&&window.V102_LIVE?.renderHistory){
+      if(match&&root.querySelector('.awm-pregame')){const g=(typeof GAMES!=='undefined'?GAMES:[]).find(x=>x.id===match[1]);if(g)window.PostgameSidebar?.mountPregame(g);root.querySelector('#canu-probability-history')?.remove()}
+      if(match&&!root.querySelector('.awm-pregame')&&window.V102_LIVE?.renderHistory){
         let host=root.querySelector('#canu-probability-history');
         if(!host){host=document.createElement('section');host.id='canu-probability-history';host.className='panel canu-history-chart';const score=root.querySelector('.v102-score,.gameHero6,.boxHero');if(score)score.after(host);else root.querySelector(':scope > .footer')?.before(host)}
         if(host){host.dataset.gameId=match[1];V102_LIVE.renderHistory(host,match[1])}

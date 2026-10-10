@@ -25,7 +25,7 @@
   if(venue.imageSource)body+='<small>Photo: '+esc(venue.credit||'')+' · <a href="'+safe(venue.imageSource)+'" target="_blank" rel="noopener">Source and licence ↗</a></small>';
   if(venue.source)body+='<a class="postgame-venue-link" href="'+safe(venue.source)+'" target="_blank" rel="noopener">Stadium details &amp; photos ↗</a>';
   const att=Number(String(info.attendance||'').replace(/,/g,'')),kick=pre?g.time:info['kickoff time'];
-  body+='<dl>'+(pre?'<div><dt>Date</dt><dd>'+esc(g.date)+'</dd></div>':'<div><dt>Attendance</dt><dd>'+(att>0?att.toLocaleString('en-CA'):'Not reported')+'</dd></div>')+(kick?'<div><dt>Kickoff</dt><dd>'+esc(kick)+'</dd></div>':'')+(info.weather?'<div><dt>Weather</dt><dd>'+esc(info.weather)+'</dd></div>':'')+'</dl>';
+  body+='<dl>'+(pre?'<div><dt>Date</dt><dd>'+esc(g.date)+'</dd></div>':'<div><dt>Attendance</dt><dd>'+(att>0?att.toLocaleString('en-CA'):'Not reported')+'</dd></div>')+(venue.capacity?'<div><dt>Capacity</dt><dd>'+Number(venue.capacity).toLocaleString('en-CA')+'</dd></div>':'')+(kick?'<div><dt>Kickoff</dt><dd>'+esc(kick)+'</dd></div>':'')+(info.weather?'<div><dt>Weather</dt><dd>'+esc(info.weather)+'</dd></div>':'')+'</dl>';
   const link=info.source||source;if(link)body+='<a class="postgame-facts-source" href="'+safe(link)+'" target="_blank" rel="noopener">'+(pre?'Official schedule':'Official gamebook')+' ↗</a>';
   return card('Game information',body,'postgame-side-info');
  }

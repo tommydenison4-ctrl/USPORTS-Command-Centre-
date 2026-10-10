@@ -1,6 +1,6 @@
 
 (()=>{
-  const graphicsStyle=document.createElement('style');graphicsStyle.textContent='.canu-chip-situation{display:block;margin-top:5px;color:#d7e3ef;font-size:11px;font-weight:700;line-height:1.3}.canu-live-event{display:block;color:#ff627b;font-size:11px;font-weight:900;font-style:normal;letter-spacing:.08em;margin:6px 0}.canu-live-event:empty{display:none}.v102-score{position:relative}#canu-selected-event{position:absolute;bottom:2px;left:0;right:0;text-align:center}.canu-drive-trail{position:absolute;inset:0;pointer-events:none;z-index:7}.canu-ball-trail{position:absolute;top:52%;height:5px;background:#000;border-radius:8px;pointer-events:none;z-index:5;box-shadow:0 0 0 1px rgba(255,255,255,.35)}.canu-ball-trail.pass{height:0;border-top:4px dashed #ff334b;background:none;box-shadow:0 1px 2px rgba(0,0,0,.5)}';document.head.appendChild(graphicsStyle);
+  const graphicsStyle=document.createElement('style');graphicsStyle.textContent='.canu-chip-situation{display:block;margin-top:5px;color:#d7e3ef;font-size:11px;font-weight:700;line-height:1.3}.canu-live-event{display:block;color:#ff627b;font-size:11px;font-weight:900;font-style:normal;letter-spacing:.08em;margin:6px 0}.canu-live-event:empty{display:none}.v102-score{position:relative}#canu-selected-event{position:absolute;bottom:2px;left:0;right:0;text-align:center}.canu-drive-trail{position:absolute;inset:0;pointer-events:none;z-index:7}.canu-drive-step{position:absolute;width:1px;background:rgba(255,255,255,.55)}.canu-trail-end{position:absolute;top:50%;width:14px;height:14px;transform:translate(-50%,-50%);border:2px solid #fff;border-radius:50%;background:inherit;color:#fff;font:900 9px/10px sans-serif;text-align:center;box-shadow:0 1px 3px #000}.canu-ball-trail{pointer-events:auto!important;cursor:help}.canu-drive-legend{display:flex;gap:14px;font-size:10px;font-weight:800;color:#cbd9e7;padding:8px 12px}.canu-drive-legend span:before{content:"";display:inline-block;width:20px;height:5px;border:1px solid #fff;border-radius:4px;margin-right:5px;background:#000}.canu-drive-legend .pass:before{background:#ff334b}.canu-ball-trail{position:absolute;top:52%;height:5px;background:#000;border-radius:8px;pointer-events:none;z-index:5;box-shadow:0 0 0 1px rgba(255,255,255,.35)}.canu-ball-trail.pass{background:#ff334b}';document.head.appendChild(graphicsStyle);
   const L={selected:'',source:null,snap:null,cat:{away:'passing',home:'passing'},tab:'overview',pbp:false,inflight:false,timer:null,lastDiscover:0,rendered:false,lastUserScroll:0,scrollRAF:0};
   window.V102_LIVE=L;
   try{if('scrollRestoration' in history)history.scrollRestoration='auto'}catch{}
@@ -154,15 +154,23 @@
       if(++snaps>limit)break;
       let gain=null;const loss=text.match(/for loss of (\d+) yards?/i),yards=text.match(/for (-?\d+) yards?/i);
       if(loss)gain=-Number(loss[1]);else if(yards)gain=Number(yards[1]);else if(/no gain|incomplete/i.test(text))gain=0;
-      if(gain===null||gain===0)continue;
+      if(gain===null)continue;
       const dest=[...text.matchAll(/\bto (?:the )?([A-Z]{2,8})(-?\d{1,2})\b/gi)].at(-1);let end=null,start=null;
       if(dest){const position=fieldPosition(g,{...d,situation:{spot:dest[1]+dest[2],possession:poss}});if(position)end=position.coord;}
       if(end!==null)start=end-dir*gain;
       else{const position=fieldPosition(g,{...d,situation:{spot:p.spot,possession:poss}});if(position){start=position.coord;end=start+dir*gain;}}
       if(start===null||end===null||start<0||start>110||end<0||end>110)continue;
-      out.push({key,start,end,kind:/pass|sack/i.test(text)?'pass':'run'});
+      out.push({key,start,end,gain,down:Number(p.down)>=1&&Number(p.down)<=3?Number(p.down):null,kind:/pass|sack/i.test(text)?'pass':'run'});
     }
     return out.reverse();
+  }
+  function driveTrailHtml(segments,pct){
+    const step=Math.min(3,24/Math.max(1,segments.length-1));
+    return segments.map((segment,i)=>{
+      const top=52-(segments.length-1-i)*step,start=pct(segment.start),end=pct(segment.end),label=[segment.down?`${segment.down}${segment.down===1?'st':segment.down===2?'nd':'rd'} down`:`Play ${i+1}`,segment.kind==='pass'?'Pass':'Run',`${segment.gain>0?'+':''}${segment.gain} yards`].join(' · ');
+      const connector=i<segments.length-1?`<div class="canu-drive-step" style="left:${end}%;top:${top}%;height:${step}%"></div>`:'';
+      return `${connector}<div class="canu-ball-trail ${segment.kind}" title="${esc2(label)}" aria-label="${esc2(label)}" data-start="${segment.start}" data-end="${segment.end}" style="top:${top}%;left:${Math.min(start,end)}%;width:${Math.abs(end-start)}%"><span class="canu-trail-end" style="left:${end>=start?100:0}%">${segment.down||''}</span></div>`;
+    }).join('');
   }
   function downText(d){const x=d?.situation||{};const n=Number(x.down);if(!n)return'';return `${n}${n===1?'st':n===2?'nd':n===3?'rd':'th'} & ${x.distance??''}`}
   function scoreboardWeek(date,anchor){
@@ -279,7 +287,8 @@
       let trail=viewport.querySelector('.canu-drive-trail');
       if(!trail){trail=document.createElement('div');trail.className='canu-drive-trail';viewport.appendChild(trail)}
       const segments=driveTrail(g,L.snap);
-      htmlIfChanged(trail,segments.map(segment=>`<div class="canu-ball-trail ${segment.kind==='pass'?'pass':'run'}" aria-label="${segment.kind==='pass'?'Passing':'Running'} play trail" data-start="${segment.start}" data-end="${segment.end}" style="left:${Math.min(pct(segment.start),pct(segment.end))}%;width:${Math.abs(pct(segment.end)-pct(segment.start))}%"></div>`).join(''));
+      htmlIfChanged(trail,driveTrailHtml(segments,pct));
+      if(!viewport.parentElement.querySelector('.canu-drive-legend')){const legend=document.createElement('div');legend.className='canu-drive-legend';legend.innerHTML='<span class="pass">PASS</span><span>RUN</span><b>Current drive · hover for down and yards</b>';viewport.parentElement.appendChild(legend)}
       if(trailTransition(prev,{id:g.id,poss,key,x:bx},text)&&!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)ball.animate?.([{left:prev.x+'%'},{left:bx+'%'}],{duration:900,easing:'ease-out'});
       fieldFrames.set(viewport,{id:g.id,poss,key,x:bx});ball.style.setProperty('display','block','important');ball.style.left=bx+'%';
     }

@@ -1,5 +1,5 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
-const src=fs.readFileSync('live-gamecast.js','utf8'),g={id:'one',away:'windsor',home:'queens'},ctx={norm:s=>String(s||'').toLowerCase(),aliases:s=>s==='windsor'?['windsor','wsr','win']:['queens','que'],isFinal:(g,d)=>g.status==='final'||d?.status?.period==='FINAL'};
+const src=fs.readFileSync('live-gamecast.js','utf8'),g={id:'one',away:'windsor',home:'queens'},ctx={esc2:String,norm:s=>String(s||'').toLowerCase(),aliases:s=>s==='windsor'?['windsor','wsr','win']:['queens','que'],isFinal:(g,d)=>g.status==='final'||d?.status?.period==='FINAL'};
 vm.runInNewContext(src.slice(src.indexOf('  function feedAliases'),src.indexOf('  function downText')),ctx);
 const play=(description,possession='WSR')=>({description,possession,clock:description}),d={status:{period:'Q3'},situation:{possession:'WSR'},playerStats:[],drives:[{plays:8}],plays:[play('A rush for 11 yards to the QUE16'),play('B pass complete for 20 yards to the QUE27'),play('C rush for 4 yards to the QUE47'),play('Kickoff to the WSR20'),play('Old rush for 10 yards to the WSR40')]};
 const segments=ctx.driveTrail(g,d);assert.equal(segments.length,3);assert.equal(segments[0].kind,'run');assert.equal(segments[1].kind,'pass');assert.equal(segments[2].kind,'run');assert.equal(segments[1].end,83);assert.equal(segments[2].start,83);assert.equal(segments[2].end,94);
@@ -10,3 +10,11 @@ assert.equal(ctx.driveTrail(g,{...d,plays:[play('A rush for 11 yards to the QUE1
 assert.equal(ctx.driveTrail({...g,status:'final'},d).length,0);
 const loss=ctx.driveTrail(g,{...d,plays:[play('A rush for loss of 3 yards to the WSR40')]});assert.equal(loss[0].start,43);assert.equal(loss[0].end,40);
 console.log('PASS: complete current drive, mixed pass/run colours, connected endpoints, loss direction, duplicates/reversals and possession/kickoff/turnover/final resets');
+
+const numbered=ctx.driveTrail(g,{...d,plays:[{...play('Pass incomplete'),down:2,spot:'WSR40'}]});
+assert.equal(numbered.length,1);assert.equal(numbered[0].gain,0);assert.equal(numbered[0].down,2);
+const html=ctx.driveTrailHtml([...segments,loss[0],numbered[0]],n=>n);
+assert.equal((html.match(/canu-drive-step/g)||[]).length,4);
+assert.match(html,/2nd down · Pass · 0 yards/);assert.match(html,/Run · -3 yards/);
+assert.equal(new Set([...html.matchAll(/style="top:([\d.]+)%/g)].map(m=>m[1])).size,5);
+console.log('PASS: cascading rows, connecting steps, down labels, incomplete markers and signed yardage');

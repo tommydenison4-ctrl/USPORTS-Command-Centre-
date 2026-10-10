@@ -151,3 +151,62 @@ body{background:#080f17;color:#f1f5fa}
 .game-home-recap p,.canu-history-note{font-size:12px;line-height:1.6;color:#b7c7d6}
 .game-home-recap footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11px;color:#96abc0}
 @media(max-width:600px){.clean-ui .official-boxscore>.panel,.clean-ui .official-full-tables>.panel{padding:11px 10px}.clean-ui .official-boxscore .statsTable th,.clean-ui .official-boxscore .statsTable td,.clean-ui .official-full-tables .statsTable th,.clean-ui .official-full-tables .statsTable td{padding:5px 6px;font-size:11px}.clean-ui .official-boxscore .statsTable th,.clean-ui .official-full-tables .statsTable th{font-size:9px}.clean-ui .published-stat-table>summary{padding:9px 10px}.clean-ui .box-team-heading{font-size:14px}}
+
+/* Completed games: compact score header and focused views. */
+.clean-ui.postgame-shell .clean-header{min-height:88px;padding:12px 0}
+.clean-ui.postgame-shell .canu-brand-logo{width:95px;height:70px}
+.clean-ui.postgame-shell .canu-wordmark{font-size:23px}
+.clean-ui.postgame-shell .canu-scoreboard{padding:10px 0;margin-bottom:18px}
+.clean-ui.postgame-shell .canu-game-chip{min-width:160px;padding:8px 10px}
+.clean-ui.postgame-shell .canu-scoreboard-label{font-size:9px;margin-bottom:7px}
+.clean-ui .postgame-page{max-width:1040px;margin:0 auto}
+.clean-ui .postgame-page .back{margin-bottom:10px;font-size:11px}
+.clean-ui .postgame-page .gameHero6{border-radius:10px;background:#101720}
+.clean-ui .postgame-page .match6{padding:18px 20px;gap:12px}
+.clean-ui .postgame-page .team6{gap:10px;min-width:0}
+.clean-ui .postgame-page .team6 img{width:48px;height:48px;border-radius:9px;padding:4px}
+.clean-ui .postgame-page .team6 h2{font-size:18px;line-height:1.2}
+.clean-ui .postgame-page .score6{font-size:42px;letter-spacing:-.05em}
+.clean-ui .postgame-page .score6 small{font-size:9px;margin-top:3px}
+.clean-ui .postgame-page .postgame-quarter{max-width:520px;margin:0 auto 10px;font-size:11px}
+.clean-ui .postgame-quarter th,.clean-ui .postgame-quarter td{padding:4px 10px}
+.postgame-tabs{display:flex;border-bottom:1px solid #334150;gap:24px;margin:12px 0 16px}
+.postgame-tabs button{background:none;border:0;border-bottom:3px solid transparent;color:#a7b3c2;padding:12px 0;font:600 13px inherit;cursor:pointer}
+.postgame-tabs button[aria-pressed=true]{color:#fff;border-bottom-color:#f32b4a}
+.postgame-tabs button:focus-visible{outline:2px solid #9ad7ff;outline-offset:3px}
+.postgame-page [hidden]{display:none!important}
+.postgame-player-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px;align-items:start}
+.clean-ui .postgame-player-table.panel{margin:0;padding:0;background:#111923;border:1px solid #283442;border-radius:8px;overflow:hidden;min-width:0}
+.clean-ui .postgame-player-table .box-team-heading{margin:0;padding:10px 12px;border-bottom:1px solid #283442;font-size:13px;line-height:1.2;text-transform:capitalize;gap:8px}
+.clean-ui .postgame-player-table .box-team-logo{width:24px;height:24px;border-radius:4px;padding:2px}
+.clean-ui .postgame-page .statsTable{font-size:12px;table-layout:auto}
+.clean-ui .postgame-page .statsTable th,.clean-ui .postgame-page .statsTable td{padding:7px 10px;letter-spacing:0;text-align:right;white-space:nowrap;border-bottom:1px solid #24303d}
+.clean-ui .postgame-page .statsTable th{font-size:10px;font-weight:600;color:#94a4b6;background:#0c131d}
+.clean-ui .postgame-page .statsTable th:first-child,.clean-ui .postgame-page .statsTable td:first-child{text-align:left;white-space:normal;width:50%}
+.clean-ui .postgame-page .statsTable td:nth-child(4){font-weight:700;color:#fff}
+.clean-ui .postgame-page .statsTable tbody tr:nth-child(even){background:#ffffff03}
+.clean-ui .postgame-page .statsTable tr:last-child td{border-bottom:0}
+.postgame-team-stats,.postgame-more{margin-top:16px;border:1px solid #283442;border-radius:8px;background:#111923;overflow:hidden}
+.postgame-page summary{padding:12px;font-size:13px;font-weight:600;cursor:pointer}
+.postgame-page .published-stat-table{border-top:1px solid #283442;margin:0;border-radius:0;background:transparent}
+.postgame-page .published-stat-table summary{font-size:12px;color:#b4c3d4}
+.postgame-source{display:inline-block;margin:16px 0;color:#a5cce9;font-size:11px}
+.clean-ui .postgame-summary-content>.panel,.clean-ui .postgame-summary-content>section{margin:0 0 14px;border-radius:8px}
+.clean-ui .postgame-summary-content .canu-history-chart{padding:16px}
+@media(max-width:680px){
+ .clean-ui.postgame-shell .clean-header{min-height:0;gap:8px}
+ .clean-ui.postgame-shell .canu-brand-logo{width:64px;height:48px}
+ .clean-ui.postgame-shell .canu-wordmark{font-size:18px}
+ .clean-ui.postgame-shell .canu-wordmark small{font-size:7px}
+ .clean-ui.postgame-shell .nav{gap:4px}
+ .clean-ui.postgame-shell .nav>button,.clean-ui.postgame-shell .clean-more>summary{font-size:11px;padding:8px}
+ .clean-ui .postgame-page .match6{padding:14px 10px;gap:8px}
+ .clean-ui .postgame-page .team6{flex-direction:column;text-align:center;gap:6px}
+ .clean-ui .postgame-page .team6.home{flex-direction:column-reverse;text-align:center}
+ .clean-ui .postgame-page .team6 h2{font-size:12px}
+ .clean-ui .postgame-page .team6 img{width:36px;height:36px}
+ .clean-ui .postgame-page .score6{font-size:34px}
+ .postgame-player-grid{grid-template-columns:1fr;gap:12px}
+ .clean-ui .postgame-page .statsTable th,.clean-ui .postgame-page .statsTable td{padding:7px 8px}
+ .postgame-tabs{gap:22px;margin-bottom:12px}
+}

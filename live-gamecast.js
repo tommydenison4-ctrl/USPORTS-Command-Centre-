@@ -188,6 +188,11 @@
   const chartCache=new Map();
   function chartHtml(g,history){
     const points=(history?.points||[]).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.p)&&p.p>=0&&p.p<=1);
+    if(g.status==='final'&&g.awayScore!=null&&g.homeScore!=null&&Number.isFinite(Number(g.awayScore))&&Number.isFinite(Number(g.homeScore))&&points.length){
+      const p=Number(g.homeScore)>Number(g.awayScore)?1:Number(g.homeScore)<Number(g.awayScore)?0:.5;
+      const terminal={x:Math.max(3600,points.at(-1).x),p,final:true,label:'Final',description:`${team(g.away).short||g.away} ${g.awayScore} – ${team(g.home).short||g.home} ${g.homeScore}`};
+      if(points.at(-1).final)points[points.length-1]=terminal;else points.push(terminal);
+    }
     if(!points.length)return '<h3>Win probability</h3><p>Game history is unavailable.</p>';
     if(g.status==='final'&&!history?.reconstructed&&points.length<3)return '<h3>Win probability</h3><p class="canu-history-note">A complete historical curve is unavailable for this game. The published event timeline or pregame forecast could not be verified.</p>';
     const end=Math.max(3600,points.at(-1).x),x=v=>42+v/end*540,y=v=>22+(1-v)*150;

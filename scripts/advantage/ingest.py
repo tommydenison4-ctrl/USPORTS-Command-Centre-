@@ -168,31 +168,23 @@ def ingest_usports():
     import national
     schedule,unresolved=national.discover(fetch,batch,int(ASOF[:4]))
     completed=[g for g in schedule if g['status']=='final' and g['date']<=ASOF]
-    presto_games=batch(lambda g:national.presto(g,fetch,text_play,metrics),completed)
-    sidearm_games,_=sidearm_history()
-    indexed={(g['date'],national.norm(g['away']),national.norm(g['home'])):g for g in completed}
-    unique={}
-    for g in presto_games+sidearm_games:
-        teams=[national.team(g[s]['id']) for s in ('away','home')]
-        if not all(teams):continue
-        key=(g['date'][:10],*[national.norm(t['slug']) for t in teams])
-        index=indexed.get(key)
-        if not index:continue # School sites enrich only games present in the national index.
-        for side,t in zip(('away','home'),teams):
-            old=g[side]['id'];new=national.norm(t['slug'])
-            g[side].update(id=new,name=t['short'],short=t['short'],abbr=t['abbr'])
-            for p in g['plays']:
-                if p['team']==old:p['team']=new
-        g.update(id=index['id'],date=index['date'],conference=index['conference'],neutral=index['neutral'],indexSource=index['source'])
-        # Composite scores are authoritative; reject a mismatched gamebook.
-        if any(g[s]['score']!=index[s+'Score'] for s in ('away','home')):continue
-        coverage=min(sum(p['team']==g[s]['id'] for p in g['plays']) for s in ('away','home'))
-        prior=unique.get(key)
-        prior_coverage=min(sum(p['team']==prior[s]['id'] for p in prior['plays']) for s in ('away','home')) if prior else -1
-        if coverage>prior_coverage or (coverage>=25 and '/boxscore/' in g['source']):unique[key]=g
+    # U SPORTS official composite and its linked gamebooks are the sole source.
+    # Missing gamebooks remain indexed as finals; no school-site substitutions.
+    presto_games=batch(lambda g:national.presto(g,fetch,text_play,metrics),[g for g in completed if g.get('boxscore')])
+    by_id={g['id']:g for g in presto_games if g}
+    unique=[]
+    for g in completed:
+        record=by_id.get(g['id'])
+        if record is None:continue
+        # Composite scores are authoritative and must match the official gamebook.
+        if any(record[side]['score']!=g[side+'Score'] for side in ('away','home')):continue
+        if not all(record[side].get('stats') for side in ('away','home')):continue
+        unique.append(record)
     national.save_schedule(schedule,unresolved,ASOF)
-    print('National composite:',len(schedule),'games;',len(unique),'gamebooks;',len(unresolved),'unresolved events',flush=True)
-    return sorted(unique.values(),key=lambda g:g['id']),schedule+unresolved
+    print('Official U SPORTS:',len(schedule),'indexed games;',len(unique),
+          'complete play-by-play gamebooks;',
+          len(completed)-len(unique),'finals awaiting usable gamebook',flush=True)
+    return sorted(unique,key=lambda g:g['id']),schedule+unresolved
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('league',choices=['NFL','NCAA','USPORTS']);args=parser.parse_args()

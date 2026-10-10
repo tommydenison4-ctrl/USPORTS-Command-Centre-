@@ -45,17 +45,14 @@ def presto_players(soup,g):
 
 def build():
     source=json.loads(Path(__file__).with_name('usports-history.json').read_text())
-    overrides=json.loads((ROOT/'data/boxscore-sources.json').read_text()) if (ROOT/'data/boxscore-sources.json').exists() else {}
-    for game in source['schedule']:
-        if game['id'] in overrides:game['boxscore']=overrides[game['id']]
-    enriched={g['id']:g for g in source['history']}
     games=[];unresolved=[]
     for indexed in source['schedule']:
         if indexed.get('status')!='final' or indexed['date']>train.ASOF:continue
-        g=enriched.get(indexed['id'])
-        if g is None and indexed.get('boxscore'):
-            g=national.history_game(indexed);g['source']=indexed['boxscore']
-        if g is None:unresolved.append(indexed['id']);continue
+        if not indexed.get('boxscore'):
+            unresolved.append(indexed['id'])
+            continue
+        g=national.history_game(indexed)
+        g['source']=indexed['boxscore']
         games.append(g)
     previous_path=ROOT/'data/player-leaders-usports.json'
     previous=json.loads(previous_path.read_text()) if previous_path.exists() else {'games':[]}

@@ -32,13 +32,15 @@
   function matchSource(x,date){let best=null,score=-999;for(const g of (GAMES||[])){if(g.status==='final')continue;if(date&&g.date!==date)continue;const pd=x.page?.match(/boxscores\/(\d{8})_/)?.[1];if(pd&&pd!==ymd(g.date))continue;let s=0;if(tm(g.away,x.visitor))s+=100;if(tm(g.home,x.home))s+=100;if(tm(g.away,x.home))s-=80;if(tm(g.home,x.visitor))s-=80;if(s>score){score=s;best=g}}return score>=180?best:null}
   // Per-game event state is never shared with the selected game's feed.
   const liveEvents=new Map(),fieldFrames=new WeakMap();
-  function eventKind(label){return label==='SCORE UPDATE'?'score':label==='TURNOVER'?'turnover':label==='RED ZONE'?'redzone':'';}
+  function eventKind(label){return label==='SCORE UPDATE'?'score':/^TURNOVER(?:$| — )/.test(label)?'turnover':label==='RED ZONE'?'redzone':'';}
   function liveEvent(previous,d,redZone=false){
     const text=String(d?.plays?.[0]?.description||'').toLowerCase();
     if(/final|complete/i.test(d?.status?.period||''))return '';
     if(previous&&((Number(d?.game?.awayScore)>previous.away)||(Number(d?.game?.homeScore)>previous.home)))return 'SCORE UPDATE';
     if(!/no[ -]play|nullified|overturned|reversed/.test(text)&&(/intercept|turnover on downs|fumble.*(?:lost|recovered by)/.test(text))){
-      if(/intercept|turnover on downs|fumble.*lost/.test(text)||previous?.pos&&d?.situation?.possession&&previous.pos!==d.situation.possession)return 'TURNOVER';
+      if(/intercept/.test(text))return 'TURNOVER — INTERCEPTION';
+      if(/turnover on downs/.test(text))return 'TURNOVER — ON DOWNS';
+      if(/fumble.*lost/.test(text)||previous?.pos&&d?.situation?.possession&&previous.pos!==d.situation.possession)return 'TURNOVER — FUMBLE';
     }
     return redZone?'RED ZONE':'';
   }

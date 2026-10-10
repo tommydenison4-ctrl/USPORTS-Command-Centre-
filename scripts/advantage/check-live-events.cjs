@@ -3,10 +3,10 @@ const src=fs.readFileSync('live-gamecast.js','utf8'),ctx={};vm.runInNewContext(s
 vm.runInNewContext(src.match(/  function eventKind[^\n]+/)[0],ctx);
 const data=(text,as=0,hs=0)=>({plays:[{description:text}],game:{awayScore:as,homeScore:hs},status:{period:'Q2'},situation:{possession:'home'}});
 assert.equal(ctx.liveEvent({away:0,home:0},data('Touchdown',7)),'SCORE UPDATE');
-assert.equal(ctx.liveEvent(null,data('Pass intercepted')),'TURNOVER');
+assert.equal(ctx.liveEvent(null,data('Pass intercepted')),'TURNOVER — INTERCEPTION');
 assert.equal(ctx.liveEvent(null,data('Pass intercepted, play reversed')),'');
 assert.equal(ctx.liveEvent({pos:'home'},data('Fumble recovered by home')),'');
-assert.equal(ctx.liveEvent({pos:'away'},data('Fumble recovered by home')),'TURNOVER');
+assert.equal(ctx.liveEvent({pos:'away'},data('Fumble recovered by home')),'TURNOVER — FUMBLE');
 assert.equal(ctx.liveEvent(null,data('Sacked')),'');
 assert.equal(ctx.liveEvent(null,data('Rush'),true),'RED ZONE');
 const final=data('Touchdown',7);final.status.period='FINAL';assert.equal(ctx.liveEvent({away:0,home:0},final),'');
@@ -43,3 +43,8 @@ for(const distance of [null,undefined,'',0,-1]){ctx.LIVE_STORE.games.two.distanc
 ctx.LIVE_STORE.games.two.distance='Goal';assert.match(ctx.rail('one'),/2nd & Goal/);
 ctx.GAMES[1].status='final';assert.doesNotMatch(ctx.rail('one'),/canu-chip-situation/);
 console.log('Live scoreboard shows verified down and distance, hides missing situations and clears on final');
+
+assert.equal(ctx.liveEvent(null,data('Turnover on downs')),'TURNOVER — ON DOWNS');
+assert.equal(ctx.liveEvent(null,data('Fumble lost')),'TURNOVER — FUMBLE');
+for(const label of ['TURNOVER — INTERCEPTION','TURNOVER — FUMBLE','TURNOVER — ON DOWNS']){assert.equal(ctx.eventKind(label),'turnover');}
+console.log('Turnover alerts name interception, lost fumble and downs while retaining orange styling');

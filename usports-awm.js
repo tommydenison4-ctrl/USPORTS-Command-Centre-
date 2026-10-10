@@ -60,7 +60,7 @@ window.US_AWM=(()=>{
     :`<section class="awm-card awm-live-only"><small>ADVANTAGE · LIVE WIN PROBABILITY</small><b>Live probability updating</b></section>`;
    // Once kickoff is verified, pregame scenarios and projected player leaders disappear.
    // Actual team/player statistics are rendered by the live GameCast directly below.
-   return '<div id="us-awm-panel" data-game-state="live">'+liveCard+'</div>';
+   return '<div id="us-awm-panel" data-game-state="live">'+liveCard+(p.availability?.length?'<p class="awm-availability">'+p.availability.map(r=>A.esc(r.player)+(r.status==='not-participating'?' not appearing in the live box score · '+A.esc(r.replacement)+' is taking the passing snaps.':' confirmed out.')).join(' ')+' Live forecast adjusted; availability is provisional.</p>':'')+'</div>';
   }
   const html=A.card(p,true,data)+(window.US_PlayerLeaders?.card(window.US_PLAYER_DATA,g)||'')+(window.USScoreSimulation?.card(p)?'<details class="pregame-simulation"><summary>Explore projected scores</summary>'+window.USScoreSimulation.card(p)+'</details>':'');
   return '<div id="us-awm-panel" data-game-state="pregame"><div class="pregame-summary-layout"><main class="pregame-main">'+html+'</main><aside class="postgame-sidebar pregame-sidebar" aria-label="Pregame information and news"></aside></div></div>';

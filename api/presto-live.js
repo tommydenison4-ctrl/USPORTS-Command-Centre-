@@ -551,6 +551,8 @@ module.exports=async function handler(req,res){
       attempts.push({kind:c.kind,status:lr.status,url:lr.url,body:lr.body});
       if(lr.ok&&isLivePayload(lr.json)){
         const normalized={...normalize(lr.json,{...source,awayLogo:boot.visitorLogo||'',homeLogo:boot.homeLogo||''}),identity};
+        const availability=require('../internal/player-availability.cjs'),fixture=require('../data/advantage-schedule-usports.json').find(g=>g.id===game),prior=require('../data/forecasts-usports.json').predictions.find(p=>p.gameId===game&&p.available);
+        normalized.availabilityForecast=availability.publicForecast(availability.evaluate(prior,fixture,normalized),fixture);
         let archiveSaved=false;try{await require('../internal/live-history.cjs').capture(game,normalized,lr.json);archiveSaved=true}catch(e){console.warn('Live archive unavailable',e.name||'StorageError')}
         return send(res,200,{ok:true,archiveSaved,game,page:source.page,visitor:boot.visitor,home:boot.home,identity,upstreamStatus:lr.status,cadenceSeconds:10,sourcePage:source.page,bootstrapStatus:boot.status,credentialMode:c.kind,data:normalized});
       }

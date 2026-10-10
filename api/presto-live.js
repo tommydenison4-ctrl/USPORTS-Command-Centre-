@@ -215,7 +215,10 @@ function latestScoringScorePair(data){
   for(let i=rows.length-1;i>=0;i--){
     const r=rows[i]||{};
     const away=numericScore(r.vscore), home=numericScore(r.hscore);
-    if(away!=null && home!=null) return {away,home,index:i,source:'latest-scoring-event'};
+    if(away!=null && home!=null){
+      let previous={away:0,home:0};for(let j=i-1;j>=0;j--){const a=numericScore(rows[j]?.vscore),h=numericScore(rows[j]?.hscore);if(a!=null&&h!=null){previous={away:a,home:h};break;}}
+      return {away,home,index:i,row:r,previous,source:'latest-scoring-event'};
+    }
   }
   return {away:null,home:null,index:null,source:''};
 }
@@ -286,7 +289,7 @@ function scoringDelta(desc=''){
   if(/FIELD GOAL/.test(t) && /GOOD|IS GOOD/.test(t) && !/NO GOOD|MISS/.test(t)) return 3;
   if(/SAFETY/.test(t)) return 2;
   if(/ROUGE|SINGLE POINT/.test(t)) return 1;
-  if(/CONVERT|CONVERSION|EXTRA POINT|\bPAT\b|(?:KICK|PASS|RUSH) ATTEMPT/.test(t) && /GOOD|SUCCESS/.test(t) && !/NO GOOD|MISS|FAIL|BLOCK|NO[ -]PLAY|NULLIFIED|REVERSED/.test(t)) return /TWO|2-POINT|2 POINT/.test(t)?2:1;
+  if(/CONVERT|CONVERSION|EXTRA POINT|\bPAT\b|(?:KICK|PASS|RUSH) ATTEMPT/.test(t) && /GOOD|SUCCESS/.test(t) && !/NO GOOD|MISS|FAIL|BLOCK|NO[ -]PLAY|NULLIFIED|REVERSED/.test(t)) return /TWO|2-POINT|2 POINT|(?:PASS|RUSH) ATTEMPT/.test(t)?2:1;
   return 0;
 }
 function scoreFallbackFromPlays(plays,source){
@@ -299,7 +302,7 @@ function scoreFallbackFromPlays(plays,source){
   }
   return seenAny?{away,home}:{away:null,home:null};
 }
-function reconcileConversionScore(away,home,playPair,fallback,plays,source){
+function reconcileConversionScore(away,home,playPair,fallback,plays,source,latestScore=null){
   if(away==null||home==null)return {away,home,adjusted:false};
   // Only bridge a recorded successful try after the newest touchdown. Never
   // infer a point merely because a touchdown occurred or a kick was attempted.
@@ -311,6 +314,17 @@ function reconcileConversionScore(away,home,playPair,fallback,plays,source){
     if(candidate?.away==null||candidate?.home==null)continue;
     if((side==='away'&&candidate.away===away+points&&candidate.home===home)||(side==='home'&&candidate.home===home+points&&candidate.away===away))return {...candidate,adjusted:true};
   }
+  // A scoring-summary touchdown row can remain at +6 while the published
+  // conversion is already in play-by-play. Match both to the same clock/period
+  // and prove that the summary has not already included the try.
+  const row=latestScore?.row,prior=latestScore?.previous;
+  const rowClock=String(row?.clock??row?.time??row?.gameclock??'').match(/\d{1,2}:\d{2}/)?.[0];
+  const rowQuarter=String(row?.qtr??row?.quarter??row?.period??row?.q??'').match(/\d+/)?.[0];
+  const tryQuarter=String(scoring.q||'').match(/\d+/)?.[0];
+  const touchdown=(plays||[]).find(p=>/TOUCHDOWN/i.test(p.description)&&! /NO[ -]PLAY|REVERSED|OVERTURNED/i.test(p.description)&&p.clock===scoring.clock&&p.q===scoring.q&&scoringTeamCode(p.possession)===who);
+  if(rowClock&&rowClock===scoring.clock&&(!rowQuarter||rowQuarter===tryQuarter)&&touchdown&&prior&&
+    latestScore.away===away&&latestScore.home===home&&
+    ((side==='home'&&home-prior.home===6&&away===prior.away)||(side==='away'&&away-prior.away===6&&home===prior.home)))return {away:away+(side==='away'?points:0),home:home+(side==='home'?points:0),adjusted:true};
   return {away,home,adjusted:false};
 }
 function flattenDrives(data){ const out=[]; walk(data?.drives,(o)=>{ if(Array.isArray(o))return; const plays=num(o.plays??o.playCount??o.numplays),yards=num(o.yards??o.yds??o.netyards),team=text(o.team??o.teamId??o.team_id??o.id),result=text(o.result??o.end??o.summary??o.outcome),time=text(o.time??o.elapsed??o.top); if(plays!=null||yards!=null||result||time)out.push({team,plays,yards,result,time}); }); return out.slice(-24).reverse(); }
@@ -430,7 +444,7 @@ function normalize(data,source){
       else {if(away==null)away=fb.away;if(home==null)home=fb.home;scoreSource='scoring-plays';}
     }
   }
-  const conversion=reconcileConversionScore(away,home,playPair,fb,plays,source);
+  const conversion=reconcileConversionScore(away,home,playPair,fb,plays,source,latestScore);
   if(conversion.adjusted){away=conversion.away;home=conversion.home;scoreSource+=' + verified-conversion';}
   const situation=currentSituationFromLatestPlay(plays,drives);
   return {

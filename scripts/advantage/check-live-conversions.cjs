@@ -16,3 +16,12 @@ result=ctx.reconcileConversionScore(0,6,{away:0,home:8},{away:0,home:8},[play('T
 console.log('PASS: successful one/two-point tries bridge delayed scoring summaries once; missed, blocked, reversed and unrelated score changes are rejected');
 
 assert.equal(ctx.reconcileConversionScore(6,0,{away:7,home:0},{},[play('Kick attempt good','WSR')],{awayId:'WIN',homeId:'QUE'}).away,7);
+
+const queenTry={description:'Jayden Gurzi-MacDonald rush attempt good, clock 10:34.',q:'4',clock:'10:34',possession:'QUE'},queenTD={description:'Ashton St.Germain rush for 2 yards to the WSR00, TOUCHDOWN, clock 10:34.',q:'4',clock:'10:34',possession:'QUE'},summary={away:25,home:20,row:{time:'10:34',qtr:'4'},previous:{away:25,home:14}};
+assert.equal(ctx.scoringDelta(queenTry.description),2);
+assert.equal(ctx.scoringDelta('Player pass attempt good, clock 10:34.'),2);
+result=ctx.reconcileConversionScore(25,20,{},{away:13,home:15},[queenTry,queenTD],source,summary);assert.equal(result.home,22);
+result=ctx.reconcileConversionScore(25,22,{},{away:13,home:15},[queenTry,queenTD],source,{...summary,home:22});assert.equal(result.home,22);assert.equal(result.adjusted,false);
+result=ctx.reconcileConversionScore(25,20,{},{},[queenTry,queenTD],source,{...summary,row:{time:'14:47',qtr:'4'}});assert.equal(result.home,20);
+result=ctx.reconcileConversionScore(25,20,{},{},[queenTry,queenTD],source,{...summary,row:{time:'10:34',qtr:'3'}});assert.equal(result.home,20);
+console.log('PASS: actual Queen’s rush conversion adds two to the matching touchdown summary even when older play history is truncated; updated/mismatched summaries never add twice');

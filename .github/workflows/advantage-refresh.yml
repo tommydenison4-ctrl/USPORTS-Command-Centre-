@@ -1,5 +1,8 @@
 name: Refresh Advantage model data
 on:
+  push:
+    paths:
+      - '.github/workflows/advantage-refresh.yml'
   workflow_dispatch:
   schedule:
     - cron: '7,22,37,52 * * * *'

@@ -341,6 +341,7 @@
   }
   function completedToBox(id,snapshot){
     const g=game(id);
+    if(!validIdentity(g,snapshot))snapshot=null;
     if(!g||!(g.status==='final'||snapshot?.status?.complete===true||/^(?:FINAL|COMPLETE|COMPLETED)$/i.test(String(snapshot?.status?.period||'').trim())))return false;
     clearInterval(L.timer);
     if(g.status!=='final'&&snapshot?.status?.complete===true&&typeof window.archiveVerifiedGameFinalV53==='function'){
@@ -356,7 +357,7 @@
   }
   async function tick(){if(L.inflight||!L.selected||document.visibilityState==='hidden'||location.hash!=='#live='+L.selected||!document.querySelector('.v102-live'))return;const selected=L.selected;if(completedToBox(selected,L.snap))return;L.inflight=true;try{const d=await fetchSnap();if(selected!==L.selected||location.hash!=='#live='+selected)return;if(completedToBox(selected,d))return;if(d){patch()}else{if(now()-L.lastDiscover>8000)discover(true);}pollNational()}finally{L.inflight=false}}
   function startTimer(){clearInterval(L.timer);L.timer=setInterval(tick,4000)}
-  function open(id,push=true){const g=game(id);if(!g)return;if(completedToBox(id,L.snap))return;const same=L.selected===id&&document.querySelector('.v102-live');if(same){if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);tick();startTimer();return}L.selected=id;L.source=readSession(sourceKey(id));L.snap=readSession(snapKey(id));if(!validIdentity(g,L.snap))L.snap=null;L.rendered=false;LIVE_STORE.selected=id;if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);render();tick();pollNational(true);startTimer()}
+  function open(id,push=true){const g=game(id);if(!g)return;if(g.status==='final'){if(push)history.pushState(null,'','#game='+encodeURIComponent(id));showGame(id);return}if(completedToBox(id,L.snap))return;const same=L.selected===id&&document.querySelector('.v102-live');if(same){if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);tick();startTimer();return}L.selected=id;L.source=readSession(sourceKey(id));L.snap=readSession(snapKey(id));if(!validIdentity(g,L.snap))L.snap=null;L.rendered=false;LIVE_STORE.selected=id;if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);render();tick();pollNational(true);startTimer()}
   L.scoreboardHtml=()=>rail('').replace('id="v102-national-rail"','id="canu-top-scores" aria-label="National football scoreboard"');
   let topBusy=false;
   L.refreshScoreboard=async()=>{

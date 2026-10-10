@@ -15,7 +15,7 @@
   else if(/\bsafety\b/.test(s)){label='SAFETY';kind='score';}
   else if(/sack/.test(s)){label='SACK';kind='play';}
   else if(!/penalty|punt|kick|return/.test(s)&&y!==null&&((/pass|complete/.test(s)&&y>=20)||(/rush|run/.test(s)&&y>=15))){label='EXPLOSIVE PLAY';kind='explosive';}
-  else if(/first down|1st down/.test(s)||p?.firstDown===true||(!/penalty|incomplete|kick|punt/.test(s)&&/rush|run|pass/.test(s)&&y!==null&&Number(p?.start?.distance)>0&&y>=Number(p.start.distance))){label='FIRST DOWN';kind='firstdown';}
+  else if(/first down|1st down/.test(s)||p?.firstDown===true||(!/penalty|incomplete|kick|punt/.test(s)&&/rush|run|pass/.test(s)&&y!==null&&Number(p?.start?.distance??p?.distance)>0&&y>=Number(p?.start?.distance??p?.distance))){label='FIRST DOWN';kind='firstdown';}
   return label?{label,kind,text,yards:y}:null;
  }
  const states=new WeakMap();

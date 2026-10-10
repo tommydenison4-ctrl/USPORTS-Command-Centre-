@@ -9,7 +9,7 @@
   const game=id=>(GAMES||[]).find(g=>g.id===id);
   const team=s=>TEAM?.[s]||{};
   const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/saint/g,'st').replace(/[^a-z0-9]+/g,' ').trim();
-  const aliases=slug=>{const t=team(slug);return [slug,t.abbr,t.short,t.name,...(slug==='stfx'?['St. Francis Xavier','St. Francis Xavier X-Men']:[]),...(slug==='mount-allison'?['Mt. Allison']:[])].map(norm).filter(Boolean)};
+  const aliases=slug=>{const t=team(slug);return [slug,t.abbr,t.short,t.name,...(slug==='windsor'?['WSR']:[]),...(slug==='laurier'?['WLU']:[]),...(slug==='stfx'?['St. Francis Xavier','St. Francis Xavier X-Men']:[]),...(slug==='mount-allison'?['Mt. Allison']:[])].map(norm).filter(Boolean)};
   const tm=(slug,label)=>{const q=norm(label);return q&&aliases(slug).some(v=>q===v)};
   function sourceKey(id){return 'usports:v115:source:'+id} function snapKey(id){return 'usports:v116:snap:'+id} function scrollKey(id){return 'usports:v104:scroll:'+id}
   function readSession(k){for(const st of [localStorage,sessionStorage]){try{const raw=st.getItem(k);if(raw)return JSON.parse(raw)}catch{}}return null} function saveSession(k,v){for(const st of [localStorage,sessionStorage]){try{st.setItem(k,JSON.stringify(v))}catch{}}}
@@ -49,13 +49,13 @@
     if(!d.situation&&!d.plays)return;
     const prev=liveEvents.get(g.id),pos=possSlug(g,d),m=String(d.situation?.spot||'').replace(/[^a-z0-9]/gi,'').match(/^([a-z]+)(\d+)$/i);
     const opponent=pos===g.away?g.home:pos===g.home?g.away:'';
-    const red=!!opponent&&!!m&&aliases(opponent).some(v=>v.replace(/ /g,'')===norm(m[1]).replace(/ /g,''))&&Number(m[2])<=20;
+    const red=!!opponent&&!!m&&feedAliases(g,d,opponent===g.away?'away':'home').some(v=>v.replace(/ /g,'')===norm(m[1]).replace(/ /g,''))&&Number(m[2])<=20;
     const key=JSON.stringify(d.plays?.[0]||{}),changed=!prev||prev.key!==key||prev.away!==Number(d.game?.awayScore)||prev.home!==Number(d.game?.homeScore);
     let label=changed?liveEvent(prev,d,red):prev.label;
     if(!changed&&prev.until<Date.now())label=red?'RED ZONE':'';
     liveEvents.set(g.id,{away:Number(d.game?.awayScore),home:Number(d.game?.homeScore),pos:d.situation?.possession,key,label,until:changed?Date.now()+15000:prev.until});
   }
-  function setLiveState(id,d){const g=game(id);if(!validIdentity(g,d))return;d=finalSnapshot(g,d);if(Object.prototype.hasOwnProperty.call(d,'availabilityForecast')){window.US_LIVE_PLAYER_AVAILABILITY??={};if(d.availabilityForecast&&!isFinal(g,d))window.US_LIVE_PLAYER_AVAILABILITY[id]=d.availabilityForecast;else delete window.US_LIVE_PLAYER_AVAILABILITY[id];}if(Array.isArray(d.plays)||Array.isArray(d.playerStats))saveSession(snapKey(id),d);recordEvent(g,d);const st=LIVE_STORE.games[id]||(LIVE_STORE.games[id]={id,away:g.away,home:g.home});st._realLive=true;st._feedIdentity=d.identity;if(d?.game?.awayScore!=null)st.as=Number(d.game.awayScore);if(d?.game?.homeScore!=null)st.hs=Number(d.game.homeScore);st.q=d?.status?.period||st.q||'LIVE';if(/final/i.test(st.q))window.USFinalScores?.accept?.(g,{identity:d.identity,final:true,awayScore:st.as,homeScore:st.hs});st.clock=isFinal(g,d)?'':d?.status?.clock||st.clock||'';st.pos=d?.situation?.possession||st.pos||'';if(d.situation){st.down=d.situation.down??'';st.distance=d.situation.distance??null;st.spot=d.situation.spot||'';}if(isFinal(g,d)){st.pos='';st.down='';st.distance=null;st.spot=''}}
+  function setLiveState(id,d){const g=game(id);if(!validIdentity(g,d))return;d=finalSnapshot(g,d);if(Object.prototype.hasOwnProperty.call(d,'availabilityForecast')){window.US_LIVE_PLAYER_AVAILABILITY??={};if(d.availabilityForecast&&!isFinal(g,d))window.US_LIVE_PLAYER_AVAILABILITY[id]=d.availabilityForecast;else delete window.US_LIVE_PLAYER_AVAILABILITY[id];}if(Array.isArray(d.plays)||Array.isArray(d.playerStats))saveSession(snapKey(id),d);recordEvent(g,d);const st=LIVE_STORE.games[id]||(LIVE_STORE.games[id]={id,away:g.away,home:g.home});st._realLive=true;st._feedIdentity=d.identity;if(d?.game?.awayScore!=null)st.as=Number(d.game.awayScore);if(d?.game?.homeScore!=null)st.hs=Number(d.game.homeScore);st.q=d?.status?.period||st.q||'LIVE';if(/final/i.test(st.q))window.USFinalScores?.accept?.(g,{identity:d.identity,final:true,awayScore:st.as,homeScore:st.hs});st.clock=isFinal(g,d)?'':d?.status?.clock||st.clock||'';st.pos=possSlug(g,d)||d?.situation?.possession||st.pos||'';if(d.situation){st.down=d.situation.down??'';st.distance=d.situation.distance??null;st.spot=d.situation.spot||'';}if(isFinal(g,d)){st.pos='';st.down='';st.distance=null;st.spot=''}}
   async function discover(force=false){
     if(!L.selected)return null;
     if(!force&&L.source&&now()-L.lastDiscover<30000)return L.source;
@@ -128,7 +128,17 @@
     const fallback=t?.localLogo||'';
     return src?`<img class="${cls}" src="${esc2(src)}" alt="${esc2(t?.short||t?.name||'Team')} logo" data-fallback="${esc2(fallback)}" onerror="if(this.dataset.fallback&&this.getAttribute('src')!==this.dataset.fallback){this.src=this.dataset.fallback;this.dataset.fallback=''}">`:'';
   }
-  function possSlug(g,d){const p=norm(d?.situation?.possession);if(!p)return'';if(aliases(g.away).some(v=>p===v||p.includes(v)||v.includes(p)))return g.away;if(aliases(g.home).some(v=>p===v||p.includes(v)||v.includes(p)))return g.home;return''}
+  function feedAliases(g,d,side){const values=[...aliases(g[side]),d?.game?.[side+'Id'],d?.game?.[side+'FeedId'],...(d?.playerStats||[]).filter(p=>p.side===side).map(p=>p.team)];return [...new Set(values.map(norm).filter(Boolean))];}
+  function possSlug(g,d){const p=norm(d?.situation?.possession);if(!p)return'';for(const side of ['away','home'])if(feedAliases(g,d,side).includes(p))return g[side];return'';}
+  function fieldPosition(g,d){
+    if(!g||isFinal(g,d))return null;
+    const spot=String(d?.situation?.spot||'').toUpperCase().replace(/\s+/g,''),m=spot.match(/^([A-Z]{2,8})(\d{1,3})$/);if(!m)return null;
+    const yd=Number(m[2]);if(!Number.isFinite(yd)||yd<0||yd>55)return null;
+    const side=['away','home'].find(side=>feedAliases(g,d,side).includes(norm(m[1])));if(!side)return null;
+    const coord=side==='away'?yd:110-yd,poss=possSlug(g,d),dir=poss===g.away?1:poss===g.home?-1:0,raw=d.situation?.distance,dist=raw==null||raw===''?null:Number(raw);
+    const first=dir&&Number.isFinite(dist)&&dist>0?Math.max(0,Math.min(110,coord+dir*dist)):null;
+    return {coord,first,poss,spot};
+  }
   function downText(d){const x=d?.situation||{};const n=Number(x.down);if(!n)return'';return `${n}${n===1?'st':n===2?'nd':n===3?'rd':'th'} & ${x.distance??''}`}
   function scoreboardWeek(date,anchor){
     const start=new Date(anchor+'T12:00:00');start.setDate(start.getDate()-(start.getDay()+6)%7);
@@ -234,14 +244,9 @@
     let badge=document.getElementById('canu-selected-event');
     if(!badge){badge=document.createElement('div');badge.id='canu-selected-event';badge.className='canu-live-event';badge.setAttribute('role','status');document.querySelector('.v102-score')?.appendChild(badge)}
     if(badge){const label=isFinal(g,L.snap)?'':liveEvents.get(g.id)?.label||'';badge.textContent=label;badge.className='canu-live-event event-'+eventKind(label);}
-    const m=spot.match(/^([A-Z]{2,8})(\d{1,3})$/); if(!m)return;
-    const code=m[1],yd=Math.max(0,Math.min(55,Number(m[2]))); if(!Number.isFinite(yd))return;
-    const awayCodes=[team(g.away).abbr,g.away,gm.awayId].map(v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,''));
-    const homeCodes=[team(g.home).abbr,g.home,gm.homeId].map(v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,''));
-    let coord=null;
-    if(awayCodes.some(v=>v&&code===v))coord=yd;
-    else if(homeCodes.some(v=>v&&code===v))coord=110-yd;
-    if(coord==null)return;
+    const position=fieldPosition(g,L.snap);
+    if(!position){for(const id of ['fieldBallV9','losLineV9','firstLineV9','v107-chain-los']){const node=document.getElementById(id);if(node)node.style.setProperty('display','none','important');}return;}
+    const coord=position.coord;
     const pct=c=>13.333+(Math.max(0,Math.min(110,c))/110)*73.334;
     const bx=pct(coord),ball=document.getElementById('fieldBallV9'),los=document.getElementById('losLineV9'),first=document.getElementById('firstLineV9');
     if(ball){
@@ -254,23 +259,21 @@
         trail.setAttribute('aria-label',/pass|complete/.test(text)?'Passing play trail':'Running play trail');
         if(!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)ball.animate?.([{left:prev.x+'%'},{left:bx+'%'}],{duration:900,easing:'ease-out'});
       }
-      fieldFrames.set(viewport,{id:g.id,poss,key,x:bx});ball.style.display='block';ball.style.left=bx+'%';
+      fieldFrames.set(viewport,{id:g.id,poss,key,x:bx});ball.style.setProperty('display','block','important');ball.style.left=bx+'%';
     }
-    if(los){los.style.display='block';los.style.left=bx+'%'}
+    if(los){los.style.setProperty('display','block','important');los.style.left=bx+'%'}
     const losStick=document.getElementById('v107-chain-los'),downBox=document.getElementById('v107-downbox');
     const dn=Number(x.down);if(downBox)downBox.textContent=Number.isFinite(dn)&&dn>0?String(dn):'•';
-    let dir=0;if(poss===g.away)dir=1;else if(poss===g.home)dir=-1;
-    const dist=Number(x.distance);
     let fpct=null;
     if(first){
-      if(dir&&Number.isFinite(dist)&&dist>0){fpct=pct(coord+dir*dist);first.style.display='block';first.style.left=fpct+'%'}
-      else first.style.display='none';
+      if(position.first!==null){fpct=pct(position.first);first.style.setProperty('display','block','important');first.style.left=fpct+'%'}
+      else first.style.setProperty('display','none','important');
     }
     if(losStick){
       // Keep the marker visually centered between the blue LOS and yellow line-to-gain.
       // If the line-to-gain is unavailable, hover directly above the LOS instead.
       const markerX=fpct==null?bx:(bx+fpct)/2;
-      losStick.style.display='block';
+      losStick.style.setProperty('display','block','important');
       losStick.style.left=markerX+'%';
     }
   }

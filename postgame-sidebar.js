@@ -20,7 +20,9 @@
   const venue=window.USGameVenues.resolve(g,info,venues);
   let body='<p class="postgame-venue-name">'+esc(venue.name)+'</p>'+(venue.city?'<p class="pregame-venue-city">'+esc(venue.city)+'</p>':'');
   if(venue.fallback)body+='<small class="venue-default-label">Home venue</small>';
-  if(venue.image)body='<img class="postgame-stadium-photo" src="'+safe(venue.image)+'" alt="'+esc(venue.name)+'" loading="lazy">'+body+'<small>Photo: '+esc(venue.credit)+' · <a href="'+safe(venue.licenseUrl)+'" target="_blank" rel="noopener">'+esc(venue.license)+'</a> · <a href="'+safe(venue.imageSource)+'" target="_blank" rel="noopener">source</a> · cropped</small>';
+  const photo=venue.image||('/api/stadium-image?name='+encodeURIComponent(venue.name)+'&source='+encodeURIComponent(venue.source||''));
+  body='<img class="postgame-stadium-photo" src="'+safe(photo)+'" alt="'+esc(venue.name)+' stadium" loading="lazy" onerror="this.style.display=\'none\'">'+body;
+  if(venue.imageSource)body+='<small>Photo: '+esc(venue.credit||'')+' · <a href="'+safe(venue.imageSource)+'" target="_blank" rel="noopener">Source and licence ↗</a></small>';
   if(venue.source)body+='<a class="postgame-venue-link" href="'+safe(venue.source)+'" target="_blank" rel="noopener">Stadium details &amp; photos ↗</a>';
   const att=Number(String(info.attendance||'').replace(/,/g,'')),kick=pre?g.time:info['kickoff time'];
   body+='<dl>'+(pre?'<div><dt>Date</dt><dd>'+esc(g.date)+'</dd></div>':'<div><dt>Attendance</dt><dd>'+(att>0?att.toLocaleString('en-CA'):'Not reported')+'</dd></div>')+(kick?'<div><dt>Kickoff</dt><dd>'+esc(kick)+'</dd></div>':'')+(info.weather?'<div><dt>Weather</dt><dd>'+esc(info.weather)+'</dd></div>':'')+'</dl>';
@@ -29,7 +31,7 @@
  }
  function mountPregame(g){
   const host=document.querySelector('.pregame-sidebar');if(!host||host.dataset.gameId===g.id)return;host.dataset.gameId=g.id;
-  host.insertAdjacentHTML('beforeend',facts(g,{}, {},g.source||'',true));news(host);
+  load().then(([infos,venues])=>{if(!host.isConnected||host.dataset.gameId!==g.id)return;host.insertAdjacentHTML('afterbegin',facts(g,infos[g.id]||{},venues,g.source||'',true));});news(host);
   const watch=window.USGameCardDetails?.watch(g)||'';if(watch)host.insertAdjacentHTML('afterbegin',card('Watch the game',watch,'pregame-watch-card'));
  }
 

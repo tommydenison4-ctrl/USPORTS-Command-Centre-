@@ -123,8 +123,9 @@
   }
   const SCOREBOARD_LOGOS={"montreal":"assets/team-logos/montreal.png","ottawa":"assets/team-logos/ottawa.gif","york":"assets/team-logos/york.png","waterloo":"assets/team-logos/waterloo.svg","laurier":"assets/team-logos/laurier.png","manitoba":"assets/team-logos/manitoba.webp","toronto":"assets/team-logos/toronto.gif","ubc":"assets/team-logos/ubc.gif","alberta":"assets/team-logos/alberta.png","concordia":"assets/team-logos/concordia.png","western":"assets/team-logos/western.png","mount-allison":"assets/team-logos/mount-allison.png","sherbrooke":"assets/team-logos/sherbrooke.png","laval":"assets/team-logos/laval.png","mcgill":"assets/team-logos/mcgill.jpg","stfx":"assets/team-logos/stfx.png","calgary":"assets/team-logos/calgary.png","queens":"assets/team-logos/queens.png","bishops":"assets/team-logos/bishops.png","windsor":"assets/team-logos/windsor.png","acadia":"assets/team-logos/acadia.png","saint-marys":"assets/team-logos/saint-marys.png","regina":"assets/team-logos/regina.jpg","saskatchewan":"assets/team-logos/saskatchewan.gif","carleton":"assets/team-logos/carleton.png","guelph":"assets/team-logos/guelph.png","mcmaster":"assets/team-logos/mcmaster.png"};
   function img(t,cls=''){
-    const src=SCOREBOARD_LOGOS[t?.slug]||(typeof REMOTE_TEAM_LOGOS!=='undefined'&&REMOTE_TEAM_LOGOS[t?.slug])||t?.logo;
-    const fallback=t?.logo||'';
+    // Use the same team crest across the top scoreboard and game pages.
+    const src=t?.logo||'';
+    const fallback=t?.localLogo||'';
     return src?`<img class="${cls}" src="${esc2(src)}" alt="${esc2(t?.short||t?.name||'Team')} logo" data-fallback="${esc2(fallback)}" onerror="if(this.dataset.fallback&&this.getAttribute('src')!==this.dataset.fallback){this.src=this.dataset.fallback;this.dataset.fallback=''}">`:'';
   }
   function possSlug(g,d){const p=norm(d?.situation?.possession);if(!p)return'';if(aliases(g.away).some(v=>p===v||p.includes(v)||v.includes(p)))return g.away;if(aliases(g.home).some(v=>p===v||p.includes(v)||v.includes(p)))return g.home;return''}

@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),fs=require('fs'),vm=require('vm'),final=require('../../final-scores');
+const g={id:'2026-10-10-western-carleton',date:'2026-10-10',away:'western',home:'carleton'};
+assert.equal(final.matches(g,{id:'2026-10-10-ottawa-york',final:true,awayScore:12,homeScore:19}),false);
+assert.equal(final.matches(g,{identity:{gameId:g.id,date:g.date,away:'ottawa',home:'york'}}),false);
+assert.equal(final.matches(g,{identity:{gameId:g.id,date:g.date,away:g.away,home:g.home}}),true);
+const src=fs.readFileSync('api/final-games.js','utf8'),ctx={require:p=>require('../../api/scoreboard')};vm.runInNewContext(src.slice(src.indexOf('function matches('),src.indexOf('function scalarLeaves')),ctx);
+for(const meta of [{visitor:'',home:''},{visitor:'Ottawa',home:'York'},{visitor:'Western',home:''}])assert.equal(ctx.matches(meta,'Western','Carleton'),false);
+assert.equal(ctx.matches({visitor:'Western Mustangs',home:'Carleton Ravens'},'western','carleton'),true);
+const store={};const storage={getItem:k=>store[k]||null,setItem:(k,v)=>store[k]=v,removeItem:k=>delete store[k]};const migration=fs.readFileSync('index.html','utf8').match(/<script id="score-identity-cache-repair">([\s\S]*?)<\/script>/)[1];
+store['usports-final-archive-v53']=JSON.stringify({[g.id]:{awayScore:12,homeScore:19},'2026-10-09-toronto-mcmaster':{awayScore:6,homeScore:26}});store['usports:verified-finals:2026:identity1']='bad';let routed='';vm.runInNewContext(migration,{localStorage:storage,sessionStorage:storage,location:{hash:'#game='+g.id},history:{replaceState:(a,b,c)=>routed=c}});
+assert(!JSON.parse(store['usports-final-archive-v53'])[g.id]);assert.equal(JSON.parse(store['usports-final-archive-v53'])['2026-10-09-toronto-mcmaster'].homeScore,26);assert.equal(routed,'#live='+g.id);assert(!store['usports:verified-finals:2026:identity1']);
+console.log('Wrong-game finals and missing identities rejected; affected saved scores cleared; legitimate historical final retained; stale final URL repaired.');

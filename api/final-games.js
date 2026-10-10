@@ -24,7 +24,12 @@ async function scanSchedule(scheduleUrl,date){
 function score(j){const rows=Array.isArray(j?.scores?.score)?j.scores.score:[];for(let i=rows.length-1;i>=0;i--){if(rows[i]?.vscore==null||rows[i]?.hscore==null||rows[i]?.vscore===''||rows[i]?.hscore==='')continue;const a=Number(rows[i]?.vscore),h=Number(rows[i]?.hscore);if(Number.isFinite(a)&&Number.isFinite(h))return {away:a,home:h};}return {away:null,home:null};}
 function quarters(j){const rows=Array.isArray(j?.scores?.score)?j.scores.score:[];const away=[0,0,0,0],home=[0,0,0,0];let pv=0,ph=0,seen=false;for(const r of rows){const q=Number(Array.isArray(r.qtr)?r.qtr[0]:r.qtr);const v=Number(r.vscore),h=Number(r.hscore);if(!(q>=1&&q<=4)||!Number.isFinite(v)||!Number.isFinite(h))continue;away[q-1]+=Math.max(0,v-pv);home[q-1]+=Math.max(0,h-ph);pv=v;ph=h;seen=true;}return seen?{away,home}:null;}
 function norm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/university|universite|ravens|warriors|marauders|gryphons|golden hawks|lancers|mustangs|lions|gaels|gee gees|gee-gees/g,'').replace(/[^a-z0-9]/g,'');}
-function matches(meta,away,home){if(!away&&!home)return true;const av=norm(meta.visitor),hm=norm(meta.home),a=norm(away),h=norm(home);return (!a||av.includes(a)||a.includes(av))&&(!h||hm.includes(h)||h.includes(hm));}
+function matches(meta,away,home){
+ if(!away&&!home)return !!meta.visitor&&!!meta.home;
+ const team=require('./scoreboard').team;
+ const av=team(meta.visitor),hm=team(meta.home),a=team(away),h=team(home);
+ return !!av&&!!hm&&(!away||!!a&&av===a)&&(!home||!!h&&hm===h);
+}
 function scalarLeaves(root,prefix='',out=[],depth=0){if(depth>5||root==null)return out;if(['string','number'].includes(typeof root)){out.push({path:prefix,value:root});return out;}if(Array.isArray(root))return out;if(typeof root!=='object')return out;for(const [k,v] of Object.entries(root)){if(/player|roster|individual/i.test(k))continue;scalarLeaves(v,prefix?`${prefix}.${k}`:k,out,depth+1);}return out;}
 function teamObjects(j){const arr=Array.isArray(j?.team)?j.team:(j?.team&&typeof j.team==='object'?Object.values(j.team):[]);return arr.filter(x=>x&&typeof x==='object');}
 function pickTeam(arr,side){return arr.find(o=>String(o.vh||o.side||o.homeAway||'').toUpperCase()===(side==='away'?'V':'H'))||arr[side==='away'?0:1]||null;}
@@ -108,7 +113,7 @@ async function legacyHandler(req,res){
  ];
  let pages=[];const scans=await Promise.allSettled(scheduleUrls.map(u=>scanSchedule(u,date)));for(const scan of scans)if(scan.status==='fulfilled')pages.push(...scan.value);pages=[...new Set(pages)].slice(0,30);
  const games=[];
- for(const page of pages){try{const b=await getText(page);if(!b.ok)continue;const record=require('./boxscore-details').parse(b.text,{id:date.slice(0,4)+'-'+date.slice(4,6)+'-'+date.slice(6)+'-'+norm(away)+'-'+norm(home),date:date.slice(0,4)+'-'+date.slice(4,6)+'-'+date.slice(6),away,home,source:page,final:metaFromHtml(b.text,page).final});if(record){games.push(require('./boxscore-details').response(record));if(away&&home)break;continue;}const meta=metaFromHtml(b.text,page);if(!meta.event||!meta.hash||!matches(meta,away,home))continue;const live=await fetchLive(meta,b.cookie);const j=live?.json;if(!j||j.error)continue;const sc=score(j);games.push({page,boxId:(page.match(/\/([^/]+)\.xml$/)||[])[1]||'',visitor:meta.visitor,home:meta.home,visitorLogo:meta.visitorLogo,homeLogo:meta.homeLogo,final:meta.final||String(j?.status?.complete||'').toUpperCase()==='Y',awayScore:sc.away,homeScore:sc.home,...(detail?{quarters:quarters(j),teamStats:compactStats(j),plays:plays(j),drives:drives(j),lastUpdated:String(j?.network?.lastUpdated||'')}:{})});if(detail&&away&&home)break;}catch{}}
+ for(const page of pages){try{const b=await getText(page);if(!b.ok)continue;const record=require('./boxscore-details').parse(b.text,{id:date.slice(0,4)+'-'+date.slice(4,6)+'-'+date.slice(6)+'-'+norm(away)+'-'+norm(home),date:date.slice(0,4)+'-'+date.slice(4,6)+'-'+date.slice(6),away,home,source:page,final:metaFromHtml(b.text,page).final});if(record){games.push(require('./boxscore-details').response(record));if(away&&home)break;continue;}const meta=metaFromHtml(b.text,page);if(!meta.event||!meta.hash||!matches(meta,away,home))continue;const live=await fetchLive(meta,b.cookie);const j=live?.json;if(!j||j.error)continue;if(!(meta.final||String(j?.status?.complete||'').toUpperCase()==='Y'))continue;const sc=score(j);games.push({page,boxId:(page.match(/\/([^/]+)\.xml$/)||[])[1]||'',visitor:meta.visitor,home:meta.home,visitorLogo:meta.visitorLogo,homeLogo:meta.homeLogo,final:meta.final||String(j?.status?.complete||'').toUpperCase()==='Y',awayScore:sc.away,homeScore:sc.home,...(detail?{quarters:quarters(j),teamStats:compactStats(j),plays:plays(j),drives:drives(j),lastUpdated:String(j?.network?.lastUpdated||'')}:{})});if(detail&&away&&home)break;}catch{}}
  if(!games.length){const fb=sidearmFallback(date,away,home,detail);if(fb)games.push(fb);}
  send(res,200,{ok:true,date,count:games.length,games});
 };
@@ -128,7 +133,7 @@ async function getFinalDetails(req){
   return {ok:true,date,games:[{...confirmed,page:source.href}],pendingStats:true};
  }
  if(confirmed)return {ok:true,date,games:[{...confirmed,page:confirmed.source}],pendingStats:true};
- let result;await legacyHandler(req,{setHeader(){},end(s){result=JSON.parse(s)}});return result||{ok:true,date,games:[]};
+ let result;await legacyHandler(req,{setHeader(){},end(s){result=JSON.parse(s)}});if(result)result.games=(result.games||[]).filter(g=>g.final===true&&matches({visitor:g.visitor||g.away||g.record?.away,home:g.home||g.record?.home},away,home));return result||{ok:true,date,games:[]};
 }
 module.exports=async function handler(req,res){
  if(req.method!=='GET'||String(req.query.detail)!=='1')return legacyHandler(req,res);

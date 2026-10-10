@@ -3126,6 +3126,7 @@ window.addEventListener('load',startPrestoV33);
     try{if(DISCOVERED_V46?.pollers?.[id]){clearInterval(DISCOVERED_V46.pollers[id]);delete DISCOVERED_V46.pollers[id]}if(DISCOVERED_V46?.byInternal)delete DISCOVERED_V46.byInternal[id];if(Array.isArray(DISCOVERED_V46?.last))DISCOVERED_V46.last=DISCOVERED_V46.last.filter(x=>internalIdForV46(x)!==id)}catch{}
     try{if(LIVE_STORE.games[id]){LIVE_STORE.games[id]._realLive=false;LIVE_STORE.games[id].event='FINAL';LIVE_STORE.games[id].q='FINAL';LIVE_STORE.games[id].clock='';LIVE_STORE.games[id].as=g.awayScore;LIVE_STORE.games[id].hs=g.homeScore}}catch{}
   }
+  window.archiveVerifiedGameFinalV53=archiveFinalV53;
   function restoreFinalsV53(){
     const all=savedFinalsV53();
     for(const [id,r] of Object.entries(all)){

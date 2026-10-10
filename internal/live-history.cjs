@@ -23,9 +23,14 @@ async function capture(id,d,raw){const g=game(id);if(!g||d?.identity?.gameId!==i
  const name=pt?`${pt.x}_${pt.p.toFixed(8)}_${pt.awayScore}_${pt.homeScore}_${pt.final?1:0}`:'feed';
  await write(prefix(id)+'snapshots/'+name+'_'+hash+'.json',{gameId:id,capturedAt:new Date().toISOString(),point:pt,...stable});return pt;
 }
-async function history(id){const g=game(id);if(!g)return null;const p=await baseline(id),points=p?[{...p,forecast:undefined}]:[];let cursor;
- do{const r=await blob().list({prefix:prefix(id)+'snapshots/',limit:1000,cursor});for(const b of r.blobs){const m=b.pathname.split('/').at(-1).match(/^(\d+)_([\d.]+)_(\d+)_(\d+)_([01])_/);if(m)points.push({x:Number(m[1]),p:Number(m[2]),awayScore:Number(m[3]),homeScore:Number(m[4]),final:m[5]==='1',capturedAt:b.uploadedAt,label:m[5]==='1'?'Final':`Q${Math.min(4,Math.floor(Number(m[1])/900)+1)} · ${Math.floor(Number(m[1])/60)} min elapsed`});}cursor=r.hasMore?r.cursor:undefined;}while(cursor);
+async function history(id){
+ const g=game(id);if(!g)return null;
+ let p;try{p=await baseline(id)}catch{const forecast=prior(id);if(forecast)p={gameId:id,p:forecast.home_win_prob,x:0,label:'Pregame',lockedAt:forecast.lockedAt||forecast.asOf,modelVersion:forecast.modelVersion};}
+ const entry=require('../data/completed-boxscores.json').find(r=>r.id===id);
+ if(p&&entry?.fullBoxscore){try{const record=require('../'+entry.fullBoxscore),reconstruction=require('./historical-game-events.cjs').reconstruct(record,p,point);if(reconstruction)return {gameId:id,away:g.away,home:g.home,...reconstruction,modelVersion:VERSION};}catch{}}
+ const points=p?[{...p,forecast:undefined}]:[];let cursor;
+ try{do{const r=await blob().list({prefix:prefix(id)+'snapshots/',limit:1000,cursor});for(const b of r.blobs){const m=b.pathname.split('/').at(-1).match(/^(\d+)_([\d.]+)_(\d+)_(\d+)_([01])_/);if(m)points.push({x:Number(m[1]),p:Number(m[2]),awayScore:Number(m[3]),homeScore:Number(m[4]),final:m[5]==='1',capturedAt:b.uploadedAt,label:m[5]==='1'?'Final':`Q${Math.min(4,Math.floor(Number(m[1])/900)+1)} · ${Math.floor(Number(m[1])/60)} min elapsed`});}cursor=r.hasMore?r.cursor:undefined;}while(cursor);}catch{}
  points.sort((a,b)=>a.x-b.x||String(a.capturedAt||'').localeCompare(String(b.capturedAt||'')));
- return {gameId:id,away:g.away,home:g.home,points,complete:points.some(p=>p.final),modelVersion:VERSION};
+ return {gameId:id,away:g.away,home:g.home,points,complete:points.some(p=>p.final),modelVersion:VERSION,reconstructionAvailable:false};
 }
 module.exports={game,prior,baseline,point,capture,history,VERSION};

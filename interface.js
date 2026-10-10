@@ -37,7 +37,7 @@
       const match=location.hash.match(/^#(?:game|live)=(.+)$/);
       if(match&&window.V102_LIVE?.renderHistory){
         let host=root.querySelector('#canu-probability-history');
-        if(!host){host=document.createElement('section');host.id='canu-probability-history';host.className='panel canu-history-chart';const score=root.querySelector('.v102-score');if(score)score.after(host);else root.querySelector(':scope > .footer')?.before(host)}
+        if(!host){host=document.createElement('section');host.id='canu-probability-history';host.className='panel canu-history-chart';const score=root.querySelector('.v102-score,.gameHero6,.boxHero');if(score)score.after(host);else root.querySelector(':scope > .footer')?.before(host)}
         if(host){host.dataset.gameId=match[1];V102_LIVE.renderHistory(host,match[1])}
       }
       const calendar=root.querySelector(':scope > .calendar'),hero=root.querySelector(':scope > .featured-game');if(calendar&&hero&&hero.nextElementSibling!==calendar)hero.after(calendar);

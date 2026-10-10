@@ -129,3 +129,25 @@ body{background:#080f17;color:#f1f5fa}
 .box-team-heading,.v102-phead{display:flex;align-items:center;gap:10px}
 .box-team-logo{width:34px;height:34px;object-fit:contain;flex:0 0 34px}
 @media(max-width:600px){.box-team-logo{width:28px;height:28px;flex-basis:28px}.box-team-heading{gap:8px}}
+
+/* Compact postgame statistics; team names remain readable on a phone. */
+.clean-ui .official-boxscore>.panel,.clean-ui .official-full-tables>.panel{padding:14px 16px;border-radius:10px;margin:10px 0}
+.clean-ui .official-boxscore .statsTable,.clean-ui .official-full-tables .statsTable{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.clean-ui .official-boxscore .statsTable th,.clean-ui .official-full-tables .statsTable th{font-size:10px;letter-spacing:.04em;color:#99acbf;background:#111d28;white-space:nowrap}
+.clean-ui .official-boxscore .statsTable th,.clean-ui .official-boxscore .statsTable td,.clean-ui .official-full-tables .statsTable th,.clean-ui .official-full-tables .statsTable td{padding:6px 10px;line-height:1.35;text-align:right;border-bottom:1px solid #24303d}
+.clean-ui .official-boxscore .statsTable tr>:first-child,.clean-ui .official-full-tables .statsTable tr>:first-child{text-align:left}
+.clean-ui .official-boxscore .statsTable tbody tr:nth-child(even),.clean-ui .official-full-tables .statsTable tbody tr:nth-child(even){background:#111923}
+.clean-ui .box-team-heading{font-size:15px;margin:0 0 10px;text-transform:capitalize;border-bottom:1px solid #2a3b4a;padding-bottom:9px}
+.clean-ui .official-published{margin-top:22px}
+.clean-ui .official-published h2{font-size:20px;margin:0 0 12px}
+.clean-ui .official-published>.panel{padding:0;margin:6px 0;border-radius:8px;overflow:hidden}
+.clean-ui .published-stat-table>summary{padding:10px 14px;font-size:12px;font-weight:800;cursor:pointer;background:#101a24}
+.clean-ui .published-stat-table[open]>summary{border-bottom:1px solid #2a3b4a}
+.clean-ui .published-stat-table .football-scroll{margin:0;padding:0 8px 8px}
+.game-home-recap{margin:14px 0!important;padding:16px!important;border-radius:12px!important}
+.game-home-recap header{display:flex;align-items:center;gap:10px}
+.game-home-recap small{color:#9bb0c4;font-size:10px;letter-spacing:.08em;font-weight:800}
+.game-home-recap h2{font-size:18px;margin:3px 0}
+.game-home-recap p,.canu-history-note{font-size:12px;line-height:1.6;color:#b7c7d6}
+.game-home-recap footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11px;color:#96abc0}
+@media(max-width:600px){.clean-ui .official-boxscore>.panel,.clean-ui .official-full-tables>.panel{padding:11px 10px}.clean-ui .official-boxscore .statsTable th,.clean-ui .official-boxscore .statsTable td,.clean-ui .official-full-tables .statsTable th,.clean-ui .official-full-tables .statsTable td{padding:5px 6px;font-size:11px}.clean-ui .official-boxscore .statsTable th,.clean-ui .official-full-tables .statsTable th{font-size:9px}.clean-ui .published-stat-table>summary{padding:9px 10px}.clean-ui .box-team-heading{font-size:14px}}

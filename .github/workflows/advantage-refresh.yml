@@ -2,7 +2,7 @@ name: Refresh Advantage model data
 on:
   workflow_dispatch:
   schedule:
-    - cron: '35 */2 * * *'
+    - cron: '7,22,37,52 * * * *'
 permissions:
   contents: write
 concurrency:

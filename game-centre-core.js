@@ -6,7 +6,7 @@ const REMOTE_TEAM_LOGOS={"carleton":"https://commons.wikimedia.org/wiki/Special:
 const IS_LOCAL_FILE = location.protocol === 'file:';
 TEAMS.forEach(t=>{
   const remote=REMOTE_TEAM_LOGOS[t.slug];
-  if(!remote || String(t.logo||'').startsWith('data:image')) return;
+  if(String(t.logo||'').startsWith('data:image')) return;
   t.remoteLogo=remote;
   t.proxyLogo='/api/team-logo?team='+encodeURIComponent(t.slug);
   const localExt={manitoba:'webp',mcgill:'jpg',ottawa:'gif',regina:'jpg',saskatchewan:'gif',toronto:'gif',ubc:'gif',waterloo:'svg'};

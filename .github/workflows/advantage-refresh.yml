@@ -6,7 +6,7 @@ on:
       - 'scripts/advantage/national.py'
   workflow_dispatch:
   schedule:
-    - cron: '7,22,37,52 * * * *'
+    - cron: '*/5 * * * *'
 permissions:
   contents: write
 concurrency:

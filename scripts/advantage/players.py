@@ -38,7 +38,7 @@ def presto_players(soup,g):
                 if name.lower()=='team':continue
                 rows.append(dict(name=name,yards=yards,touchdowns=td,interceptions=ints))
             expected=totals.get('passing' if category=='receiving' else category)
-            if rows and expected and team_yards==expected[side_index]:
+            if rows and (not expected or category=='receiving' or team_yards==expected[side_index]):
                 record['teams'].setdefault(g[side]['id'],{})[category]=rows
                 record['teamTotals'].setdefault(g[side]['id'],{})[category]=team_yards
     return record

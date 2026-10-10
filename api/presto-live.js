@@ -278,24 +278,40 @@ function extractSituation(data, plays){
   const p=(plays||[])[0]; if(p){ out.down??=p.down; out.distance??=p.distance; out.spot ||= p.spot||''; out.possession ||= p.possession||''; }
   return out;
 }
+function scoringTeamCode(value){const id=String(value||'').toUpperCase();return ({WSR:'WIN',WLU:'LAU'})[id]||id;}
 function scoringDelta(desc=''){
   const t=String(desc).toUpperCase();
+  if(/NO[ -]PLAY|NULLIFIED|OVERTURNED|REVERSED/.test(t))return 0;
   if(/TOUCHDOWN/.test(t)) return 6;
   if(/FIELD GOAL/.test(t) && /GOOD|IS GOOD/.test(t) && !/NO GOOD|MISS/.test(t)) return 3;
   if(/SAFETY/.test(t)) return 2;
   if(/ROUGE|SINGLE POINT/.test(t)) return 1;
-  if(/CONVERT|EXTRA POINT|PAT/.test(t) && /GOOD|SUCCESS/.test(t)) return /TWO|2-POINT|2 POINT/.test(t)?2:1;
+  if(/CONVERT|CONVERSION|EXTRA POINT|\bPAT\b|(?:KICK|PASS|RUSH) ATTEMPT/.test(t) && /GOOD|SUCCESS/.test(t) && !/NO GOOD|MISS|FAIL|BLOCK|NO[ -]PLAY|NULLIFIED|REVERSED/.test(t)) return /TWO|2-POINT|2 POINT/.test(t)?2:1;
   return 0;
 }
 function scoreFallbackFromPlays(plays,source){
   let away=0,home=0,seenAny=false;
   for(const p of [...(plays||[])].reverse()){
     const pts=scoringDelta(p.description); if(!pts) continue;
-    const who=String(p.possession||'').toUpperCase(); const d=String(p.description||'').toUpperCase();
-    if(who===source.awayId.toUpperCase()||d.includes('MCMASTER')||d.includes('MAC ')){ away+=pts; seenAny=true; }
-    else if(who===source.homeId.toUpperCase()||d.includes('GUELPH')||d.includes('GUE ')){ home+=pts; seenAny=true; }
+    const who=scoringTeamCode(p.possession); const d=String(p.description||'').toUpperCase();
+    if(who===scoringTeamCode(source.awayId)){ away+=pts; seenAny=true; }
+    else if(who===scoringTeamCode(source.homeId)){ home+=pts; seenAny=true; }
   }
   return seenAny?{away,home}:{away:null,home:null};
+}
+function reconcileConversionScore(away,home,playPair,fallback,plays,source){
+  if(away==null||home==null)return {away,home,adjusted:false};
+  // Only bridge a recorded successful try after the newest touchdown. Never
+  // infer a point merely because a touchdown occurred or a kick was attempted.
+  const scoring=(plays||[]).find(p=>scoringDelta(p.description)>0);
+  if(!scoring||!/CONVERT|CONVERSION|EXTRA POINT|\bPAT\b|(?:KICK|PASS|RUSH) ATTEMPT/i.test(scoring.description))return {away,home,adjusted:false};
+  const points=scoringDelta(scoring.description),who=scoringTeamCode(scoring.possession),side=who===scoringTeamCode(source.awayId)?'away':who===scoringTeamCode(source.homeId)?'home':null;
+  if(!side||points<1||points>2)return {away,home,adjusted:false};
+  for(const candidate of [playPair,fallback]){
+    if(candidate?.away==null||candidate?.home==null)continue;
+    if((side==='away'&&candidate.away===away+points&&candidate.home===home)||(side==='home'&&candidate.home===home+points&&candidate.away===away))return {...candidate,adjusted:true};
+  }
+  return {away,home,adjusted:false};
 }
 function flattenDrives(data){ const out=[]; walk(data?.drives,(o)=>{ if(Array.isArray(o))return; const plays=num(o.plays??o.playCount??o.numplays),yards=num(o.yards??o.yds??o.netyards),team=text(o.team??o.teamId??o.team_id??o.id),result=text(o.result??o.end??o.summary??o.outcome),time=text(o.time??o.elapsed??o.top); if(plays!=null||yards!=null||result||time)out.push({team,plays,yards,result,time}); }); return out.slice(-24).reverse(); }
 function teamAndPlayerStats(data){
@@ -414,6 +430,8 @@ function normalize(data,source){
       else {if(away==null)away=fb.away;if(home==null)home=fb.home;scoreSource='scoring-plays';}
     }
   }
+  const conversion=reconcileConversionScore(away,home,playPair,fb,plays,source);
+  if(conversion.adjusted){away=conversion.away;home=conversion.home;scoreSource+=' + verified-conversion';}
   const situation=currentSituationFromLatestPlay(plays,drives);
   return {
     source:data?.source||'PrestoSports',version:data?.version||null,platformId:data?.platformId||null,

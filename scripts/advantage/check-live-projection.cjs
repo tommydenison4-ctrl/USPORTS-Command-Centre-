@@ -1,0 +1,13 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+let prior={available:true,home_win_prob:.6,away_win_prob:.4,away_score:20,home_score:30};
+const g={id:'test',away:'a',home:'h',date:'2026-10-10'};
+const ctx={AWM_BUNDLED:true,AWM_DATA:{USPORTS:{}},AdvantageModel:{project:()=>prior,card:()=>'<forecast>',live:()=>null,esc:s=>s},TEAM:{a:{short:'Away'},h:{short:'Home'}},document:{readyState:'complete',visibilityState:'hidden',addEventListener(){}},setInterval(){}};ctx.window=ctx;vm.runInNewContext(fs.readFileSync('usports-awm.js','utf8'),ctx);
+const panel=(q,clock,a,h)=>ctx.US_AWM.panel(g,{game:{awayScore:a,homeScore:h},status:{period:q,clock}});
+assert.match(panel('Q1','15:00',0,0),/Away 20.0.*30.0 Home/);
+assert.match(panel('Q3','15:00',12,13),/Away 22.0.*28.0 Home/);
+assert.match(panel('Q4','00:00',24,27),/Away 24.0.*27.0 Home/);
+prior={...prior,away_score:26,home_score:24};assert.match(panel('Q3','15:00',12,13),/Away 25.0.*25.0 Home/,'availability-adjusted forecast drives projection');
+assert.doesNotMatch(panel('FINAL','00:00',24,27),/PROJECTED FINAL/);
+assert.match(panel('OT','',27,27),/PROJECTED FINAL.*Projection updating/);
+assert.doesNotMatch(panel('Q3','15:00',12,13),/fraction|3600|formula|remaining/i);
+console.log('PASS: kickoff baseline, actual score plus remaining-game projection, availability-adjusted inputs, no projections below actual scores, final and overtime guards');

@@ -55,9 +55,13 @@ window.US_AWM=(()=>{
      l={homeWin,final:false,mode:'Pregame prior + verified score and clock'};
     }
    }
+   const fraction=Number.isFinite(remaining)?Math.max(0,Math.min(1,remaining/3600)):null;
+   const projectedAway=Number.isFinite(l?.away)?l.away:fraction!==null&&Number.isFinite(p.away_score)?awayScore+p.away_score*fraction:null;
+   const projectedHome=Number.isFinite(l?.home)?l.home:fraction!==null&&Number.isFinite(p.home_score)?homeScore+p.home_score*fraction:null;
+   const projectedFinal=complete?'':`<div class="awm-live-projection"><small>PROJECTED FINAL</small>${Number.isFinite(projectedAway)&&Number.isFinite(projectedHome)?`<b>${A.esc(TEAM[g.away].short)} ${Math.max(awayScore,projectedAway).toFixed(1)} <span aria-hidden="true">–</span> ${Math.max(homeScore,projectedHome).toFixed(1)} ${A.esc(TEAM[g.home].short)}</b>`:'<span>Projection updating</span>'}</div>`;
    const liveCard=l
-    ?`<section class="awm-card awm-live-only"><small>ADVANTAGE · LIVE WIN PROBABILITY</small><b>${A.esc(TEAM[g.home].short)} ${(l.homeWin*100).toFixed(1)}% · ${A.esc(TEAM[g.away].short)} ${((1-l.homeWin)*100).toFixed(1)}%</b></section>`
-    :`<section class="awm-card awm-live-only"><small>ADVANTAGE · LIVE WIN PROBABILITY</small><b>Live probability updating</b></section>`;
+    ?`<section class="awm-card awm-live-only"><small>ADVANTAGE · LIVE WIN PROBABILITY</small><b>${A.esc(TEAM[g.home].short)} ${(l.homeWin*100).toFixed(1)}% · ${A.esc(TEAM[g.away].short)} ${((1-l.homeWin)*100).toFixed(1)}%</b>${projectedFinal}</section>`
+    :`<section class="awm-card awm-live-only"><small>ADVANTAGE · LIVE WIN PROBABILITY</small><b>Live probability updating</b>${projectedFinal}</section>`;
    // Once kickoff is verified, pregame scenarios and projected player leaders disappear.
    // Actual team/player statistics are rendered by the live GameCast directly below.
    return '<div id="us-awm-panel" data-game-state="live">'+liveCard+(p.availability?.length?'<p class="awm-availability">'+p.availability.map(r=>A.esc(r.player)+(r.status==='not-participating'?' not appearing in the live box score · '+A.esc(r.replacement)+' is taking the passing snaps.':' confirmed out.')).join(' ')+' Live forecast adjusted; availability is provisional.</p>':'')+'</div>';

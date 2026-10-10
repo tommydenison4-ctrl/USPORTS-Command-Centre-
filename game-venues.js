@@ -6,7 +6,7 @@
   const home=homes[g.home],stadium=String(g.venue||info.stadium||'').trim(),site=String(info.site||'').trim(),text=stadium||site;
   const candidates=[home,...Object.values(homes),...Object.values(media)].filter(Boolean);
   const match=candidates.find(v=>[v.name,...(v.aliases||[])].some(n=>norm(text).includes(norm(n))));
-  if(stadium||match)return {...match,name:stadium||match.name,city:match?.city||site,fallback:false,site};
+  if(stadium||match)return {...match,name:stadium||match.name,city:match?.city||site,fallback:false,site,source:match?.source||home?.source};
   const city=home?.city?.split(',')[0];
   if(home&&!g.neutral&&(!site||norm(site).includes(norm(city))))return {...home,fallback:true,site};
   return {name:site||'Venue to be confirmed',city:'',site,fallback:false};

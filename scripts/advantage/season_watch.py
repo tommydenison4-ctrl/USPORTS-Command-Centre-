@@ -108,7 +108,7 @@ def build(only=None):
             bundle[league]['eligiblePlayers']=rows
             bundle[league]['weights']={'production':.75,'teamWinningPercentage':.15,'teamRanking':.10}
             bundle[league]['lossPolicy']={'freeLosses':1,'reductionPerAdditionalLoss':.05,'minimumMultiplier':0}
-            bundle[league]['method']='Base score out of 100 = 75 × normalized offensive production + 15 × team winning percentage + 10 × normalized team strength rank. Rank is the same all-team Advantage ranking used by Vanier Cup Watch; rank normalization = (team count − rank) / (team count − 1). Final watch score = base score × max(0, 1 − 0.05 × max(0, team losses − 1)); the first loss is free and reductions add together. Offensive production per recorded appearance = passing yards / 25 + rushing and receiving yards / 10 + passing TD × 4 + rushing and receiving TD × 6 − interceptions × 2. Normalize against the highest production score among all eligible players; negative production is floored at zero. Team winning percentage = (wins + half of ties) / completed regular-season games. At least two recorded appearances. This weighting rewards winning teams; it does not exclude players on losing teams. Defense and special teams are not scored. Missing box scores may change the order.'
+            bundle[league]['method']='Watch ratings consider verified player performance, team results and team strength. Regular-season games only; exhibitions are excluded. At least two recorded appearances are required. Missing box scores may change the order.'
             records={team:dict(wins=0,losses=0,ties=0) for team in profiles}
             opponents={team:[] for team in profiles}
             for g in result['games']:

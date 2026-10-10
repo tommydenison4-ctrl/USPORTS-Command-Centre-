@@ -74,8 +74,13 @@ def discover(fetch,batch,season):
     previous_path=ROOT/'data/national-schedule-usports.json'
     previous=json.loads(previous_path.read_text()) if previous_path.exists() else {}
     previous_dates={date for date in (g.get('date') for g in previous.get('games',[])) if date}
+    # A recent date with no official response is temporarily unavailable, not
+    # a reason to block importing all other newly completed games.
     if missing-previous_dates:
-        raise ValueError('National composite missing unverified dates: '+', '.join(sorted(missing-previous_dates)))
+        print('Composite dates unavailable (will retry):',', '.join(sorted(missing-previous_dates)),flush=True)
+    # But protect existing coverage: never silently lose the previously indexed games.
+    if missing and not fetched:
+        raise ValueError('All composite dates failed; preserving previous verified schedule')
     games={};unresolved=[]
     for date,(rows,unknown) in sorted(fetched.items()):
         for g in rows:games[g['id']]=g

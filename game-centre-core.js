@@ -9,7 +9,8 @@ TEAMS.forEach(t=>{
   if(!remote || String(t.logo||'').startsWith('data:image')) return;
   t.remoteLogo=remote;
   t.proxyLogo='/api/team-logo?team='+encodeURIComponent(t.slug);
-  t.logo=IS_LOCAL_FILE ? remote : t.proxyLogo;
+  const localExt={manitoba:'webp',mcgill:'jpg',ottawa:'gif',regina:'jpg',saskatchewan:'gif',toronto:'gif',ubc:'gif',waterloo:'svg'};
+  t.logo='/assets/team-logos/'+t.slug+'.'+(localExt[t.slug]||'png');
 });
 function logoFallbackV76(img, slug){
   try{

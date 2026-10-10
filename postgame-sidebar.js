@@ -1,7 +1,7 @@
 /* Compact, sourced facts beside the postgame Summary. */
 (function(){
  const esc=x=>AdvantageModel.esc(String(x??''));
- const safe=x=>/^https:\/\//.test(x||'')?esc(x):'';
+ const safe=x=>(/^https:\/\//.test(x||'')||/^\/api\/stadium-image\?/.test(x||''))?esc(x):'';
  let resources;
  function load(){return resources||(resources=Promise.all(['/data/game-info-usports.json','/data/stadium-media.json'].map(u=>fetch(u).then(r=>r.ok?r.json():{}).catch(()=>({})))))}
  function card(title,body,cls){return '<section class="postgame-side-card '+(cls||'')+'"><h2>'+title+'</h2>'+body+'</section>'}

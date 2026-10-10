@@ -221,7 +221,8 @@ function latestScoringScorePair(data){
 }
 
 function parseDestinationSpot(desc=''){
-  const m=String(desc).match(/\bto the ([A-Z]{2,5})-?0?(\d{1,2})\b/i);
+  const m=[...String(desc).matchAll(/\bto the ([A-Z]{2,5})(-?\d{1,2})\b/gi)].at(-1);
+  if(m && Number(m[2])<0)return '';
   return m ? `${m[1].toUpperCase()}${Number(m[2])}` : '';
 }
 function parseGain(desc=''){
@@ -244,9 +245,19 @@ function currentSituationFromLatestPlay(plays,drives){
   let down=p.down, distance=p.distance, spot=parseDestinationSpot(p.description)||p.spot||'', possession=p.possession||text(drives?.[0]?.team);
   const t=String(p.description).toUpperCase();
   const gain=parseGain(p.description);
+  if(!/NO PLAY|OVERTURN|REVERSED/.test(t)){
+    if(/INTERCEPT|TURNOVER ON DOWNS|FUMBLE.*(?:LOST|RECOVERED BY)|PUNT|KICKOFF/.test(t)){
+      const next=text(drives?.[0]?.team);
+      // A retained fumble is not a change of possession.
+      if(!/FUMBLE/.test(t)||/LOST/.test(t)||(next&&next!==p.possession)){
+        return {down:1,distance:10,spot,possession:next||possession};
+      }
+    }
+    if(/TOUCHDOWN|FIELD GOAL.*GOOD/.test(t))return {down:null,distance:null,spot:'',possession};
+  } else return {down:p.down,distance:p.distance,spot:p.spot||'',possession};
   // For normal scrimmage snaps, Presto's down/distance fields describe the snap
   // that just occurred. Convert them to the NEXT live situation when possible.
-  if(Number.isFinite(Number(down)) && Number.isFinite(Number(distance)) && /RUSH|PASS|SACK/.test(t) && !/TOUCHDOWN|TURNOVER|INTERCEPT|FUMBLE LOST/.test(t)){
+  if(down!=null && distance!=null && Number.isFinite(Number(down)) && Number.isFinite(Number(distance)) && /RUSH|PASS|SACK/.test(t) && !/TOUCHDOWN|TURNOVER|INTERCEPT|FUMBLE LOST/.test(t)){
     down=Number(down); distance=Number(distance);
     if(gain!=null){
       const remain=Math.max(0,distance-gain);

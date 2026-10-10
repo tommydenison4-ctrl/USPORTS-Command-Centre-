@@ -9,6 +9,7 @@
   if(typeof previous==='function')window.shell=function(content,active){return previous.apply(this,arguments).replace(/<header class="topbar"[\s\S]*?<\/header>/,header(active||'schedule')).replace('class="shell"','class="shell clean-ui"')};
   function fold(node,label){if(!node||node.parentElement?.classList.contains('clean-disclosure'))return;const d=document.createElement('details');d.className='clean-disclosure';const s=document.createElement('summary');s.textContent=label;node.before(d);d.append(s,node)}
   function enhance(){
+    window.V102_LIVE?.patchSchedule?.();
     const copy=document.createTreeWalker(document.getElementById('app')||document.body,NodeFilter.SHOW_TEXT);let textNode;const changes=[];
     while(textNode=copy.nextNode()){if(/The forecast uses the shared Advantage model|Available imported box scores:/.test(textNode.nodeValue))changes.push(textNode)}
     changes.forEach(n=>{n.nodeValue=n.nodeValue.replace(/The forecast uses the shared Advantage model[\s\S]*/,'').replace(/Available imported box scores:[\s\S]*/,'')});

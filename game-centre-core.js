@@ -80,8 +80,8 @@ function route(){let h=location.hash.slice(1);if(h.startsWith('game='))showGame(
 window.addEventListener('hashchange',()=>{if(location.hash)route()});route();
 
 /* === V25 pregame rendering and live handoff === */
-const _showGameCastLiveV25 = showGameCast;
-const _applyRealtimeEventV25 = applyRealtimeEvent;
+let _showGameCastLiveV25 = typeof showGameCast==='function'?showGameCast:(id)=>window.V102_LIVE?.open(id);
+const _applyRealtimeEventV25 = typeof applyRealtimeEvent==='function'?applyRealtimeEvent:()=>{};
 function preRecord(slug,current){
   const out={w:0,l:0,pf:0,pa:0,gp:0};
   GAMES.filter(g=>g.status==='final' && (g.away===slug||g.home===slug) && (!current || g.date < current.date)).forEach(g=>{

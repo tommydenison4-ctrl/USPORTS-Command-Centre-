@@ -55,7 +55,7 @@
     if(!changed&&prev.until<Date.now())label=red?'RED ZONE':'';
     liveEvents.set(g.id,{away:Number(d.game?.awayScore),home:Number(d.game?.homeScore),pos:d.situation?.possession,key,label,until:changed?Date.now()+15000:prev.until});
   }
-  function setLiveState(id,d){const g=game(id);if(!validIdentity(g,d))return;d=finalSnapshot(g,d);recordEvent(g,d);const st=LIVE_STORE.games[id]||(LIVE_STORE.games[id]={id,away:g.away,home:g.home});st._realLive=true;st._feedIdentity=d.identity;if(d?.game?.awayScore!=null)st.as=Number(d.game.awayScore);if(d?.game?.homeScore!=null)st.hs=Number(d.game.homeScore);st.q=d?.status?.period||st.q||'LIVE';if(/final/i.test(st.q))window.USFinalScores?.accept?.(g,{final:true,awayScore:st.as,homeScore:st.hs});st.clock=isFinal(g,d)?'':d?.status?.clock||st.clock||'';st.pos=d?.situation?.possession||st.pos||'';st.down=d?.situation?.down||st.down||'';st.distance=d?.situation?.distance??st.distance;st.spot=d?.situation?.spot||st.spot||'';if(isFinal(g,d)){st.pos='';st.down='';st.distance=null;st.spot=''}}
+  function setLiveState(id,d){const g=game(id);if(!validIdentity(g,d))return;d=finalSnapshot(g,d);if(Array.isArray(d.plays)||Array.isArray(d.playerStats))saveSession(snapKey(id),d);recordEvent(g,d);const st=LIVE_STORE.games[id]||(LIVE_STORE.games[id]={id,away:g.away,home:g.home});st._realLive=true;st._feedIdentity=d.identity;if(d?.game?.awayScore!=null)st.as=Number(d.game.awayScore);if(d?.game?.homeScore!=null)st.hs=Number(d.game.homeScore);st.q=d?.status?.period||st.q||'LIVE';if(/final/i.test(st.q))window.USFinalScores?.accept?.(g,{final:true,awayScore:st.as,homeScore:st.hs});st.clock=isFinal(g,d)?'':d?.status?.clock||st.clock||'';st.pos=d?.situation?.possession||st.pos||'';if(d.situation){st.down=d.situation.down??'';st.distance=d.situation.distance??null;st.spot=d.situation.spot||'';}if(isFinal(g,d)){st.pos='';st.down='';st.distance=null;st.spot=''}}
   async function discover(force=false){
     if(!L.selected)return null;
     if(!force&&L.source&&now()-L.lastDiscover<30000)return L.source;
@@ -139,7 +139,7 @@
     const dates=(GAMES||[]).map(g=>g.date).sort(),d=game(id)?.date||(dates.includes(today())?today():dates.find(d=>d>today())||dates.at(-1)||today());
     return `<div class="v102-other" id="v102-national-rail">${(GAMES||[]).filter(x=>(id?x.date===d:scoreboardWeek(x.date,d))&&x.id!==id).map(x=>{
       const st=LIVE_STORE?.games?.[x.id],verified=st?._realLive&&validIdentity(x,{identity:st._feedIdentity}),final=x.status==='final'||/final|complete/i.test(verified?st.q:x.status||''),live=verified&&!final&&/Q?[1-4]|OT/i.test(st.q||''),pos=live?possSlug(x,{situation:{possession:st.pos}}):'',event=live?(liveEvents.get(x.id)?.label||''):'';
-      return `<button data-game-id="${esc2(x.id)}" class="canu-game-chip ${live?'is-live':''} ${event?'has-event event-'+eventKind(event):''} ${x.id===L.selected?'is-selected':''}" onclick="V102_LIVE.open('${x.id}')"><small><span>${esc2(x.conference||'')} · ${esc2(x.date.slice(5))}</span><span>${final?'FINAL':live?esc2([st.q,st.clock].filter(Boolean).join(' ')):esc2(x.time||'')}</span></small>${['away','home'].map(side=>`<span class="canu-chip-team"><span>${img(team(x[side]),'canu-chip-logo')}<b>${esc2(team(x[side]).short||team(x[side]).abbr||x[side])}</b>${pos===x[side]?'<span aria-label="Possession">🏈</span>':''}</span><strong class="canu-chip-score">${final?(side==='away'?x.awayScore:x.homeScore)??'—':verified?(side==='away'?st.as:st.hs)??'—':'—'}</strong></span>`).join('')}${event?`<em class="canu-live-event event-${eventKind(event)}">${esc2(event)}</em>`:''}</button>`;
+      return `<button data-game-id="${esc2(x.id)}" class="canu-game-chip ${live?'is-live':''} ${event?'has-event event-'+eventKind(event):''} ${x.id===L.selected?'is-selected':''}" onclick="V102_LIVE.open('${x.id}')"><small><span>${esc2(x.conference||'')} · ${esc2(x.date.slice(5))}</span><span>${final?'FINAL':live?esc2([st.q,st.clock].filter(Boolean).join(' ')):esc2(x.time||'')}</span></small>${['away','home'].map(side=>`<span class="canu-chip-team"><span>${img(team(x[side]),'canu-chip-logo')}<b>${esc2(team(x[side]).short||team(x[side]).abbr||x[side])}</b>${pos===x[side]?'<span aria-label="Possession">🏈</span>':''}</span><strong class="canu-chip-score">${final?(side==='away'?x.awayScore:x.homeScore)??'—':live?(side==='away'?st.as:st.hs)??'—':'—'}</strong></span>`).join('')}${event?`<em class="canu-live-event event-${eventKind(event)}">${esc2(event)}</em>`:''}</button>`;
     }).join('')}</div>`;
   }
   const chartCache=new Map();
@@ -356,13 +356,25 @@
   }
   async function tick(){if(L.inflight||!L.selected||document.visibilityState==='hidden'||location.hash!=='#live='+L.selected||!document.querySelector('.v102-live'))return;const selected=L.selected;if(completedToBox(selected,L.snap))return;L.inflight=true;try{const d=await fetchSnap();if(selected!==L.selected||location.hash!=='#live='+selected)return;if(completedToBox(selected,d))return;if(d){patch()}else{if(now()-L.lastDiscover>8000)discover(true);}pollNational()}finally{L.inflight=false}}
   function startTimer(){clearInterval(L.timer);L.timer=setInterval(tick,4000)}
-  function open(id,push=true){const g=game(id);if(!g)return;if(completedToBox(id,L.snap))return;const same=L.selected===id&&document.querySelector('.v102-live');if(same){if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);tick();startTimer();return}L.selected=id;L.source=readSession(sourceKey(id));L.snap=readSession(snapKey(id));L.rendered=false;LIVE_STORE.selected=id;if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);render();tick();pollNational(true);startTimer()}
+  function open(id,push=true){const g=game(id);if(!g)return;if(completedToBox(id,L.snap))return;const same=L.selected===id&&document.querySelector('.v102-live');if(same){if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);tick();startTimer();return}L.selected=id;L.source=readSession(sourceKey(id));L.snap=readSession(snapKey(id));if(!validIdentity(g,L.snap))L.snap=null;L.rendered=false;LIVE_STORE.selected=id;if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);render();tick();pollNational(true);startTimer()}
   L.scoreboardHtml=()=>rail('').replace('id="v102-national-rail"','id="canu-top-scores" aria-label="National football scoreboard"');
   let topBusy=false;
   L.refreshScoreboard=async()=>{
     if(topBusy||document.visibilityState==='hidden')return;
     topBusy=true;
     try{await Promise.allSettled((GAMES||[]).filter(g=>g.date===today()&&g.status!=='final').map(fetchNationalGame));window.dispatchEvent(new Event('canu-scores-updated'));}finally{topBusy=false}
+  };
+  L.isLive=id=>{const g=game(id),st=LIVE_STORE.games[id];return !!(st?._realLive&&validIdentity(g,{identity:st._feedIdentity})&&!isFinal(g,{status:{period:st.q}})&&/^(?:Q?[1-4]|OT)/i.test(st.q||''))};
+  L.patchSchedule=()=>{
+    for(const card of document.querySelectorAll('.gameCard[data-game-id]')){
+      const id=card.dataset.gameId;if(!L.isLive(id))continue;
+      const st=LIVE_STORE.games[id],rows=card.querySelectorAll('.teamRow');
+      rows.forEach((row,i)=>{const score=row.querySelector('.score,.at'),value=String((i===0?st.as:st.hs)??'—');if(score){score.classList.remove('at');score.classList.add('score');if(score.textContent!==value)score.textContent=value}});
+      const status=card.querySelector('.gameStatus'),label=[st.q,st.clock].filter(Boolean).join(' ');
+      if(status){status.classList.add('live');if(status.textContent!==label)status.textContent=label}
+      card.querySelectorAll('.awm-card,.schedule-card-leaders').forEach(n=>n.remove());
+    }
+    const hub=document.getElementById('canu-live-hub');if(hub)htmlIfChanged(hub,rail(''));
   };
   L.open=open;L.tick=tick;L.discover=discover;
   const initialPlayerCategories=L.cat;
@@ -375,7 +387,7 @@
   L.view=(v)=>{const el=document.getElementById(sectionIds[v]);if(el?.style.display==='none')L.toggleSection(v);};
   // This is the only live renderer after V102. Earlier generic schedule/game functions stay intact.
   window.showGameCast=(id)=>open(id,true);
-  window.openLiveV32=()=>{const todayGames=(GAMES||[]).filter(g=>g.date===today()&&g.status!=='final');const html=`<div style="max-width:1180px;margin:auto;padding:18px"><h2>Live</h2><div class="v102-other">${todayGames.map(g=>`<button onclick="V102_LIVE.open('${g.id}')"><small><span>${esc2(g.conference||'')}</span><span>${esc2(g.time||'')}</span></small><b>${esc2(team(g.away).abbr||g.away)} · ${esc2(team(g.home).abbr||g.home)}</b></button>`).join('')}</div></div>`;document.getElementById('app').innerHTML=shell(html,'live')};
+  window.openLiveV32=()=>{document.getElementById('app').innerHTML=shell(`<div style="max-width:1180px;margin:auto;padding:18px"><h2>Live scores</h2><div id="canu-live-hub">${rail('')}</div></div>`,'live');L.refreshScoreboard();};
   const routeBefore=window.route;window.route=function(){const h=location.hash.slice(1);if(h==='live'){openLiveV32();return}if(h.startsWith('live=')){const id=h.slice(5);if(game(id)?.status==='final'){completedToBox(id,L.snap);return}if(L.selected===id&&document.querySelector('.v102-live')){tick();startTimer();return}open(id,false);return}return routeBefore?.()};
   window.addEventListener('hashchange',()=>window.route());
   window.addEventListener('scroll',()=>{if(document.visibilityState==='visible')L.lastUserScroll=Date.now()},{passive:true});

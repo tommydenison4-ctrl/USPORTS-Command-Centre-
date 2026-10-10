@@ -18,7 +18,7 @@
  }
  function decorate(){for(const card of document.querySelectorAll('.gameCard[data-game-id]')){
   const g=(typeof GAMES!=='undefined'?GAMES:[]).find(x=>x.id===card.dataset.gameId);if(!g)continue;
-  const final=g.status==='final',body=US_PlayerLeaders.compact(window.US_PLAYER_DATA,g,final,typeof BOX!=='undefined'?BOX[g.id]?.leaders:null);
+  const final=g.status==='final',body=window.V102_LIVE?.isLive(g.id)?'':US_PlayerLeaders.compact(window.US_PLAYER_DATA,g,final,typeof BOX!=='undefined'?BOX[g.id]?.leaders:null);
   const current=card.querySelector('.schedule-card-leaders');
   if(body){if(!current){const host=document.createElement('div');host.className='schedule-card-leaders';host.innerHTML=body;host._leaderBody=body;(card.querySelector('.gameAction')||card).insertAdjacentElement(card.querySelector('.gameAction')?'beforebegin':'beforeend',host)}else if(current._leaderBody!==body){current.innerHTML=body;current._leaderBody=body}}else current?.remove();
   // The final-score detail hydrator can also render leaders. Keep one consistent list.

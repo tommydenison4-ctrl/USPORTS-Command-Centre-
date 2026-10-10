@@ -1,0 +1,13 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const s=fs.readFileSync('api/presto-live.js','utf8'),ctx={text:v=>v==null?'':String(v)};
+vm.runInNewContext(s.slice(s.indexOf('function parseDestinationSpot'),s.indexOf('function extractSituation')),ctx);
+const derive=(description,down=2,distance=5,possession='WIN')=>ctx.currentSituationFromLatestPlay([{description,down,distance,possession,spot:'QUE20'}],[{team:'QUE'}]);
+let x=derive('Kareame Cotton pass intercepted by Koen Hubbard at the QUE00, Koen Hubbard return 20 yards to the QUE20, clock 09:36.');
+assert.equal(x.down,1);assert.equal(x.distance,10);assert.equal(x.possession,'QUE');assert.equal(x.spot,'QUE20');
+x=derive('Pass complete for 3 yards to the QUE17');assert.equal(x.down,3);assert.equal(x.distance,2);
+x=derive('Pass intercepted at the QUE00, NO PLAY');assert.equal(x.down,2);assert.equal(x.distance,5);
+x=derive('Rush for 3 yards',null,null);assert.equal(x.down,null);assert.equal(x.distance,null);
+x=derive('Pass complete for 20 yards TOUCHDOWN');assert.equal(x.down,null);assert.equal(x.distance,null);
+assert.equal(ctx.parseDestinationSpot('Punt to the QUE10, return to the QUE25'),'QUE25');
+assert.equal(ctx.parseDestinationSpot('return to the QUE-5'),'');
+console.log('Interception resets possession to first and ten; normal plays, reversals, unknown downs, touchdowns and return spots stay correct.');

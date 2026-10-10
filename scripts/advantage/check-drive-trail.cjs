@@ -1,0 +1,12 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const src=fs.readFileSync('live-gamecast.js','utf8'),g={id:'one',away:'windsor',home:'queens'},ctx={norm:s=>String(s||'').toLowerCase(),aliases:s=>s==='windsor'?['windsor','wsr','win']:['queens','que'],isFinal:(g,d)=>g.status==='final'||d?.status?.period==='FINAL'};
+vm.runInNewContext(src.slice(src.indexOf('  function feedAliases'),src.indexOf('  function downText')),ctx);
+const play=(description,possession='WSR')=>({description,possession,clock:description}),d={status:{period:'Q3'},situation:{possession:'WSR'},playerStats:[],drives:[{plays:8}],plays:[play('A rush for 11 yards to the QUE16'),play('B pass complete for 20 yards to the QUE27'),play('C rush for 4 yards to the QUE47'),play('Kickoff to the WSR20'),play('Old rush for 10 yards to the WSR40')]};
+const segments=ctx.driveTrail(g,d);assert.equal(segments.length,3);assert.equal(segments[0].kind,'run');assert.equal(segments[1].kind,'pass');assert.equal(segments[2].kind,'run');assert.equal(segments[1].end,83);assert.equal(segments[2].start,83);assert.equal(segments[2].end,94);
+assert.equal(ctx.driveTrail(g,{...d,plays:[play('Kickoff to the WSR20'),...d.plays]}).length,0);
+assert.equal(ctx.driveTrail(g,{...d,plays:[play('Pass intercepted'),...d.plays]}).length,0);
+assert.equal(ctx.driveTrail(g,{...d,plays:[play('Opponent rush for 10 yards to the QUE20','QUE'),...d.plays]}).length,0);
+assert.equal(ctx.driveTrail(g,{...d,plays:[play('A rush for 11 yards to the QUE16, NO PLAY'),...d.plays]}).length,3);
+assert.equal(ctx.driveTrail({...g,status:'final'},d).length,0);
+const loss=ctx.driveTrail(g,{...d,plays:[play('A rush for loss of 3 yards to the WSR40')]});assert.equal(loss[0].start,43);assert.equal(loss[0].end,40);
+console.log('PASS: complete current drive, mixed pass/run colours, connected endpoints, loss direction, duplicates/reversals and possession/kickoff/turnover/final resets');

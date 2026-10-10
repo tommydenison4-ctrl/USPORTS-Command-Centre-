@@ -1,6 +1,6 @@
 
 (()=>{
-  const graphicsStyle=document.createElement('style');graphicsStyle.textContent='.canu-live-event{display:block;color:#ff627b;font-size:11px;font-weight:900;font-style:normal;letter-spacing:.08em;margin:6px 0}.canu-live-event:empty{display:none}.v102-score{position:relative}#canu-selected-event{position:absolute;bottom:2px;left:0;right:0;text-align:center}.canu-ball-trail{position:absolute;top:50%;height:5px;background:#ffca56;border-radius:8px;pointer-events:none;z-index:5;box-shadow:0 0 8px #ffca56}.canu-ball-trail.pass{height:0;border-top:4px dashed #fff;background:none;box-shadow:none}';document.head.appendChild(graphicsStyle);
+  const graphicsStyle=document.createElement('style');graphicsStyle.textContent='.canu-live-event{display:block;color:#ff627b;font-size:11px;font-weight:900;font-style:normal;letter-spacing:.08em;margin:6px 0}.canu-live-event:empty{display:none}.v102-score{position:relative}#canu-selected-event{position:absolute;bottom:2px;left:0;right:0;text-align:center}.canu-drive-trail{position:absolute;inset:0;pointer-events:none;z-index:7}.canu-ball-trail{position:absolute;top:52%;height:5px;background:#000;border-radius:8px;pointer-events:none;z-index:5;box-shadow:0 0 0 1px rgba(255,255,255,.35)}.canu-ball-trail.pass{height:0;border-top:4px dashed #ff334b;background:none;box-shadow:0 1px 2px rgba(0,0,0,.5)}';document.head.appendChild(graphicsStyle);
   const L={selected:'',source:null,snap:null,cat:{away:'passing',home:'passing'},tab:'overview',pbp:false,inflight:false,timer:null,lastDiscover:0,rendered:false,lastUserScroll:0,scrollRAF:0};
   window.V102_LIVE=L;
   try{if('scrollRestoration' in history)history.scrollRestoration='auto'}catch{}
@@ -139,6 +139,29 @@
     const first=dir&&Number.isFinite(dist)&&dist>0?Math.max(0,Math.min(110,coord+dir*dist)):null;
     return {coord,first,poss,spot};
   }
+  function driveTrail(g,d){
+    const poss=possSlug(g,d);if(!poss||isFinal(g,d))return [];
+    const dir=poss===g.away?1:-1,out=[],seen=new Set(),limit=Number(d.drives?.[0]?.plays)||60;let snaps=0;
+    for(const p of d.plays||[]){
+      const text=String(p.description||''),key=[p.q,p.clock,text].join('|');if(seen.has(key))continue;seen.add(key);
+      if(/no[ -]play|overturned|reversed/i.test(text))continue;
+      // Boundaries stop history even if the same team starts the next drive.
+      if(/kickoff|punt|field goal|touchdown|intercept|turnover on downs|fumble.*lost/i.test(text))break;
+      if(!/rush|run|pass|sack/i.test(text)||/penalty/i.test(text))continue;
+      const playPoss=possSlug(g,{...d,situation:{possession:p.possession}});if(playPoss&&playPoss!==poss)break;
+      if(++snaps>limit)break;
+      let gain=null;const loss=text.match(/for loss of (\d+) yards?/i),yards=text.match(/for (-?\d+) yards?/i);
+      if(loss)gain=-Number(loss[1]);else if(yards)gain=Number(yards[1]);else if(/no gain|incomplete/i.test(text))gain=0;
+      if(gain===null||gain===0)continue;
+      const dest=[...text.matchAll(/\bto (?:the )?([A-Z]{2,8})(-?\d{1,2})\b/gi)].at(-1);let end=null,start=null;
+      if(dest){const position=fieldPosition(g,{...d,situation:{spot:dest[1]+dest[2],possession:poss}});if(position)end=position.coord;}
+      if(end!==null)start=end-dir*gain;
+      else{const position=fieldPosition(g,{...d,situation:{spot:p.spot,possession:poss}});if(position){start=position.coord;end=start+dir*gain;}}
+      if(start===null||end===null||start<0||start>110||end<0||end>110)continue;
+      out.push({key,start,end,kind:/pass|sack/i.test(text)?'pass':'run'});
+    }
+    return out.reverse();
+  }
   function downText(d){const x=d?.situation||{};const n=Number(x.down);if(!n)return'';return `${n}${n===1?'st':n===2?'nd':n===3?'rd':'th'} & ${x.distance??''}`}
   function scoreboardWeek(date,anchor){
     const start=new Date(anchor+'T12:00:00');start.setDate(start.getDate()-(start.getDay()+6)%7);
@@ -245,20 +268,17 @@
     if(!badge){badge=document.createElement('div');badge.id='canu-selected-event';badge.className='canu-live-event';badge.setAttribute('role','status');document.querySelector('.v102-score')?.appendChild(badge)}
     if(badge){const label=isFinal(g,L.snap)?'':liveEvents.get(g.id)?.label||'';badge.textContent=label;badge.className='canu-live-event event-'+eventKind(label);}
     const position=fieldPosition(g,L.snap);
-    if(!position){for(const id of ['fieldBallV9','losLineV9','firstLineV9','v107-chain-los']){const node=document.getElementById(id);if(node)node.style.setProperty('display','none','important');}return;}
+    if(!position){document.querySelector('.v102-field .canu-drive-trail')?.replaceChildren();for(const id of ['fieldBallV9','losLineV9','firstLineV9','v107-chain-los']){const node=document.getElementById(id);if(node)node.style.setProperty('display','none','important');}return;}
     const coord=position.coord;
     const pct=c=>13.333+(Math.max(0,Math.min(110,c))/110)*73.334;
     const bx=pct(coord),ball=document.getElementById('fieldBallV9'),los=document.getElementById('losLineV9'),first=document.getElementById('firstLineV9');
     if(ball){
       const viewport=ball.parentElement,prev=fieldFrames.get(viewport),play=L.snap.plays?.[0],key=JSON.stringify(play||{}),text=String(play?.description||'').toLowerCase();
-      let trail=viewport.querySelector('.canu-ball-trail');
-      if(!trail){trail=document.createElement('div');trail.className='canu-ball-trail';viewport.appendChild(trail)}
-      if(prev?.id!==g.id||prev?.poss!==poss||prev?.key!==key)trail.style.display='none';
-      if(!/final|complete/i.test(L.snap.status?.period||'')&&trailTransition(prev,{id:g.id,poss,key,x:bx},text)){
-        trail.style.display='block';trail.style.left=Math.min(prev.x,bx)+'%';trail.style.width=Math.abs(prev.x-bx)+'%';trail.classList.toggle('pass',/pass|complete/.test(text));
-        trail.setAttribute('aria-label',/pass|complete/.test(text)?'Passing play trail':'Running play trail');
-        if(!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)ball.animate?.([{left:prev.x+'%'},{left:bx+'%'}],{duration:900,easing:'ease-out'});
-      }
+      let trail=viewport.querySelector('.canu-drive-trail');
+      if(!trail){trail=document.createElement('div');trail.className='canu-drive-trail';viewport.appendChild(trail)}
+      const segments=driveTrail(g,L.snap);
+      htmlIfChanged(trail,segments.map(segment=>`<div class="canu-ball-trail ${segment.kind==='pass'?'pass':'run'}" aria-label="${segment.kind==='pass'?'Passing':'Running'} play trail" data-start="${segment.start}" data-end="${segment.end}" style="left:${Math.min(pct(segment.start),pct(segment.end))}%;width:${Math.abs(pct(segment.end)-pct(segment.start))}%"></div>`).join(''));
+      if(trailTransition(prev,{id:g.id,poss,key,x:bx},text)&&!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)ball.animate?.([{left:prev.x+'%'},{left:bx+'%'}],{duration:900,easing:'ease-out'});
       fieldFrames.set(viewport,{id:g.id,poss,key,x:bx});ball.style.setProperty('display','block','important');ball.style.left=bx+'%';
     }
     if(los){los.style.setProperty('display','block','important');los.style.left=bx+'%'}

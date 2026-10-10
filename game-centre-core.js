@@ -10,13 +10,21 @@ TEAMS.forEach(t=>{
   t.remoteLogo=remote;
   t.proxyLogo='/api/team-logo?team='+encodeURIComponent(t.slug);
   const localExt={manitoba:'webp',mcgill:'jpg',ottawa:'gif',regina:'jpg',saskatchewan:'gif',toronto:'gif',ubc:'gif',waterloo:'svg'};
-  t.logo='/assets/team-logos/'+t.slug+'.'+(localExt[t.slug]||'png');
+  t.localLogo='/assets/team-logos/'+t.slug+'.'+(localExt[t.slug]||'png');
+  // Primary athletics crests for teams whose cached local mark is a wordmark.
+  const primaryCrests={carleton:'https://content.sportslogos.net/logos/78/2392/full/2473_carleton_ravens-primary-2013.png',western:'https://www.uwo.ca/campusrec/img/Mustangs-CMYK.png'};
+  t.logo=primaryCrests[t.slug]||t.localLogo;
 });
 function logoFallbackV76(img, slug){
   try{
     const t=TEAMS.find(x=>x.slug===slug);
     if(!t) return;
     const current=img.getAttribute('src')||'';
+    if(t.localLogo && current!==t.localLogo){
+      img.onerror=()=>logoFallbackV76(img,slug);
+      img.src=t.localLogo;
+      return;
+    }
     if(!IS_LOCAL_FILE && t.remoteLogo && current!==t.remoteLogo){
       img.onerror=()=>logoFallbackV76(img,slug);
       img.src=t.remoteLogo;

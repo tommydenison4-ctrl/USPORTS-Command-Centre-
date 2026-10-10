@@ -1,5 +1,6 @@
 const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
 const src=fs.readFileSync('live-gamecast.js','utf8'),ctx={};vm.runInNewContext(src.match(/  function liveEvent\([\s\S]*?(?=  function recordEvent)/)[0],ctx);
+vm.runInNewContext(src.match(/  function eventKind[^\n]+/)[0],ctx);
 const data=(text,as=0,hs=0)=>({plays:[{description:text}],game:{awayScore:as,homeScore:hs},status:{period:'Q2'},situation:{possession:'home'}});
 assert.equal(ctx.liveEvent({away:0,home:0},data('Touchdown',7)),'SCORE UPDATE');
 assert.equal(ctx.liveEvent(null,data('Pass intercepted')),'TURNOVER');
@@ -30,3 +31,8 @@ assert.equal(ctx.scoreboardWeek('2026-10-12','2026-10-09'),false);
 console.log('Shared scoreboard includes the full current week, including tomorrow’s games');
 
 ctx.LIVE_STORE.games.two.q="PRE";assert.doesNotMatch(ctx.rail("one"),/aria-label="Possession"/,"Pregame feed must not imply an active live possession");
+
+ctx.LIVE_STORE.games.two.q='Q2';
+for(const [label,kind] of [['SCORE UPDATE','score'],['TURNOVER','turnover'],['RED ZONE','redzone']]){ctx.liveEvents.set('two',{label});assert.match(ctx.rail('one'),new RegExp('has-event event-'+kind));}
+ctx.GAMES[1].status='final';assert.doesNotMatch(ctx.rail('one'),/has-event|RED ZONE/);
+console.log('Scoreboard event colours distinguish scores, turnovers and red zone; finals clear alerts');

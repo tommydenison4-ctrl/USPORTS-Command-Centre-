@@ -11,9 +11,9 @@
   else if(/fumble/.test(s)){label='FUMBLE';kind='turnover';}
   else if(/turnover on downs/.test(s)){label='TURNOVER ON DOWNS';kind='turnover';}
   else if(/block(?:ed)?/.test(s)&&/kick|punt|field goal/.test(s)){label='BLOCKED KICK';kind='turnover';}
-  else if(/field goal/.test(s)){label=/no good|miss|wide|short/.test(s)?'MISSED FIELD GOAL':/good|made/.test(s)?'FIELD GOAL':'FIELD GOAL ATTEMPT';kind='score';}
+  else if(/field goal/.test(s)){label=/no good|miss|wide|short/.test(s)?'MISSED FIELD GOAL':/good|made/.test(s)?'FIELD GOAL':'FIELD GOAL ATTEMPT';kind=/no good|miss|wide|short/.test(s)?'play':/good|made/.test(s)?'score':'play';}
   else if(/\bsafety\b/.test(s)){label='SAFETY';kind='score';}
-  else if(/sack/.test(s)){label='SACK';kind='turnover';}
+  else if(/sack/.test(s)){label='SACK';kind='play';}
   else if(!/penalty|punt|kick|return/.test(s)&&y!==null&&((/pass|complete/.test(s)&&y>=20)||(/rush|run/.test(s)&&y>=15))){label='EXPLOSIVE PLAY';kind='explosive';}
   else if(/first down|1st down/.test(s)||p?.firstDown===true||(!/penalty|incomplete|kick|punt/.test(s)&&/rush|run|pass/.test(s)&&y!==null&&Number(p?.start?.distance)>0&&y>=Number(p.start.distance))){label='FIRST DOWN';kind='firstdown';}
   return label?{label,kind,text,yards:y}:null;
@@ -36,6 +36,6 @@
   }
   if(!st.active)next();
  }
- if(root.document){const style=document.createElement('style');style.textContent='.play-ribbon-host:empty{display:none}.play-ribbon-host{height:auto!important;overflow:visible!important}.play-event-ribbon{display:flex;flex-direction:column;gap:7px;padding:18px 22px;margin:12px 0;border:2px solid #f5c542;border-radius:12px;background:linear-gradient(110deg,#303019,#101b29);color:#fff;animation:playRibbonIn .25s ease-out}.play-event-ribbon b{font-size:24px;letter-spacing:.06em;color:#f5c542}.play-event-ribbon span{font-size:14px;line-height:1.5}.play-event-ribbon.turnover{border-color:#ff5268}.play-event-ribbon.turnover b{color:#ff7588}.play-event-ribbon.score{border-color:#52e7a0}.play-event-ribbon.score b{color:#52e7a0}@keyframes playRibbonIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){.play-event-ribbon{animation:none}}';document.head.appendChild(style);}
+ if(root.document){const style=document.createElement('style');style.textContent='.play-ribbon-host:empty{display:none}.play-ribbon-host{height:auto!important;overflow:visible!important}.play-event-ribbon{display:flex;flex-direction:column;gap:7px;padding:18px 22px;margin:12px 0;border:2px solid #f5c542;border-radius:12px;background:linear-gradient(110deg,#303019,#101b29);color:#fff;animation:playRibbonIn .25s ease-out}.play-event-ribbon b{font-size:24px;letter-spacing:.06em;color:#f5c542}.play-event-ribbon span{font-size:14px;line-height:1.5}.play-event-ribbon.turnover{border-color:#ffad49}.play-event-ribbon.turnover b{color:#ffad49}.play-event-ribbon.score{border-color:#52e7a0}.play-event-ribbon.score b{color:#52e7a0}@keyframes playRibbonIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){.play-event-ribbon{animation:none}}';document.head.appendChild(style);}
  root.PlayRibbons={classify,update};if(typeof module==='object')module.exports=root.PlayRibbons;
 })(typeof globalThis!=='undefined'?globalThis:this);

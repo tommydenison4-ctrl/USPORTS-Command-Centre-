@@ -89,7 +89,7 @@ body{background:#080f17;color:#f1f5fa}
 
 .canu-scoreboard-label{font-size:10px;font-weight:800;letter-spacing:.12em;color:#9aadc3;padding:0 4px 8px}
 
-.canu-scoreboard .canu-game-chip{flex-basis:190px;padding:9px 12px;min-height:100px;border-radius:8px}.canu-chip-team{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:5px 0}.canu-chip-team>span,.canu-chart-legend>span{display:flex;align-items:center;gap:6px}.canu-chip-logo{width:22px;height:22px;object-fit:contain;flex-shrink:0}.canu-chip-score{font-size:16px}.canu-game-chip.is-live{border-top:3px solid #35d797}.canu-game-chip.is-selected{box-shadow:inset 0 -3px #ed1238}.canu-game-chip.has-event{border-color:#ff627b;background:#291823}.canu-chart-legend{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:12px 0;font-weight:800}.canu-history-chart{margin:18px 0;padding:18px;background:#0b1b28;border:1px solid #294354;border-radius:12px}.canu-history-chart svg{width:100%;display:block}.canu-history-chart small{color:#9ab0c0}.canu-scoreboard .v102-other{scroll-snap-type:x proximity}.canu-game-chip{scroll-snap-align:start}
+.canu-scoreboard .canu-game-chip{flex-basis:190px;padding:9px 12px;min-height:100px;border-radius:8px}.canu-chip-team{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:5px 0}.canu-chip-team>span,.canu-chart-legend>span{display:flex;align-items:center;gap:6px}.canu-chip-logo{width:22px;height:22px;object-fit:contain;flex-shrink:0}.canu-chip-score{font-size:16px}.canu-game-chip.is-live{border-top:3px solid #35d797}.canu-game-chip.is-selected{box-shadow:inset 0 -3px #ed1238}.canu-game-chip.has-event{border-color:var(--event-color);background:var(--event-background)}.canu-chart-legend{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:12px 0;font-weight:800}.canu-history-chart{margin:18px 0;padding:18px;background:#0b1b28;border:1px solid #294354;border-radius:12px}.canu-history-chart svg{width:100%;display:block}.canu-history-chart small{color:#9ab0c0}.canu-scoreboard .v102-other{scroll-snap-type:x proximity}.canu-game-chip{scroll-snap-align:start}
 
 /* Keep all six standings columns inside the mobile viewport. */
 .clean-ui .us-conferences,.clean-ui .us-conferences>section,.clean-ui .us-table-scroll{min-width:0;max-width:100%}
@@ -120,3 +120,12 @@ body{background:#080f17;color:#f1f5fa}
 .podcast-segment-credit{font-size:12px;line-height:1.5;color:#a8bbce}.podcast-segment-credit a{color:#9cd5f5}
 .podcast-segment-replay{background:#172332;color:#eaf0f7;border:1px solid #334254;border-radius:8px;padding:10px 14px;cursor:pointer;font-weight:700}
 @media(max-width:500px){.game-podcast-reaction header img{width:44px;height:44px}.game-podcast-reaction header h2{font-size:18px}}
+
+/* Broadcast event colours shared by every scoreboard and selected game. */
+.event-score{--event-color:#52e7a0;--event-background:#102b22}
+.event-turnover{--event-color:#ffad49;--event-background:#302313}
+.event-redzone{--event-color:#ff5268;--event-background:#301821}
+.canu-live-event.event-score,.canu-live-event.event-turnover,.canu-live-event.event-redzone{color:var(--event-color)}
+.box-team-heading,.v102-phead{display:flex;align-items:center;gap:10px}
+.box-team-logo{width:34px;height:34px;object-fit:contain;flex:0 0 34px}
+@media(max-width:600px){.box-team-logo{width:28px;height:28px;flex-basis:28px}.box-team-heading{gap:8px}}

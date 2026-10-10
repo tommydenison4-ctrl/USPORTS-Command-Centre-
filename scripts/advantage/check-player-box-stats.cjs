@@ -1,2 +1,6 @@
 const assert=require('node:assert/strict'),stats=require('../../player-box-stats'),r=require('../../data/boxscores/2026-09-26-york-laurier.json'),schools=require('../../data/usports-teams.json');
 const qb=stats.enrich(r.teams.york.passing[0],'passing',r,'york',schools);assert.equal(qb.completions,11);assert.equal(qb.attempts,26);assert.equal(qb.yards,69);const rb=stats.enrich(r.teams.york.rushing[0],'rushing',r,'york',schools);assert.equal(rb.attempts,20);assert.equal(rb.yards,117);const wr=stats.enrich(r.teams.york.receiving[0],'receiving',r,'york',schools);assert.equal(wr.receptions,7);assert.equal(wr.targets,undefined);assert.equal(wr.fumbles,undefined);const html=stats.html(r,schools,s=>String(s));for(const label of ['CMP','ATT','CAR','TGT','REC','FUM'])assert.ok(html.includes('<th>'+label+'</th>'));console.log('York–Laurier completions, attempts, carries, receptions and missing target/fumble handling passed');
+
+const branded=stats.html(r,schools.map(t=>({...t,logo:'assets/'+t.slug+'.png'})),s=>String(s));
+for(const slug of ['york','laurier'])assert.ok(branded.includes('src="assets/'+slug+'.png"'),slug+' gets its own logo');
+console.log('Both teams retain their names and get logos in player-stat headings');

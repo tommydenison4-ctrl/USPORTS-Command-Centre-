@@ -11,3 +11,5 @@ assert.equal(E.reconstruct(record,{...prior,lockedAt:'2026-10-04'},H.point),null
 const panda=require('../../data/boxscores/2026-10-04-carleton-ottawa.json'),pp=H.prior(panda.id),pc=E.reconstruct(panda,{p:pp.home_win_prob,x:0},H.point);assert.equal(pc.coverage,'scoring-only');assert.equal(pc.points.find(p=>p.awayScore===24).x,2860,'Quarter totals corroborate the mislabeled Q4 scoring row');
 const broken=require('../../data/boxscores/2026-10-03-laurier-waterloo.json');assert.equal(E.reconstruct(broken,{p:.5,x:0},H.point),null,'Conflicting line score is not silently reconciled');
 console.log('PASS: verified scores, quarter boundaries, turnovers, nullified plays, missing data, forecast timing and scoring-only fallback');
+
+(async()=>{const live=await H.history(record.id);assert.equal(live.reconstructed,true);assert.equal(live.points.at(-1).awayScore,46);console.log('PASS: history endpoint loads the full published gamebook without relying on the short summary registry');})().catch(e=>{console.error(e);process.exitCode=1});

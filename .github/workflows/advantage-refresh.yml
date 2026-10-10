@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - '.github/workflows/advantage-refresh.yml'
+      - 'scripts/advantage/national.py'
   workflow_dispatch:
   schedule:
     - cron: '7,22,37,52 * * * *'

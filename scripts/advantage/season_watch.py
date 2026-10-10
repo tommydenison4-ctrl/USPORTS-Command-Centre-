@@ -17,7 +17,7 @@ def weight_team_results(rows,records,rankings=None):
         production=p['score'];win_pct=(r['wins']+.5*r['ties'])/games
         normalized=max(0,production)/maximum if maximum>0 else 0
         rank=(rankings or {}).get(p['teamId']);count=len(rankings or {});strength=(count-rank)/(count-1) if rank and count>1 else 0
-        base=75*normalized+15*win_pct+10*strength;penalty=min(1,.1*max(0,r['losses']-1))
+        base=75*normalized+15*win_pct+10*strength;penalty=min(1,.05*max(0,r['losses']-1))
         p.update(productionScore=production,productionNormalized=normalized,teamWinPercentage=win_pct,teamRank=rank,teamRankingNormalized=strength,teamLosses=r['losses'],lossPenalty=penalty,baseScore=base,score=round(base*(1-penalty),2))
     return maximum
 def build(only=None):
@@ -107,8 +107,8 @@ def build(only=None):
             bundle[league]['productionMaximum']=production_maximum
             bundle[league]['eligiblePlayers']=rows
             bundle[league]['weights']={'production':.75,'teamWinningPercentage':.15,'teamRanking':.10}
-            bundle[league]['lossPolicy']={'freeLosses':1,'reductionPerAdditionalLoss':.10,'minimumMultiplier':0}
-            bundle[league]['method']='Base score out of 100 = 75 × normalized offensive production + 15 × team winning percentage + 10 × normalized team strength rank. Rank is the same all-team Advantage ranking used by Vanier Cup Watch; rank normalization = (team count − rank) / (team count − 1). Final watch score = base score × max(0, 1 − 0.10 × max(0, team losses − 1)); the first loss is free and reductions add together. Offensive production per recorded appearance = passing yards / 25 + rushing and receiving yards / 10 + passing TD × 4 + rushing and receiving TD × 6 − interceptions × 2. Normalize against the highest production score among all eligible players; negative production is floored at zero. Team winning percentage = (wins + half of ties) / completed regular-season games. At least two recorded appearances. This weighting rewards winning teams; it does not exclude players on losing teams. Defense and special teams are not scored. Missing box scores may change the order.'
+            bundle[league]['lossPolicy']={'freeLosses':1,'reductionPerAdditionalLoss':.05,'minimumMultiplier':0}
+            bundle[league]['method']='Base score out of 100 = 75 × normalized offensive production + 15 × team winning percentage + 10 × normalized team strength rank. Rank is the same all-team Advantage ranking used by Vanier Cup Watch; rank normalization = (team count − rank) / (team count − 1). Final watch score = base score × max(0, 1 − 0.05 × max(0, team losses − 1)); the first loss is free and reductions add together. Offensive production per recorded appearance = passing yards / 25 + rushing and receiving yards / 10 + passing TD × 4 + rushing and receiving TD × 6 − interceptions × 2. Normalize against the highest production score among all eligible players; negative production is floored at zero. Team winning percentage = (wins + half of ties) / completed regular-season games. At least two recorded appearances. This weighting rewards winning teams; it does not exclude players on losing teams. Defense and special teams are not scored. Missing box scores may change the order.'
             records={team:dict(wins=0,losses=0,ties=0) for team in profiles}
             opponents={team:[] for team in profiles}
             for g in result['games']:

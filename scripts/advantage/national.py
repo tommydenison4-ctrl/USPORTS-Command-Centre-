@@ -57,7 +57,14 @@ def parse_composite(html, date):
 
 def discover(fetch,batch,season):
     html=fetch(COMPOSITE)
-    dates=sorted(set(re.findall(r'composite\?d=('+str(season)+r'-\d{2}-\d{2})',html)))
+    dates=set(re.findall(r'composite\\?d=('+str(season)+r'-\\d{2}-\\d{2})',html))
+    # Landing-page links can lag behind recently completed dates.
+    import datetime as dt
+    import os
+    today=dt.date.fromisoformat(os.environ.get('AWM_ASOF',dt.datetime.now(dt.timezone.utc).date().isoformat()))
+    dates.update((today-dt.timedelta(days=offset)).isoformat() for offset in range(0,10)
+                 if (today-dt.timedelta(days=offset)).year==season)
+    dates=sorted(dates)
     if not dates:raise ValueError('National composite returned no season dates; retaining last verified schedule')
     # Retain previously verified dates if a single national composite page times out.
     # Fresh successful dates can still advance without discarding older verified results.

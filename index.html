@@ -4785,8 +4785,7 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
       navButton87('highlights','Highlights','highlights65()',active),
       navButton87('media','Media','showMedia()',active),
       navButton87('podcasts','Podcasts','podcasts83()',active),
-      navButton87('teams','Teams','showTeams()',active),
-      navButton87('conferences','Conferences','showConferences()',active)
+      navButton87('explore','Explore','exploreTeams()',active)
     ].join('');
     return `<div class="shell"><header class="topbar"><button class="brand" onclick="goHome()" style="background:none;border:0;color:inherit;padding:0"><span class="roundel">U</span><span>U SPORTS<small>FOOTBALL</small></span></button><nav class="nav" aria-label="Primary navigation">${nav}</nav></header>${content}<div class="footer">U SPORTS Football Game Centre</div></div>`;
   };
@@ -4998,4 +4997,41 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
 <script src="final-scores-data.js?v=20261010finals1"></script><script src="final-scores.js?v=20261010identityrepair2"></script>
 <script src="player-box-stats.js?v=20261010season1"></script>
 <script src="game-highlights.js?v=20261003clips2"></script>
-<script src="completed-boxscores-data.js?v=20261003finalboxes1"></script><script src="game-card-details.js?v=20261010livefix1"></script><script src="final-boxscore-sync.js?v=20261003autosync1"></script><script src="pregame-comparison.js?v=20261010finalprobability1"></script><link rel="stylesheet" href="interface.css?v=20261010pregame1"><script src="interface.js?v=20261010livefix1"></script><script src="podcast-game-segments-data.js?v=20261010season1"></script><script src="podcast-game-segments.js?v=20261010season1"></script><script src="game-recap.js?v=20261010recap1"></script><script src="verified-watch-refresh.js?v=20261010"></script><script src="playoff-projections.js?v=20261011fix1"></script></body></html>
+<script src="completed-boxscores-data.js?v=20261003finalboxes1"></script><script src="game-card-details.js?v=20261010livefix1"></script><script src="final-boxscore-sync.js?v=20261003autosync1"></script><script src="pregame-comparison.js?v=20261010finalprobability1"></script><link rel="stylesheet" href="interface.css?v=20261010pregame1"><script src="interface.js?v=20261010livefix1"></script><script src="podcast-game-segments-data.js?v=20261010season1"></script><script src="podcast-game-segments.js?v=20261010season1"></script><script src="game-recap.js?v=20261010recap1"></script><script src="verified-watch-refresh.js?v=20261010"></script><script src="playoff-projections.js?v=20261011fix1"></script>
+
+<style id="v91-explore-teams-styles">
+.exploreTeamsGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:12px;margin-top:16px}
+.exploreTeamCard{display:flex;align-items:center;gap:14px;text-align:left;width:100%;padding:14px;border:1px solid var(--line);border-radius:16px;background:#0d1721;color:var(--text,#f3f7fb);cursor:pointer}
+.exploreTeamCard:hover{border-color:var(--gold);transform:translateY(-1px)}
+.exploreTeamLogo{width:54px;height:54px;flex:0 0 54px;object-fit:contain;background:#fff;border-radius:12px;padding:5px}
+.exploreTeamName{font-weight:900;font-size:17px}.exploreTeamMeta{color:var(--muted);font-size:12px;margin-top:4px}
+.exploreControls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px}
+.exploreSearch{flex:1 1 220px;min-width:0;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#0a1016;color:inherit;font:inherit}
+.exploreFilter{border:1px solid var(--line);border-radius:999px;padding:9px 14px;background:#0a1016;color:inherit;font-weight:800;cursor:pointer}
+.exploreFilter.active{background:var(--gold);color:#111;border-color:var(--gold)}
+</style>
+<script id="v91-explore-teams">
+(function(){
+  let activeConference='All', searchText='';
+  window.exploreTeams=function(){
+    location.hash='explore';
+    const entries=typeof TEAM!=='undefined' ? Object.entries(TEAM) : [];
+    const conferences=['All',...new Set(entries.map(([,t])=>t.conference).filter(Boolean))];
+    const cards=entries.sort((a,b)=>String(a[1].name||a[1].short||a[0]).localeCompare(String(b[1].name||b[1].short||b[0]))).map(([slug,t])=>{
+      const name=t.name||t.school||t.short||slug;
+      const haystack=(name+' '+(t.short||'')+' '+(t.conference||'')).toLowerCase();
+      if(activeConference!=='All'&&t.conference!==activeConference)return '';
+      if(searchText&&!haystack.includes(searchText))return '';
+      const logoSrc=t.logo||'';
+      return '<button class="exploreTeamCard" data-slug="'+esc(slug)+'" onclick="showTeam(this.dataset.slug)"><img class="exploreTeamLogo" src="'+esc(logoSrc)+'" alt="" loading="lazy"><span><span class="exploreTeamName">'+esc(name)+'</span><span class="exploreTeamMeta">'+esc(t.conference||'U SPORTS')+(t.city?' · '+esc(t.city):'')+'</span></span></button>';
+    }).join('');
+    const filters=conferences.map(c=>'<button class="exploreFilter '+(c===activeConference?'active':'')+'" data-conf="'+esc(c)+'" onclick="window._exploreConference(this.dataset.conf)">'+esc(c)+'</button>').join('');
+    document.getElementById('app').innerHTML=shell('<section class="statsHero"><div class="kicker">EXPLORE U SPORTS FOOTBALL</div><h1>Teams</h1><p>Browse every program, filter by conference, and open a team page for its schedule, results, and snapshot.</p></section><section class="panel"><div class="exploreControls"><input class="exploreSearch" type="search" placeholder="Search teams or conferences" value="'+esc(searchText)+'" oninput="window._exploreSearch(this.value)"></div><div class="exploreControls">'+filters+'</div><div class="exploreTeamsGrid">'+(cards||'<p>No teams match that search.</p>')+'</div></section>','explore');
+  };
+  window._exploreConference=function(value){activeConference=value;window.exploreTeams()};
+  window._exploreSearch=function(value){searchText=String(value||'').trim().toLowerCase();window.exploreTeams();const input=document.querySelector('.exploreSearch');input?.focus();input?.setSelectionRange(searchText.length,searchText.length)};
+  window.addEventListener('hashchange',()=>{if(location.hash==='#explore')window.exploreTeams()});
+  if(location.hash==='#explore')setTimeout(()=>window.exploreTeams(),0);
+})();
+</script>
+</body></html>

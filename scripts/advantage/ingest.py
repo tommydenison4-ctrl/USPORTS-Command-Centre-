@@ -22,6 +22,7 @@ def fetch(url):
             try:
                 with urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0','Accept':'text/html,application/json;q=0.9,*/*;q=0.8'}),timeout=25) as response:
                     text=response.read().decode('utf-8',errors='replace')
+                if not valid(text):raise ValueError('Official response was empty or challenged')
             except Exception:
                 if urlparse(url).hostname=='en.usports.ca':
                     relay='https://canufootball.com/api/national-source?'+urlencode({'path':urlparse(url).path+('?' + urlparse(url).query if urlparse(url).query else '')})

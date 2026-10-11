@@ -23,5 +23,5 @@ import players
 players.build()
 
 import season_watch
-season_watch.build()
+season_watch.build('USPORTS')
 subprocess.run(['node',str(Path(__file__).with_name('check-season.cjs'))],check=True)

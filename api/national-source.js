@@ -8,9 +8,13 @@ module.exports=async function handler(req,res){
     res.statusCode=400;return res.end('Unsupported official football path');
   }
   try{
-    const response=await fetch('https://en.usports.ca'+path,{headers:{'User-Agent':'Mozilla/5.0','Cache-Control':'no-cache','Accept':'text/html'},signal:AbortSignal.timeout(15000)});
+    const response=await fetch('https://en.usports.ca'+path,{headers:{
+      'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36',
+      'Accept-Language':'en-CA,en;q=0.9','Cache-Control':'no-cache','Pragma':'no-cache',
+      'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+    },signal:AbortSignal.timeout(15000)});
     const html=await response.text();
-    if(!response.ok||!/event-row|stats-header/.test(html)||/awsWafCookieDomainList|AwsWafIntegration/.test(html)){
+    if(!response.ok||!/event-row|stats-header|<table\b/i.test(html)){
       res.statusCode=502;return res.end('Official source temporarily unavailable');
     }
     res.setHeader('Content-Type','text/html; charset=utf-8');res.end(html);

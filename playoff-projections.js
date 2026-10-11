@@ -615,4 +615,6 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderInitialProjection, { once: true });
   else renderInitialProjection();
+  window.addEventListener('load', () => setTimeout(renderInitialProjection, 0), { once: true });
+  setTimeout(renderInitialProjection, 150);
 })();

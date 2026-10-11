@@ -8,7 +8,7 @@
     { id: 'AUS', name: 'AUS', spots: 3 }
   ];
   const OUA_RULES_URL = 'https://www.oua.ca/sports/fball/2025-26/files/operations';
-  const RSEQ_RULES_URL = 'https://rseq.ca/media/1095312/2627_uni_fb_regles_specifiques_en.pdf';
+  const RSEQ_RULES_URL = 'https://rseq.ca/media/875453/2627_uni_reglements_secteur.pdf';
   const OUA_POINT_CAP = 25;
   const STORE_KEY = 'canufootball:playoff-projections:v1';
   const conferenceFor = id => CONFERENCES.find(c => c.id === id) || CONFERENCES[0];
@@ -87,6 +87,8 @@
   function gamesPlayedBy(conf) {
     return scenarioGames(conf);
   }
+
+  function standingValue(row) { return row.w + row.l ? row.w / (row.w + row.l) : 0; }
 
   function headToHeadGames(group, games) {
     const set = new Set(group.map(r => r.slug));
@@ -351,40 +353,65 @@
     return {tiers:[group],unresolved:true,reason:'The supplied Canada West criteria did not resolve the tie; a coin toss or draw is required.',trace};
   }
 
-  function rseqCriterion(group, index, games) {
+  function rseqCriterion(group, index, games, baseRows) {
     const values = new Map(), h2h = headToHeadGames(group, games);
     if (index === 0) {
+      group.forEach(r => values.set(r.slug, standingValue(r)));
+      return { label: 'Season winning percentage', values };
+    }
+    if (index === 1 || index === 2) {
       if (group.some(r => group.some(o => r.slug !== o.slug && !h2h.some(g => (g.away === r.slug && g.home === o.slug) || (g.home === r.slug && g.away === o.slug))))) return { unavailable: 'Not every tied team has played every other tied team.' };
-      group.forEach(r => { const against = h2h.filter(g => g.away === r.slug || g.home === r.slug); values.set(r.slug, ratio(winsIn(r.slug, against), against.length)); });
-      return { label: 'Head-to-head winning percentage', values };
+      group.forEach(r => { const against = h2h.filter(g => g.away === r.slug || g.home === r.slug); values.set(r.slug, ratio(winsIn(r.slug, against) * (index === 2 ? 2 : 1), against.length)); });
+      return { label: index === 1 ? 'Head-to-head winning percentage' : 'RSEQ points earned in head-to-head games', values };
     }
-    if (index === 1 || index === 3 || index === 4) {
-      if (!completeScores(h2h)) return { unavailable: 'A score is missing from a head-to-head game.' };
-      if (index === 1) {
-        group.forEach(r => values.set(r.slug, h2h.filter(g => (g.away === r.slug ? g.result.home : g.result.away) > (g.away === r.slug ? g.result.away : g.result.home)).reduce((n, g) => n + (g.away === r.slug ? g.result.home : g.result.away), 0)));
-        return { label: 'Fewest points against in head-to-head games', values, lowerWins: true };
-      }
-      if (index === 3) {
-        group.forEach(r => values.set(r.slug, h2h.filter(g => g.away === r.slug || g.home === r.slug).reduce((n, g) => n + (g.away === r.slug ? g.result.away - g.result.home : g.result.home - g.result.away), 0)));
-        return { label: 'Head-to-head point differential', values };
-      }
-      group.forEach(r => { const gms = h2h.filter(g => g.away === r.slug || g.home === r.slug); const pf = gms.reduce((n,g)=>n+(g.away===r.slug?g.result.away:g.result.home),0); const pa=gms.reduce((n,g)=>n+(g.away===r.slug?g.result.home:g.result.away),0); values.set(r.slug, pa ? pf/pa : (pf ? Infinity : 1)); });
-      return { label: 'Head-to-head points quotient', values };
-    }
-    if (index === 2) {
+    if (index === 3 || index === 4 || index === 5) {
       const season = games.filter(g => group.some(r => r.slug === g.away || r.slug === g.home));
-      if (!completeScores(season)) return { unavailable: 'A score is missing from an RSEQ regular-season game.' };
-      group.forEach(r => values.set(r.slug, season.filter(g => g.away === r.slug || g.home === r.slug).reduce((n,g)=>n+(g.away===r.slug?g.result.home:g.result.away),0)));
-      return { label: 'Fewest points against over the season', values, lowerWins: true };
+      const selected = index === 3 ? h2h : season;
+      if (!completeScores(selected)) return { unavailable: 'A score needed for the RSEQ point quotient or points-against criteria is missing.' };
+      group.forEach(r => {
+        const gms = selected.filter(g => g.away === r.slug || g.home === r.slug);
+        const pf = gms.reduce((n,g)=>n+(g.away===r.slug?g.result.away:g.result.home),0);
+        const pa = gms.reduce((n,g)=>n+(g.away===r.slug?g.result.home:g.result.away),0);
+        if (index === 3 || index === 5) values.set(r.slug, pa ? pf/pa : (pf ? Infinity : 1));
+        else values.set(r.slug, pa);
+      });
+      if (index === 3) return { label: 'Head-to-head points quotient', values };
+      if (index === 4) return { label: 'Fewest points against over the season', values, lowerWins: true, skipForCoefficient: true };
+      return { label: 'Season points quotient', values };
     }
-    return { unavailable: 'The supplied RSEQ criteria did not resolve the tie.' };
+    if (index === 6 || index === 7) {
+      const tied = new Set(group.map(r=>r.slug));
+      const outsiders = baseRows.filter(r=>!tied.has(r.slug));
+      for (let i=1;i<outsiders.length;i++) if (standingValue(outsiders[i-1])===standingValue(outsiders[i])) return { unavailable:'The order of comparison against other tied RSEQ teams is unresolved.' };
+      if (!outsiders.length) return { unavailable:'No RSEQ comparison opponent is available.' };
+      const opponents = outsiders.map(r=>r.slug);
+      for (const opponent of opponents) {
+        const comparisons = new Map();
+        for (const r of group) {
+          const against = gamesAgainst(r.slug,[opponent],games);
+          if (index===6) comparisons.set(r.slug,ratio(winsIn(r.slug,against),against.length));
+          else {
+            if (!completeScores(against)) return { unavailable:'A score against a ranked comparison opponent is missing.' };
+            const pf=against.reduce((n,g)=>n+(g.away===r.slug?g.result.away:g.result.home),0), pa=against.reduce((n,g)=>n+(g.away===r.slug?g.result.home:g.result.away),0);
+            comparisons.set(r.slug,pa?pf/pa:(pf?Infinity:1));
+          }
+        }
+        const distinct=new Set([...comparisons.values()].map(String));
+        if(distinct.size>1) return {label:index===6?'Winning percentage vs. highest-ranked non-tied opponent':'Point quotient vs. highest-ranked non-tied opponent',values:comparisons};
+      }
+      return {label:index===6?'Winning percentage vs. non-tied teams':'Point quotient vs. non-tied teams',values:new Map(group.map(r=>[r.slug,0]))};
+    }
+    if (index === 8) return { unavailable: 'RSEQ rules call for an agreed playoff tiebreaker match when possible; this requires an external decision.' };
+    if (index === 9) return { unavailable: 'RSEQ rules call for a draw when the prior criteria do not resolve the tie.' };
+    return { unavailable: 'The current RSEQ criteria did not resolve the tie.' };
   }
 
-  function resolveRseqGroup(group, games, trace = [], startIndex = 0) {
+  function resolveRseqGroup(group, games, baseRows, trace = [], startIndex = 0) {
     if (group.length < 2) return { tiers: [group], unresolved: false, trace };
-    for (let index = startIndex; index < 5; index++) {
-      const result = rseqCriterion(group, index, games);
+    for (let index = startIndex; index < 10; index++) {
+      const result = rseqCriterion(group, index, games, baseRows);
       if (result.unavailable) return { tiers: [group], unresolved: true, reason: result.unavailable, trace };
+      if (result.skipForCoefficient && new Set(group.map(r=>r.gp)).size > 1) continue;
       trace.push(result.label);
       const buckets = new Map();
       group.forEach(r => { const key = String(result.values.get(r.slug)); if (!buckets.has(key)) buckets.set(key, []); buckets.get(key).push(r); });
@@ -394,7 +421,7 @@
       const tiers=[]; let unresolved=false, reason='';
       for (const [, bucket] of ordered) {
         if (bucket.length === 1) tiers.push(bucket);
-        else { const next=resolveRseqGroup(bucket,games,trace.slice(),index+1); tiers.push(...next.tiers); if(next.unresolved){unresolved=true;reason=next.reason;} }
+        else { const next=resolveRseqGroup(bucket,games,baseRows,trace.slice()); tiers.push(...next.tiers); if(next.unresolved){unresolved=true;reason=next.reason;} }
       }
       return { tiers, unresolved, reason, trace };
     }
@@ -403,16 +430,16 @@
 
   function rankedRows(conf) {
     const records = recordsFor(conf);
-    const rows = Object.values(records).sort((a, b) => b.w - a.w || nameOf(a.slug).localeCompare(nameOf(b.slug)));
+    const rows = Object.values(records).sort((a, b) => standingValue(b) - standingValue(a) || nameOf(a.slug).localeCompare(nameOf(b.slug)));
     if (conf === 'RSEQ' || conf === 'AUS' || conf === 'CW') {
       const games = scenarioGames(conf), tiers = [], unresolvedGroups = [];
       let unresolvedTies = false, tieReason = '';
       for (let i = 0; i < rows.length;) {
-        let j = i + 1; while (j < rows.length && rows[j].w === rows[i].w) j++;
+        let j = i + 1; while (j < rows.length && standingValue(rows[j]) === standingValue(rows[i])) j++;
         const group = rows.slice(i, j);
         if (group.length === 1) tiers.push(group);
         else {
-          const result = conf === 'AUS' ? resolveAusGroup(group, games) : conf === 'CW' ? resolveCwGroup(group, games) : resolveRseqGroup(group, games);
+          const result = conf === 'AUS' ? resolveAusGroup(group, games) : conf === 'CW' ? resolveCwGroup(group, games) : resolveRseqGroup(group, games, rows);
           tiers.push(...result.tiers);
           result.tiers.filter(t => t.length > 1).forEach(t => unresolvedGroups.push(t.map(r => r.slug)));
           if (result.unresolved) { unresolvedTies = true; tieReason = result.reason; }
@@ -424,7 +451,7 @@
     if (conf !== 'OUA') {
       const groups = [];
       for (let i = 0; i < rows.length;) {
-        let j = i + 1; while (j < rows.length && rows[j].w === rows[i].w) j++;
+        let j = i + 1; while (j < rows.length && standingValue(rows[j]) === standingValue(rows[i])) j++;
         if (j - i > 1) groups.push(rows.slice(i, j).map(r => r.slug));
         i = j;
       }
@@ -435,7 +462,7 @@
     const unresolvedGroups = [];
     let unresolvedTies = false, tieReason = '';
     for (let i = 0; i < rows.length;) {
-      let j = i + 1; while (j < rows.length && rows[j].w === rows[i].w) j++;
+      let j = i + 1; while (j < rows.length && standingValue(rows[j]) === standingValue(rows[i])) j++;
       const baseGroup = rows.slice(i, j);
       if (baseGroup.length === 1) tiers.push(baseGroup);
       else {
@@ -483,7 +510,7 @@
       : conf === 'CW'
         ? `<p class="pp-rule-note">Canada West awards 2 points per win. Seeds use the supplied sequence: head-to-head winning percentage and point differential, season point differential, points allowed, then points scored. Multi-team ties restart the sequence for remaining tied teams; a final statistical tie requires a draw. Missing scores leave the tie unresolved.</p>`
       : conf === 'RSEQ'
-        ? `<p class="pp-rule-note">RSEQ awards 2 points per win. This projection applies the supplied head-to-head winning percentage, points against, season points against, and point quotient criteria. The 2026–27 RSEQ regulations refer tie procedures to the latest University Sector Rules; where the supplied criteria do not resolve a tie, it remains unresolved. <a href="${RSEQ_RULES_URL}" target="_blank" rel="noopener">2026–27 RSEQ regulations ↗</a></p>`
+        ? `<p class="pp-rule-note">RSEQ awards 2 points per win. The 2026–27 University Sector rules use season winning percentage, head-to-head percentage and points, point quotients, season points against, then comparison against ranked teams. Multi-team ties restart at step one. Scores needed for a step must be available; external playoff-tiebreaker agreements or a draw remain unresolved here. <a href="${RSEQ_RULES_URL}" target="_blank" rel="noopener">Official 2026–27 RSEQ rules ↗</a></p>`
       : `<p class="pp-rule-note">${esc(result.tieReason || `Playoff field: ${cfg.spots}. Official tie-break details for ${cfg.name} are not verified here, so tied records share a seed until the conference rule can be applied.`)}</p>`;
     return `<section class="pp-panel pp-standing-panel"><div class="pp-panel-head"><div><div class="pp-eyebrow">LIVE SCENARIO</div><h2>${esc(cfg.name)} standings</h2></div><span class="pp-count">Top ${cfg.spots} qualify</span></div><div class="pp-table-wrap"><table class="pp-table"><thead><tr><th>Seed</th><th>Team</th><th>W-L</th><th>PTS</th><th>GP</th><th>PF</th><th>PA</th><th>Field</th></tr></thead><tbody>${body || `<tr><td colspan="8">Standings are not available.</td></tr>`}</tbody></table></div>${note}</section>`;
   }
@@ -582,4 +609,5 @@
   window.addEventListener('hashchange', () => {
     if (location.hash.slice(1).startsWith('projections')) page(location.hash.slice(1).split('=')[1] || 'OUA');
   });
+  if (location.hash.slice(1).startsWith('projections')) page(location.hash.slice(1).split('=')[1] || 'OUA');
 })();

@@ -598,7 +598,8 @@
   window.shell = function (content, active = 'schedule') {
     let html = oldShell(content, active);
     const button = `<button class="${active === 'projections' ? 'active' : ''}" onclick="playoffProjectionsPage()">Playoff Projections <span class="pp-new">NEW</span></button>`;
-    return html.replace(/<button\b[^>]*onclick="playoffs[^\"]*"[^>]*>Playoffs<\/button>/i, marker => marker + button);
+    if (html.includes('<details class="clean-more"')) return html.replace('<details class="clean-more"', button + '<details class="clean-more"');
+    return html.replace('</nav>', button + '</nav>');
   };
   const oldRoute = window.route;
   window.route = function () {
@@ -609,5 +610,9 @@
   window.addEventListener('hashchange', () => {
     if (location.hash.slice(1).startsWith('projections')) page(location.hash.slice(1).split('=')[1] || 'OUA');
   });
-  if (location.hash.slice(1).startsWith('projections')) page(location.hash.slice(1).split('=')[1] || 'OUA');
+  function renderInitialProjection() {
+    if (location.hash.slice(1).startsWith('projections')) page(location.hash.slice(1).split('=')[1] || 'OUA');
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderInitialProjection, { once: true });
+  else renderInitialProjection();
 })();

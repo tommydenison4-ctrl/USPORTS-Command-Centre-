@@ -1,7 +1,7 @@
 import os
 import argparse, concurrent.futures as cf, datetime as dt, hashlib, json, re, time,subprocess
 from pathlib import Path
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse, urlencode
 from urllib.request import Request,urlopen
 from bs4 import BeautifulSoup
 
@@ -23,7 +23,12 @@ def fetch(url):
                 with urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0','Accept':'text/html,application/json;q=0.9,*/*;q=0.8'}),timeout=25) as response:
                     text=response.read().decode('utf-8',errors='replace')
             except Exception:
-                text=subprocess.check_output(['curl','--fail','--location','--silent','--show-error','--max-time','25','--user-agent','Mozilla/5.0',url],stderr=subprocess.DEVNULL).decode('utf-8',errors='replace')
+                if urlparse(url).hostname=='en.usports.ca':
+                    relay='https://canufootball.com/api/national-source?'+urlencode({'path':urlparse(url).path+('?' + urlparse(url).query if urlparse(url).query else '')})
+                    with urlopen(Request(relay,headers={'User-Agent':'National stats refresh'}),timeout=30) as response:
+                        text=response.read().decode('utf-8',errors='replace')
+                else:
+                    text=subprocess.check_output(['curl','--fail','--location','--silent','--show-error','--max-time','25','--user-agent','Mozilla/5.0',url],stderr=subprocess.DEVNULL).decode('utf-8',errors='replace')
             if not valid(text):raise ValueError('Source returned an empty response or security challenge: '+url)
             path.write_text(text,encoding='utf-8');return text
         except Exception:

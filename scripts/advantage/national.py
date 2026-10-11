@@ -56,8 +56,15 @@ def parse_composite(html, date):
     return games,unresolved
 
 def discover(fetch,batch,season):
-    html=fetch(COMPOSITE)
-    dates=set(re.findall(r'composite\\?d=('+str(season)+r'-\\d{2}-\\d{2})',html))
+    previous_path=ROOT/'data/national-schedule-usports.json'
+    previous=json.loads(previous_path.read_text()) if previous_path.exists() else {}
+    try:html=fetch(COMPOSITE)
+    except Exception:
+        if not previous.get('games'):raise
+        html=''
+        print('Composite landing unavailable; refreshing known official dates',flush=True)
+    dates=set(re.findall(r'composite\?d=('+str(season)+r'-\d{2}-\d{2})',html))
+    dates.update(g['date'] for g in previous.get('games',[]) if g.get('date','').startswith(str(season)))
     # Landing-page links can lag behind recently completed dates.
     import datetime as dt
     import os

@@ -1,5 +1,5 @@
 """Extract complete 2026 Sidearm and Presto individual tables; retain source and game date."""
-import json, re, os
+import json, re, os, hashlib, datetime
 from pathlib import Path
 from bs4 import BeautifulSoup
 import ingest, train, national
@@ -57,8 +57,17 @@ def build():
     previous_path=ROOT/'data/player-leaders-usports.json'
     previous=json.loads(previous_path.read_text()) if previous_path.exists() else {'games':[]}
     saved={(r['date'],r['source']):r for r in previous['games']}
+    saved_by_id={r['id']:r for r in previous['games'] if r.get('id')}
     out=[]; errors=[]
+    for indexed in source['schedule']:
+        retained=saved_by_id.get(indexed.get('id'))
+        if indexed.get('status')=='final' and not indexed.get('boxscore') and retained and all(retained.get(side+'Score')==indexed[side+'Score'] for side in ('away','home')):
+            out.append(retained)
     for g in games:
+        retained=saved_by_id.get(g['id'])
+        if retained and retained.get('date')==g['date'][:10] and all(retained.get(side+'Score')==g[side]['score'] for side in ('away','home')):
+            out.append(retained)
+            continue
         try:
             soup=BeautifulSoup(ingest.fetch(g['source']),'html.parser')
             if '/boxscores/' in g['source']:
@@ -107,10 +116,10 @@ def build():
                 title=table.find('caption') or table.find_previous(['h2','h3','h4'])
                 record['tables'].append({'title':title.get_text(' ',strip=True) if title else 'Official box score','rows':rows})
             if record['teams']:out.append(record)
-            elif (g['date'][:10],g['source']) in saved:out.append(saved[(g['date'][:10],g['source'])])
+            elif g['id'] in saved_by_id:out.append(saved_by_id[g['id']])
         except Exception as e:
             errors.append({'source':g['source'],'error':str(e)})
-            if (g['date'][:10],g['source']) in saved:out.append(saved[(g['date'][:10],g['source'])])
+            if g['id'] in saved_by_id:out.append(saved_by_id[g['id']])
     pdf_path=ROOT/'data/official-pdf-boxscores.json'
     for record in json.loads(pdf_path.read_text()) if pdf_path.exists() else []:
         out=[g for g in out if g.get('id')!=record['id']]+[record]
@@ -122,6 +131,28 @@ def build():
     index_by_id={g['id']:g for g in source['schedule']}
     for record in out:
         indexed=index_by_id.get(record['id'])
+        # Keep the published recent drive rows alongside the summary tables.
+        if indexed and indexed.get('boxscore') and record['date']>=str(datetime.date.fromisoformat(train.ASOF)-datetime.timedelta(days=1)):
+            cached=ingest.CACHE/(hashlib.sha256((indexed['boxscore']+'?view=plays').encode()).hexdigest()+'.txt')
+            if cached.exists():
+                if not record.get('tables') and record.get('fullBoxscore'):
+                    full=ROOT/record['fullBoxscore']
+                    if full.exists():record=json.loads(full.read_text())
+                soup=BeautifulSoup(cached.read_text(),'html.parser')
+                identities=[national.norm(t['slug']) for n in soup.select('.stats-header') if (t:=national.team(n.get_text(' ',strip=True)))]
+                if identities[:2]==[national.norm(indexed['away']),national.norm(indexed['home'])]:
+                    drive=None;drive_rows=[];drives=[]
+                    for tr in soup.select('table tr'):
+                        cells=tr.find_all(['td','th'],recursive=False)
+                        values=[re.sub(r'\s+',' ',c.get_text(' ',strip=True)) for c in cells]
+                        if not values:continue
+                        if tr.find('th') and re.match(r'.+ at \d{1,2}:\d{2}$',values[0]):
+                            if drive and drive_rows:drives.append({'title':'Drive · '+drive,'rows':[['Down & distance','Play']]+drive_rows})
+                            drive=values[0];drive_rows=[]
+                        elif drive and len(values)==2:drive_rows.append(values)
+                    if drive and drive_rows:drives.append({'title':'Drive · '+drive,'rows':[['Down & distance','Play']]+drive_rows})
+                    if drives:record['tables']=[t for t in record.get('tables',[]) if not t['title'].startswith('Drive · ')]+drives
+
         if indexed and indexed.get('status')=='final':
             record.update(away=indexed['away'],home=indexed['home'],awayScore=indexed['awayScore'],homeScore=indexed['homeScore'],final=True)
         if record.get('tables') or record.get('pages'):

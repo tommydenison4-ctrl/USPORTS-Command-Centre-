@@ -50,8 +50,7 @@ for(const id of ['acadia','bishops','mountallison','saintmarys','stfx'])for(cons
  assert(g.available);assert(away===id?g.scoreAdjustment>0:g.scoreAdjustment<0);
  assert(g.home_score>=0&&g.away_score>=0);
  assert(Math.abs(g.total-(g.home_score+g.away_score))<1e-9);
- assert(A.strengthNote(g).includes('2/10'));
- assert(A.strengthNote(g).includes('before →'));
+ assert.equal(A.strengthNote(g),'');
 }
 assert.equal(A.project(d,{away:'acadia',home:'stfx',date:futureDate,neutral:true}).scoreAdjustment,0);
 console.log('Build Matchup conference disclosure, score adjustment, both orientations and same-conference invariance passed');

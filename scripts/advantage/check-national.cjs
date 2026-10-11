@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const root=path.resolve(__dirname,'../..'),A=require(path.join(root,'advantage-model.js')),S=require(path.join(root,'national-schedule.js'));
 const read=f=>JSON.parse(fs.readFileSync(path.join(root,f),'utf8'));
 const d=read('data/advantage-usports.json'),schedule=read('data/advantage-schedule-usports.json'),teams=read('data/usports-teams.json');
-const ctx={window:{AWM_DATA:{USPORTS:d},AdvantageModel:A},document:{readyState:'loading',addEventListener(){}}};
+const ctx={window:{AWM_DATA:{USPORTS:d},AdvantageModel:A},document:{readyState:'loading',visibilityState:'hidden',addEventListener(){}},setInterval(){}};
 vm.runInNewContext(fs.readFileSync(path.join(root,'usports-awm.js'),'utf8'),ctx);
 assert.equal(new Set(schedule.map(g=>g.id)).size,schedule.length);
 assert.equal(teams.length,27);

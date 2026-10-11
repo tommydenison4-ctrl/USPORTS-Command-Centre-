@@ -10,7 +10,7 @@
    const results=await Promise.all(urls.map(async u=>{const r=await fetch(u+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error(u+' '+r.status);return r.json()}));
    const [watch,model,stats]=results;const w=watch?.USPORTS;
    if(w?.season!==2026||model?.dataPolicy?.season!==2026||stats?.season!==2026)return;
-   const stamp=String(w.asOf||'')+'|'+String(stats.asOf||'')+'|'+String(model?.coverage?.completedGames??'');
+   const stamp=JSON.stringify(results);
    if(last===stamp)return;last=stamp;
    window.SEASON_WATCH=window.SEASON_WATCH||{};window.SEASON_WATCH.USPORTS=w;
    window.AWM_DATA=window.AWM_DATA||{};window.AWM_DATA.USPORTS=model;

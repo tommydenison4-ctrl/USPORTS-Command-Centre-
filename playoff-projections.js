@@ -631,6 +631,7 @@
   window.shell = function (content, active = 'schedule') {
     let html = oldShell(content, active);
     const button = `<button class="${active === 'projections' ? 'active' : ''}" onclick="playoffProjectionsPage()">Playoff Projections <span class="pp-new">NEW</span></button>`;
+    if (html.includes('</div><details class="clean-more"')) return html.replace('</div><details class="clean-more"', button + '</div><details class="clean-more"');
     if (html.includes('<details class="clean-more"')) return html.replace('<details class="clean-more"', button + '<details class="clean-more"');
     return html.replace('</nav>', button + '</nav>');
   };

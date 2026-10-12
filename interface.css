@@ -322,3 +322,12 @@ body{background:#080f17;color:#f1f5fa}
  .clean-ui .topbar.clean-header .clean-more{position:static}
  .clean-ui .topbar.clean-header .clean-menu{position:fixed;left:14px;right:14px;top:148px;width:auto;max-width:none;max-height:calc(100dvh - 164px);overflow-y:auto;grid-template-columns:1fr;box-sizing:border-box}
 }
+
+/* Explore stays visible while primary tabs scroll beside it. */
+.clean-primary-tabs{display:contents}
+@media(max-width:760px){
+ .clean-ui .topbar.clean-header .nav{overflow:visible!important;padding:0!important;align-items:center;gap:8px!important}
+ .clean-ui .topbar.clean-header .clean-primary-tabs{display:flex;align-items:center;gap:6px;flex:1 1 0;min-width:0;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:thin;-webkit-overflow-scrolling:touch;padding:2px 0 8px}
+ .clean-ui .topbar.clean-header .clean-primary-tabs>button{display:inline-flex!important;align-items:center;flex:0 0 auto;min-height:44px;white-space:nowrap;padding:10px 12px!important;font-size:12px!important}
+ .clean-ui .topbar.clean-header .clean-more{align-self:flex-start;margin-top:2px}
+}

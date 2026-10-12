@@ -5,6 +5,7 @@
   function button(x,active){return `<button type="button" class="${x[0]===active?'active':''}" ${x[3]?`data-watch="${x[3]}"`:`onclick="${x[2]}"`} ${x[0]===active?'aria-current="page"':''}>${x[1]}</button>`}
   function header(active){return `<header class="topbar clean-header"><button class="brand" type="button" onclick="goHome()" aria-label="Can-U Football home"><img class="canu-brand-logo" src="assets/canu-football.png" alt="Can-U Football maple leaf and football"><span class="canu-wordmark">Can-U <strong>FOOTBALL</strong><small>CANADIAN UNIVERSITY FOOTBALL</small></span></button><nav class="nav" aria-label="Primary navigation">${items.map(x=>button(x,active)).join('')}<details class="clean-more"><summary>Explore <span aria-hidden="true">⌄</span></summary><div class="clean-menu">${groups.map(g=>`<div><span class="clean-menu-title">${g[0]}</span>${g[1].map(x=>button(x,active)).join('')}</div>`).join('')}</div></details></nav></header>`}
   const stripMarkup=new WeakMap();
+  const positionedNav=new WeakSet();
   const previous=window.shell;
   if(typeof previous==='function')window.shell=function(content,active){return previous.apply(this,arguments).replace(/<header class="topbar"[\s\S]*?<\/header>/,header(active||'schedule')).replace('class="shell"','class="shell clean-ui"')};
   function fold(node,label){if(!node||node.parentElement?.classList.contains('clean-disclosure'))return;const d=document.createElement('details');d.className='clean-disclosure';const s=document.createElement('summary');s.textContent=label;node.before(d);d.append(s,node)}
@@ -30,6 +31,14 @@
     document.querySelectorAll('.shell').forEach(root=>{
       root.classList.add('clean-ui');const footer=root.querySelector(':scope > .footer');if(footer&&footer.textContent!=='Can-U Football · Canadian University Football')footer.textContent='Can-U Football · Canadian University Football';const old=root.querySelector(':scope > .topbar:not(.clean-header)');if(old){const active=old.querySelector('button.active')?.textContent.trim();const key=items.concat(groups.flatMap(g=>g[1])).find(x=>x[1]===active)?.[0]||'schedule';old.outerHTML=header(key)}
       const top=root.querySelector(':scope > .clean-header');
+      const nav=top?.querySelector('.nav');
+      if(nav&&!positionedNav.has(nav)){
+        positionedNav.add(nav);
+        if(matchMedia('(max-width:760px)').matches){
+          const active=nav.querySelector(':scope > button.active');
+          if(active)nav.scrollLeft=Math.max(0,active.offsetLeft-nav.offsetLeft-12);
+        }
+      }
       if(top&&window.V102_LIVE?.scoreboardHtml){
         const html='<div class="canu-scoreboard-label">THIS WEEK · SCOREBOARD</div>'+V102_LIVE.scoreboardHtml();let strip=root.querySelector(':scope > .canu-scoreboard');
         if(!strip){strip=document.createElement('section');strip.className='canu-scoreboard';top.after(strip)}

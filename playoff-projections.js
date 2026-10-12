@@ -501,7 +501,7 @@
       const crossesCut = tieAcrossCut && !!r.tieGroup && r.tieGroup === standings[cfg.spots - 1]?.tieGroup;
       const status = crossesCut ? 'TIE' : (i < cfg.spots ? 'IN' : 'OUT');
       const statusClass = status === 'IN' ? 'pp-in' : status === 'OUT' ? 'pp-out' : 'pp-tie';
-      return `<tr><td><span class="pp-rank">${position}</span></td><td><div class="pp-table-team">${logoOf(r.slug)}<b>${esc(nameOf(r.slug))}</b></div></td><td>${r.w}-${r.l}</td><td>${conf === 'RSEQ' || conf === 'CW' ? r.w * 2 : r.w}</td><td>${r.gp}</td><td>${r.pf}</td><td>${r.pa}</td><td><span class="pp-status ${statusClass}">${status}</span></td></tr>`;
+      return `<tr><td data-label="Seed"><span class="pp-rank">${position}</span></td><td data-label="Team"><div class="pp-table-team">${logoOf(r.slug)}<b>${esc(nameOf(r.slug))}</b></div></td><td data-label="W-L">${r.w}-${r.l}</td><td data-label="PTS">${conf === 'RSEQ' || conf === 'CW' ? r.w * 2 : r.w}</td><td data-label="GP">${r.gp}</td><td data-label="PF">${r.pf}</td><td data-label="PA">${r.pa}</td><td data-label="Field"><span class="pp-status ${statusClass}">${status}</span></td></tr>`;
     }).join('');
     const note = conf === 'OUA'
       ? `<p class="pp-rule-note">OUA seeds use the published 2025 football operations tie-break sequence. Point-difference criteria cap each game at ±25. If the next applicable step needs a score that is missing, or the procedure ends in a draw, the tie stays unresolved. <a href="${OUA_RULES_URL}" target="_blank" rel="noopener">Official OUA rules ↗</a></p>`
@@ -541,7 +541,19 @@
         .pp-scoreline label>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .pp-scoreline label:first-child{flex-direction:row-reverse}
         .pp-score{width:40px;min-width:40px;padding:6px 2px}
-        .pp-table{min-width:410px}
+        .pp-matchup{grid-template-columns:minmax(0,1fr)}
+        .pp-team-pick{min-height:44px;font-size:12px}.pp-team-pick span{white-space:normal;overflow-wrap:anywhere}.pp-vs{padding:2px}
+        .pp-table-wrap{overflow:visible}.pp-table{min-width:0;display:block}.pp-table thead{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%)}
+        .pp-table tbody{display:grid;gap:10px}.pp-table tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid #26384a;border-radius:12px;padding:8px}
+        .pp-table td{display:flex;flex-direction:column;gap:5px;text-align:left!important;padding:8px 5px;border:0;min-width:0}
+        .pp-table td::before{content:attr(data-label);color:#92a1b1;font-size:9px;font-weight:800}
+        .pp-table td:nth-child(2){grid-column:span 2}.pp-table-team{white-space:normal;overflow-wrap:anywhere}.pp-table td[colspan]{grid-column:1/-1}
+        .pp-score{min-height:44px}
+        .pp-scoreline{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;font-size:10px}
+        .pp-scoreline>span{grid-column:1/-1;grid-row:1;text-align:center}
+        .pp-scoreline label,.pp-scoreline label:first-child{flex-direction:column;align-items:flex-start;overflow:visible;gap:5px}
+        .pp-scoreline label:last-child{align-items:flex-end}
+        .pp-scoreline label>span{white-space:normal;overflow:visible;overflow-wrap:anywhere}
       }
     `;
     document.head.appendChild(style);

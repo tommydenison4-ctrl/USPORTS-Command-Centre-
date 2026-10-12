@@ -311,3 +311,14 @@ body{background:#080f17;color:#f1f5fa}
  #locked-pregame-comparison .statsTable td:not(:first-child):before{display:block;color:#a9b8cc;font-size:10px;font-weight:700;margin-bottom:5px}
  #locked-pregame-comparison .statsTable td:nth-child(4){font-weight:800}
 }
+
+/* Keep every primary destination reachable on narrow screens. */
+@media(max-width:760px){
+ .clean-ui .topbar.clean-header{height:auto!important;min-height:0!important;flex-direction:column!important;align-items:stretch!important;gap:10px!important;padding:12px 0!important}
+ .clean-ui .topbar.clean-header .brand{align-self:flex-start!important}
+ .clean-ui .topbar.clean-header .nav{width:100%!important;max-width:100%!important;min-width:0!important;flex:0 0 auto!important;flex-wrap:nowrap!important;justify-content:flex-start!important;overflow-x:auto!important;overflow-y:hidden!important;gap:6px!important;margin:0!important;padding:2px 0 8px!important;overscroll-behavior-x:contain;scrollbar-width:thin;-webkit-overflow-scrolling:touch;touch-action:auto!important}
+ .clean-ui .topbar.clean-header .nav>button,.clean-ui .topbar.clean-header .clean-more{flex:0 0 auto!important}
+ .clean-ui .topbar.clean-header .nav>button,.clean-ui .topbar.clean-header .clean-more>summary{display:inline-flex!important;align-items:center;min-height:44px;white-space:nowrap;padding:10px 12px!important;font-size:12px!important}
+ .clean-ui .topbar.clean-header .clean-more{position:static}
+ .clean-ui .topbar.clean-header .clean-menu{position:fixed;left:14px;right:14px;top:148px;width:auto;max-width:none;max-height:calc(100dvh - 164px);overflow-y:auto;grid-template-columns:1fr;box-sizing:border-box}
+}

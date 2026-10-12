@@ -39,4 +39,9 @@ The page shows the deciding rule and values, distinguishes a playoff-cut tie fro
 
 ## Verification
 
-Run `node tests/playoff-tiebreaks.cjs`. Fixtures include circular ties, imbalanced comparisons, restarted subgroups, removed common opponents, ranked outsider ties, fourth/fifth opponent comparisons, score requirements, forfeits, coefficient exceptions and explicit final draws. Four hundred generated seasons also check invariance under reversed team/game inputs.
+Run `node tests/playoff-tiebreaks.cjs`. Fixtures include circular ties, imbalanced comparisons, restarted subgroups, removed common opponents, ranked outsider ties, fourth/fifth opponent comparisons, score requirements, forfeits, coefficient exceptions and explicit final draws. Four hundred generated seasons also check invariance under reversed team/game inputs. One thousand additional OUA seasons use 11 teams and an eight-game imbalanced schedule.
+
+
+## Mutually dependent ranked opponents
+
+The ordered-opponent criteria can be circular when teams in separate standings ties did not meet. The resolver enumerates consistent comparison orders when the dependent search has at most 4,096 combinations. A unique self-consistent statistical order is applied automatically. If no unique order exists, the page requires an explicit scenario conference-decision order and labels it as an assumption; it does not manufacture an official draw or an alphabetical tiebreak. Very large dependent searches also require an explicit comparison-order assumption rather than blocking the browser. These exceptional orders are saved for the exact input result signature, like final draw assumptions.

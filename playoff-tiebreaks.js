@@ -141,9 +141,12 @@
         trace.push({ label: result.label, values: Object.fromEntries([...result.values].map(([slug, v]) => [slug, display(v)])) });
         if (tiers.length === 1) continue;
         const decision = { teams: group.map(r => r.slug), label: result.label, values: trace.at(-1).values, order: tiers.flat().map(r => r.slug), trace };
+        let inserted = false;
         const nextContext = context.flatMap(tier => {
           if (!tier.some(r => group.some(g => g.slug === r.slug))) return [tier];
           const before = tier.filter(r => !group.some(g => g.slug === r.slug));
+          if (inserted) return before.length ? [before] : [];
+          inserted = true;
           return before.length ? [before, ...tiers] : tiers;
         });
         const results = tiers.map(tier => resolve(tier, nextContext, nextAncestors));
@@ -159,10 +162,48 @@
       if (next.map(keyFor).join(';') === context.map(keyFor).join(';')) break;
       context = next;
     }
+    const comparisonIssues = resolved.flatMap(r => r.issues).filter(i => i.type === 'comparison');
+    let comparisonAlternatives = 0;
+    if (comparisonIssues.length && !resolved.some(r => r.issues.some(i => i.type === 'scores'))) {
+      const provisional = resolved.flatMap(r => r.tiers);
+      const otherIssues = resolved.flatMap(r => r.issues).filter(i => i.type !== 'comparison');
+      const dependent = provisional.filter(t => t.length > 1 && !otherIssues.some(i => i.teams.slice().sort().join('|') === keyFor(t)));
+      const factorial = n => n < 2 ? 1 : n * factorial(n - 1);
+      const combinations = dependent.reduce((n, t) => n * factorial(t.length), 1);
+      const permutations = items => items.length < 2 ? [items] : items.flatMap((r, i) => permutations(items.filter((_, j) => j !== i)).map(rest => [r, ...rest]));
+      const solutions = [];
+      if (combinations <= 4096) {
+        function enumerate(index, candidate) {
+          if (index === provisional.length) {
+            const checked = initial.map(group => resolve(group, candidate));
+            if (checked.some(r => r.issues.some(i => i.type === 'comparison'))) return;
+            const actual = checked.flatMap(r => r.tiers).flat().map(r => r.slug).join('|');
+            if (actual === candidate.flat().map(r => r.slug).join('|')) solutions.push(checked);
+            return;
+          }
+          const tier = provisional[index];
+          if (dependent.includes(tier)) permutations(tier).forEach(order => enumerate(index + 1, candidate.concat(order.map(r => [r]))));
+          else enumerate(index + 1, candidate.concat([tier]));
+        }
+        enumerate(0, []);
+      }
+      comparisonAlternatives = solutions.length;
+      const choices = dependent.filter(t => Array.isArray(drawOrders[keyFor(t)]) && drawOrders[keyFor(t)].length === t.length && new Set(drawOrders[keyFor(t)]).size === t.length && t.every(r => drawOrders[keyFor(t)].includes(r.slug)));
+      const selected = solutions.filter(solution => choices.every(t => solution.flatMap(r => r.tiers).flat().filter(r => t.some(x => x.slug === r.slug)).map(r => r.slug).join('|') === drawOrders[keyFor(t)].join('|')));
+      if (solutions.length === 1 || (selected.length === 1 && choices.length)) {
+        resolved = solutions.length === 1 ? solutions[0] : selected[0];
+        if (solutions.length > 1) resolved[0].decisions.push(...choices.map(t => ({ teams: t.map(r => r.slug), label: 'Scenario conference decision between consistent comparison orders', order: drawOrders[keyFor(t)], simulated: true })));
+      } else {
+        // The published ordered-opponent procedure has no unique statistical answer.
+        // Require a transparent conference-decision assumption, never alphabetical seeding.
+        const manualTiers = provisional.flatMap(t => choices.includes(t) ? drawOrders[keyFor(t)].map(slug => [t.find(r => r.slug === slug)]) : [t]);
+        resolved = [{ tiers: manualTiers, decisions: resolved.flatMap(r => r.decisions).concat(choices.map(t => ({ teams: t.map(r => r.slug), label: 'Scenario conference decision for mutually dependent comparisons', order: drawOrders[keyFor(t)], simulated: true }))), issues: resolved.flatMap(r => r.issues).filter(i => i.type !== 'comparison').concat(dependent.filter(t => !choices.includes(t)).map(t => ({ teams: t.map(r => r.slug), type: 'draw', label: 'Conference decision: mutually dependent ranked-opponent comparisons', reason: combinations > 4096 ? 'This large set of dependent comparisons requires a conference-decision order for the scenario.' : 'The ordered-opponent rules do not determine a unique ranking for these groups. Choose a conference-decision outcome for this scenario.' }))) }];
+      }
+    }
     resolved.forEach(r => { decisions.push(...r.decisions); issues.push(...r.issues); });
     const tiers = resolved.flatMap(r => r.tiers);
     const uniqueIssues = [...new Map(issues.map(issue => [issue.type + ':' + issue.teams.slice().sort().join('|') + ':' + issue.label, issue])).values()];
-    return { rows: tiers.flat(), tiers, unresolvedGroups: tiers.filter(t => t.length > 1).map(t => t.map(r => r.slug)), unresolvedTies: tiers.some(t => t.length > 1), decisions, issues: uniqueIssues, coefficient };
+    return { rows: tiers.flat(), tiers, unresolvedGroups: tiers.filter(t => t.length > 1).map(t => t.map(r => r.slug)), unresolvedTies: tiers.some(t => t.length > 1), decisions, issues: uniqueIssues, coefficient, comparisonAlternatives };
   }
   const api = Object.freeze({ rank, compare, keyFor });
   if (typeof module === 'object' && module.exports) module.exports = api;

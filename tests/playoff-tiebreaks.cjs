@@ -141,4 +141,25 @@ test('Ranking is independent of team and game input order', () => {
   assert(!r.issues.some(i=>i.type==='scores'||i.type==='comparison'));
  }
 });
-console.log(`${count} test groups passed (including 400 generated conference seasons).`);
+test('One thousand imbalanced OUA seasons produce resolved or explicit conference-decision seeds', () => {
+ let seed=7, decisions=0; const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/2**32;};
+ for(let run=0;run<1000;run++){
+  const ids=Array.from({length:11},(_,i)=>'t'+i),games=[];
+  for(let a=0;a<11;a++)for(let b=a+1;b<11;b++){
+   if(b-a===1||b-a===10)continue;
+   let as=Math.floor(random()*50),hs=Math.floor(random()*50);if(as===hs)as++;
+   games.push(game(ids[a],ids[b],as,hs));
+  }
+  const rec=records(ids,games),r=rank('OUA',rec,games);
+  assert(!r.issues.some(i=>i.type==='comparison'||i.type==='scores'));
+  if(r.unresolvedTies){
+   decisions++;
+   const choices=Object.fromEntries(r.issues.filter(i=>i.type==='draw').map(i=>[i.teams.slice().sort().join('|'),i.teams.slice().reverse()]));
+   let chosen=rank('OUA',rec,games,choices);
+   for(let pass=0;chosen.unresolvedTies&&pass<11;pass++){for(const i of chosen.issues.filter(i=>i.type==='draw'))choices[i.teams.slice().sort().join('|')]=i.teams.slice().reverse();chosen=rank('OUA',rec,games,choices);}
+   assert.equal(chosen.unresolvedTies,false,JSON.stringify({run,issues:chosen.issues,groups:chosen.unresolvedGroups,choices}));assert(chosen.decisions.some(d=>d.simulated));
+  }
+ }
+ console.log('Imbalanced OUA scenarios requiring explicit conference decisions:',decisions);
+});
+console.log(`${count} test groups passed (including 1,400 generated conference seasons).`);

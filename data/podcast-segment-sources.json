@@ -1,6 +1,38 @@
 {
   "episodes": [
     {
+      "id": "2026-week-7",
+      "episode": "Week 7 Review",
+      "published": "2026-10-12",
+      "durationSeconds": 6014,
+      "url": "https://www.youtube.com/watch?v=W3smDJ9665E",
+      "videoId": "W3smDJ9665E",
+      "audioUrl": null,
+      "sourceChapters": "https://www.youtube.com/watch?v=W3smDJ9665E",
+      "chapters": [
+        {
+          "label": "Players of the Week",
+          "start": 127
+        },
+        {
+          "label": "Battle of Lake Ontario",
+          "start": 445
+        },
+        {
+          "label": "Ottawa @ York",
+          "start": 1912
+        },
+        {
+          "label": "Windsor @ Queen's",
+          "start": 2987
+        },
+        {
+          "label": "Western @ Carleton",
+          "start": 4632
+        }
+      ]
+    },
+    {
       "id": "2026-week-6",
       "episode": "Week 6 Review",
       "published": "2026-10-06",
@@ -222,6 +254,38 @@
     }
   ],
   "segments": [
+    {
+      "episodeId": "2026-week-7",
+      "gameId": "2026-10-09-toronto-mcmaster",
+      "label": "Battle of Lake Ontario",
+      "start": 445,
+      "end": 1912,
+      "endsAtEpisodeEnd": false
+    },
+    {
+      "episodeId": "2026-week-7",
+      "gameId": "2026-10-10-ottawa-york",
+      "label": "Ottawa at York",
+      "start": 1912,
+      "end": 2987,
+      "endsAtEpisodeEnd": false
+    },
+    {
+      "episodeId": "2026-week-7",
+      "gameId": "2026-10-10-windsor-queens",
+      "label": "Windsor at Queen's",
+      "start": 2987,
+      "end": 4632,
+      "endsAtEpisodeEnd": false
+    },
+    {
+      "episodeId": "2026-week-7",
+      "gameId": "2026-10-10-western-carleton",
+      "label": "Western at Carleton",
+      "start": 4632,
+      "end": 6014,
+      "endsAtEpisodeEnd": true
+    },
     {
       "episodeId": "2026-week-6",
       "gameId": "2026-10-03-laurier-waterloo",

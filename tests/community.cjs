@@ -1,0 +1,13 @@
+const assert=require('node:assert/strict'),fs=require('fs'),vm=require('vm'),api=require('../community');
+const context={window:{}};vm.runInNewContext(fs.readFileSync('community-data.js','utf8'),context);const data=context.window.CANU_COMMUNITY;
+const g={id:'2026-09-11-laval-mcgill',date:'2026-09-11',away:'laval',home:'mcgill'},teams={laval:{name:'Laval Rouge et Or',short:'Laval'},mcgill:{name:'McGill Redbirds',short:'McGill'}};
+assert.equal(api.gamePost(data,g).id,'1wdvi8n');
+assert.equal(api.gamePost(data,{...g,id:'2026-10-18-mcgill-laval',date:'2026-10-18',away:'mcgill',home:'laval'}),undefined);
+assert.equal(api.gamePost(data,{...g,date:'2025-09-11'}),undefined);
+for(const url of ['javascript:alert(1)','https://evil.test/r/cisfootball/','https://www.reddit.com/r/CFL/comments/1/','https://user:password@www.reddit.com/r/cisfootball/'])assert.equal(api.safe(url),'');
+const share=new URL(api.share(g,teams));assert.equal(share.searchParams.get('url'),'https://canufootball.com/index.html#game='+g.id);assert.ok(share.searchParams.get('title').includes(g.date));
+assert.ok(api.game(data,g,teams).includes('Open game thread'));
+assert.ok(api.game(data,{...g,id:'other'},teams).includes('Search this matchup on Reddit'));
+assert.ok(!api.home({posts:[{url:'javascript:alert(1)'}]}).includes('javascript:'));
+assert.ok(api.team(data,'western',{short:'Western'}).includes('USPORTS Recruiting 2026'));
+console.log('PASS: exact dated game mapping, rematch fallback, safe external links, share draft URL, national recruiting on every team.');

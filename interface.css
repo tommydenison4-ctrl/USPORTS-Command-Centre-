@@ -331,3 +331,8 @@ body{background:#080f17;color:#f1f5fa}
  .clean-ui .topbar.clean-header .clean-primary-tabs>button{display:inline-flex!important;align-items:center;flex:0 0 auto;min-height:44px;white-space:nowrap;padding:10px 12px!important;font-size:12px!important}
  .clean-ui .topbar.clean-header .clean-more{align-self:flex-start;margin-top:2px}
 }
+
+/* Keep the national score rail in view while the page scrolls. */
+.clean-ui .topbar.clean-header{position:relative!important;top:auto!important}
+.clean-ui .canu-scoreboard{position:sticky;top:0;z-index:900;background:#0b131d;box-shadow:0 8px 18px #0004}
+.clean-ui .postgame-tabs{top:var(--canu-scoreboard-height,156px)}

@@ -41,7 +41,7 @@
       }
       if(top&&window.V102_LIVE?.scoreboardHtml){
         const html='<div class="canu-scoreboard-label">THIS WEEK · SCOREBOARD</div>'+V102_LIVE.scoreboardHtml();let strip=root.querySelector(':scope > .canu-scoreboard');
-        if(!strip){strip=document.createElement('section');strip.className='canu-scoreboard';top.after(strip)}
+        if(!strip){strip=document.createElement('section');strip.className='canu-scoreboard';top.after(strip);new ResizeObserver(entries=>{const height=entries[0]?.borderBoxSize?.[0]?.blockSize||strip.getBoundingClientRect().height;root.style.setProperty('--canu-scoreboard-height',height+'px')}).observe(strip)}
         if(stripMarkup.get(strip)!==html){stripMarkup.set(strip,html);strip.innerHTML=html;}
       }
       const match=location.hash.match(/^#(?:game|live)=(.+)$/);

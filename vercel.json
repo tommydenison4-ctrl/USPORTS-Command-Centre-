@@ -33,6 +33,14 @@
     },
     "api/player-availability.js": {
       "includeFiles": "{internal/**,data/**}"
+    },
+    "api/fan-consensus.js": {
+      "maxDuration": 60,
+      "includeFiles": "{internal/**,data/**,game-day.js}"
+    },
+    "api/consensus-cleanup.js": {
+      "maxDuration": 60,
+      "includeFiles": "{internal/**,data/**,game-day.js}"
     }
   },
   "headers": [
@@ -59,6 +67,10 @@
     {
       "path": "/api/capture-live-history",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/consensus-cleanup",
+      "schedule": "15 5 * * *"
     }
   ]
 }

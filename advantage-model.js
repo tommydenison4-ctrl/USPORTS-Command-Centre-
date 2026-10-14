@@ -153,7 +153,7 @@
 
 
    html+=`<div class="awm-metrics"><div><small>HOME MARGIN</small><b>${p.margin>=0?'+':''}${p.margin.toFixed(1)}</b></div><div><small>80% ERROR BAND</small><b>${p.marginInterval?p.marginInterval.map(x=>x.toFixed(1)).join(' to '):'Not supplied'}</b></div></div>`;
-   if(p.expected)html+=`<table><thead><tr><th>Expected matchup</th><th>${esc(p.awayName)}</th><th>${esc(p.homeName)}</th></tr></thead><tbody>${[['tempo','Eligible plays'],['explosives','Explosive plays'],['median','Median yards'],['neg','Negative play rate']].map(([k,label])=>`<tr><td>${label}</td>${['away','home'].map(side=>`<td>${finite(p.expected[side]?.[k])?(p.expected[side][k]*(k==='neg'?100:1)).toFixed(1)+(k==='neg'?'%':''):'—'}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+   if(p.expected)html+=`<table><thead><tr><th>Expected matchup</th><th>${esc(p.awayName)}</th><th>${esc(p.homeName)}</th></tr></thead><tbody>${[['tempo','Eligible plays'],['explosives','Explosive plays'],['ypp','Average yards per play'],['neg','Negative play rate']].map(([k,label])=>`<tr><td>${label}</td>${['away','home'].map(side=>`<td>${finite(p.expected[side]?.[k])?(p.expected[side][k]*(k==='neg'?100:1)).toFixed(1)+(k==='neg'?'%':''):'—'}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
 
 
   }return html+'</section>';

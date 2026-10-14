@@ -1,0 +1,4 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),A=require('../advantage-model');
+const p={available:true,gameId:'test',awayName:'Away',homeName:'Home',home_win_prob:.6,away_win_prob:.4,away_score:20,home_score:25,total:45,margin:5,expected:{away:{ypp:6.3,median:2,tempo:60,explosives:4,neg:.2},home:{ypp:7.1,median:3,tempo:62,explosives:5,neg:.1}}};
+const html=A.card(p,true);assert.ok(html.includes('Average yards per play'));assert.ok(!html.includes('Median yards'));assert.ok(/Average yards per play<\/td><td>6\.3<\/td><td>7\.1<\/td>/.test(html),'Average must render ypp values, not median values');
+assert.ok(fs.readFileSync('usports-awm.js','utf8').includes('class="pregame-left"'));console.log('PASS: fan average uses actual ypp values while model median inputs remain unchanged.');

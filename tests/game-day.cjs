@@ -8,3 +8,5 @@ assert.equal(weather.forecast({daily:{time:['2026-10-16'],temperature_2m_min:[3]
 assert.equal(api.safe('javascript:alert(1)'), '');assert.ok(api.compact(g,d).includes('Directions'));console.log('PASS: timezone-to-UTC calendar, date-only TBA, final/postponed exclusion, neutral venue safety, weather date validation and safe actions.');
 
 const k=api.kickoff(g),hour=Math.floor(k.getTime()/3600000)*3600;assert.deepEqual(weather.atKickoff({hourly:{time:[hour],temperature_2m:[7.6],precipitation_probability:[20],wind_speed_10m:[14.2]}},g),{temperature:8,rain:20,wind:14,forecastAt:new Date(hour*1000).toISOString()});assert.equal(weather.atKickoff({hourly:{time:[]}},g),null);assert.equal(weather.atKickoff({hourly:{time:[hour],temperature_2m:[null],precipitation_probability:[20],wind_speed_10m:[14]}},g),null);
+
+assert.equal(weather.condition(0,0).emoji,'🌙');assert.equal(weather.condition(0,1).emoji,'☀️');assert.equal(weather.condition(73).label,'Snow');assert.equal(weather.condition(95).emoji,'⛈️');assert.equal(weather.condition(null),null);

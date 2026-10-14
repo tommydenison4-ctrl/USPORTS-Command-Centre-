@@ -25,7 +25,7 @@
   if(body)card.querySelector('.v113-final-leaders')?.remove();
   const badge=card.querySelector('.attached-video-badge'),has=window.USGameHighlights?.has(g.id);
   if(has&&!badge){const link=document.createElement('a');link.className='attached-video-badge';link.href='#'+(final?'game':'live')+'='+encodeURIComponent(g.id);link.setAttribute('aria-label','Video clips attached');link.title='Video clips attached';link.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="5" width="14" height="14" rx="2"/><path d="M16 9l6-3v12l-6-3z"/></svg> Video';link.onclick=ev=>{ev.stopPropagation()};card.querySelector('.gameTop')?.append(link)}else if(!has)badge?.remove();
-  const old=card.querySelector('.game-watch');if(!final&&!old){const html=watch(g);if(html)card.querySelector('.gameAction')?.insertAdjacentHTML('beforebegin',html)}else if(final)old?.remove();
+  const old=card.querySelector('.game-watch');if(!window.CanuGameDay&&!final&&!old){const html=watch(g);if(html)card.querySelector('.gameAction')?.insertAdjacentHTML('beforebegin',html)}else if(final)old?.remove();
  }}
  let queued=false;function schedule(){if(queued)return;queued=true;queueMicrotask(()=>{queued=false;decorate()})}
  window.USGameCardDetails={watch,watchSchedule,decorate,events};new MutationObserver(schedule).observe(document.getElementById('app'),{subtree:true,childList:true});window.addEventListener('storage',schedule);window.addEventListener('hashchange',schedule);schedule();

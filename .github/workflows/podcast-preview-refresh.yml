@@ -1,0 +1,29 @@
+name: Verify upcoming podcast previews
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+permissions:
+  contents: write
+concurrency:
+  group: advantage-data-refresh
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5a1630ceea73d27597364c9af683
+      - name: Verify publisher chapters for October 15–18 games
+        run: |
+          if [ "$(date -u +%F)" \> '2026-10-18' ]; then exit 0; fi
+          python3 scripts/refresh-game-podcasts.py
+      - name: Save verified podcast data
+        run: |
+          git config user.name 'Podcast verification bot'
+          git config user.email 'podcast-verification@users.noreply.github.com'
+          git add data/podcast-segment-sources.json data/podcast-preview-status.json podcast-game-segments-data.js
+          if ! git diff --cached --quiet; then
+            git commit -m 'Refresh publisher-verified game podcast previews'
+            git push
+          fi

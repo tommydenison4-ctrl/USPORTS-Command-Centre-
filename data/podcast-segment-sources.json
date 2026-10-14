@@ -251,6 +251,29 @@
           "start": 5656
         }
       ]
+    },
+    {
+      "id": "2026-sea-preview-week-7",
+      "episode": "Sea to Sea Week 7",
+      "published": "2026-10-14",
+      "durationSeconds": 5094,
+      "url": "https://www.youtube.com/watch?v=t92jMAVbWJY",
+      "videoId": "t92jMAVbWJY",
+      "sourceChapters": "https://www.youtube.com/watch?v=t92jMAVbWJY",
+      "chapters": [
+        {
+          "label": "AUS",
+          "start": 203
+        },
+        {
+          "label": "RSEQ",
+          "start": 1555
+        },
+        {
+          "label": "CanWest",
+          "start": 3175
+        }
+      ]
     }
   ],
   "segments": [
@@ -525,6 +548,94 @@
       "start": 5656,
       "end": 7253,
       "endsAtEpisodeEnd": true
+    },
+    {
+      "episodeId": "2026-sea-preview-week-7",
+      "gameId": "2026-10-15-alberta-regina",
+      "label": "Alberta at Regina",
+      "start": 3175,
+      "end": 5094,
+      "kind": "preview",
+      "scope": "conference",
+      "conference": "CW",
+      "endsAtEpisodeEnd": true
+    },
+    {
+      "episodeId": "2026-sea-preview-week-7",
+      "gameId": "2026-10-16-calgary-ubc",
+      "label": "Calgary at Ubc",
+      "start": 3175,
+      "end": 5094,
+      "kind": "preview",
+      "scope": "conference",
+      "conference": "CW",
+      "endsAtEpisodeEnd": true
+    },
+    {
+      "episodeId": "2026-sea-preview-week-7",
+      "gameId": "2026-10-16-concordia-montreal",
+      "label": "Concordia at Montreal",
+      "start": 1555,
+      "end": 3175,
+      "kind": "preview",
+      "scope": "conference",
+      "conference": "RSEQ",
+      "endsAtEpisodeEnd": false
+    },
+    {
+      "episodeId": "2026-sea-preview-week-7",
+      "gameId": "2026-10-16-manitoba-saskatchewan",
+      "label": "Manitoba at Saskatchewan",
+      "start": 3175,
+      "end": 5094,
+      "kind": "preview",
+      "scope": "conference",
+      "conference": "CW",
+      "endsAtEpisodeEnd": true
+    },
+    {
+      "episodeId": "2026-sea-preview-week-7",
+      "gameId": "2026-10-17-bishops-sherbrooke",
+      "label": "Bishops at Sherbrooke",
+      "start": 1555,
+      "end": 3175,
+      "kind": "preview",
+      "scope": "conference",
+      "conference": "RSEQ",
+      "endsAtEpisodeEnd": false
+    },
+    {
+      "episodeId": "2026-sea-preview-week-7",
+      "gameId": "2026-10-17-saint-marys-acadia",
+      "label": "Saint Marys at Acadia",
+      "start": 203,
+      "end": 1555,
+      "kind": "preview",
+      "scope": "conference",
+      "conference": "AUS",
+      "endsAtEpisodeEnd": false
+    },
+    {
+      "episodeId": "2026-sea-preview-week-7",
+      "gameId": "2026-10-17-stfx-mount-allison",
+      "label": "Stfx at Mount Allison",
+      "start": 203,
+      "end": 1555,
+      "kind": "preview",
+      "scope": "conference",
+      "conference": "AUS",
+      "endsAtEpisodeEnd": false
+    },
+    {
+      "episodeId": "2026-sea-preview-week-7",
+      "gameId": "2026-10-18-mcgill-laval",
+      "label": "Mcgill at Laval",
+      "start": 1555,
+      "end": 3175,
+      "kind": "preview",
+      "scope": "conference",
+      "conference": "RSEQ",
+      "endsAtEpisodeEnd": false
     }
   ]
 }

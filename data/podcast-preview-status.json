@@ -1,0 +1,26 @@
+{
+  "target": {
+    "from": "2026-10-15",
+    "through": "2026-10-18",
+    "seaTitle": "Sea to Sea Week 7",
+    "ouaTitle": "Week 8 Preview"
+  },
+  "checkedDate": "2026-10-14",
+  "sources": [
+    "https://feeds.soundcloud.com/users/soundcloud:users:501236826/sounds.rss",
+    "https://www.youtube.com/@atthe55podcast/videos"
+  ],
+  "shows": {
+    "sea": {
+      "title": "Sea to Sea Week 7",
+      "status": "verified",
+      "url": "https://www.youtube.com/watch?v=t92jMAVbWJY",
+      "published": "2026-10-14",
+      "games": 8
+    },
+    "oua": {
+      "title": "Week 8 Preview",
+      "status": "not-released"
+    }
+  }
+}

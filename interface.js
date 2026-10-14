@@ -21,6 +21,7 @@
     document.querySelectorAll('details').forEach(n=>{const label=n.querySelector(':scope > summary')?.textContent||'';if(/Why this position|What could change the pick|Model and source details/.test(label))n.remove()});
     document.querySelectorAll('.season-watch p,.awm-card p').forEach(n=>{if(/model weights|Ranking method|editorial AUS|strength-based winner pick|playoff-bracket simulation|Early-season estimate|Projected score reconciled/.test(n.textContent))n.remove()});
     document.querySelectorAll('.gameCard[data-game-id]').forEach(card=>{
+      let anchor=card.querySelector(':scope > .gameAction');if(anchor)for(const selector of ['.gameday-card','.schedule-card-leaders','.awm-card','.fan-consensus']){const panel=card.querySelector(':scope > '+selector);if(panel){if(panel.nextElementSibling!==anchor)card.insertBefore(panel,anchor);anchor=panel}}
       const game=(typeof GAMES!=='undefined'?GAMES:[]).find(g=>g.id===card.dataset.gameId);
       if(!game||card.dataset.cleanAccent===game.away+'|'+game.home)return;
       const teams=typeof TEAM!=='undefined'?TEAM:{};

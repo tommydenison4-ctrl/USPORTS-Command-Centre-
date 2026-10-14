@@ -6,3 +6,5 @@ for(const slug of ['york','laurier'])assert.ok(branded.includes('src="assets/'+s
 console.log('Both teams retain their names and get logos in player-stat headings');
 
 assert.ok(!html.includes('<th>TGT</th>'));assert.ok(!html.includes('<th>FUM</th>'));assert.ok(html.includes('data-category="passing"'));console.log('Unsupported columns are omitted and categories remain available for paired layouts');
+
+const reordered={...r,teams:Object.fromEntries(Object.entries(r.teams).reverse().map(([t,c])=>[t,Object.fromEntries(Object.entries(c).reverse())]))};const stable=stats.html(reordered,schools,String,{away:'york',home:'laurier'});const order=[...stable.matchAll(/data-category="([^"]+)" data-team="([^"]+)"/g)].map(m=>m[1]+':'+m[2]);assert.deepEqual(order,['passing:york','passing:laurier','rushing:york','rushing:laurier','receiving:york','receiving:laurier']);console.log('Shuffled source data still renders Passing, Rushing, Receiving with away then home.');

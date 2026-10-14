@@ -17,7 +17,7 @@
   const tableTitle=t=>{if(/scoring summary/i.test(t.rows?.[0]?.join(' ')))return 'Scoring summary';if(t.rows?.[0]?.[0]==='Scoring')return 'Scoring by quarter';if(t.title==='Official box score'||[a.short,h.short].includes(t.title))return (t.rows?.[0]?.join(' · ')||t.title).slice(0,90);return t.title};
   const tables=(r.tables||[]).map(t=>'<details class="panel published-stat-table"><summary>'+esc(tableTitle(t))+'</summary><div class="football-scroll"><table class="statsTable"><tbody>'+t.rows.map((row,i)=>'<tr>'+row.map(cell=>'<'+(i===0?'th':'td')+'>'+esc(cell)+'</'+(i===0?'th':'td')+'>').join('')+'</tr>').join('')+'</tbody></table></div></details>').join('');
   const pages=(r.pages||[]).map((p,i)=>'<details class="panel published-stat-table"><summary>Official gamebook · page '+(i+1)+'</summary><pre style="white-space:pre-wrap;overflow:auto">'+esc(p)+'</pre></details>').join('');
-  const players=USPlayerBoxStats.html(r,TEAMS,esc);
+  const players=USPlayerBoxStats.html(r,TEAMS,esc,g);
   const renderTable=(rows,cls='')=>'<div class="football-scroll"><table class="statsTable '+cls+'"><thead><tr>'+rows[0].map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr></thead><tbody>'+rows.slice(1).map(row=>'<tr>'+row.map(c=>'<td>'+esc(c)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
   const quarter=(r.tables||[]).find(t=>/score by quarter|scoring by quarter/i.test(t.title)||t.rows?.[0]?.[0]==='Scoring');
   const stats=(r.tables||[]).find(t=>/^team statistics$/i.test(t.title));

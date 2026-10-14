@@ -336,3 +336,5 @@ body{background:#080f17;color:#f1f5fa}
 .clean-ui .topbar.clean-header{position:relative!important;top:auto!important}
 .clean-ui .canu-scoreboard{position:sticky;top:0;z-index:900;background:#0b131d;box-shadow:0 8px 18px #0004}
 .clean-ui .postgame-tabs{top:var(--canu-scoreboard-height,156px)}
+
+html,body{overflow-x:clip!important;overflow-y:visible!important}

@@ -47,10 +47,13 @@ jobs:
         run: |
           python scripts/build-game-previews.py
           node tests/game-previews.cjs
+      - name: Update website prediction record
+        run: node scripts/build-prediction-record.cjs
       - name: Save refreshed data
         run: |
           git config user.name 'Advantage data bot'
           git config user.email 'advantage-data@users.noreply.github.com'
+          git add data/prediction-record.json prediction-record-data.js
           git add data/game-previews.json game-previews-data.js
           git add data/watch-media.json watch-media-data.js
           git add player-stats-usports-data.js national-schedule-data.js data/national-schedule-usports.json data/verified-results-usports.json data/player-stats-*.json data/season-watch.json season-watch-data.js data/advantage-*.json data/forecasts-*.json data/advantage-snapshots data/pregame-predictions-*.json advantage-data.js data/player-leaders-usports.json player-leaders-data.js data/boxscores data/standings-usports.json standings-data.js rankings-data.js news-data.js podcasts-data.js

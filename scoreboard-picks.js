@@ -6,8 +6,8 @@ window.USScoreboardPicks=(()=>{
   if(s.error)return '<p role="status">Fan picks could not be loaded.</p><button type="button" data-picks-retry>Try again</button>';
   if(!s.data)return '<p role="status">Loading fan picks…</p>';
   const d=s.data;if(!d.available)return '<p>'+esc(d.message||'Picks will appear at kickoff.')+'</p>';
-  if(!d.total)return '<p>No picks were saved for this game.</p>';
-  return '<p class="scoreboard-picks-total">'+d.total+' pick'+(d.total===1?'':'s')+' · Locked at kickoff</p>'+(d.picks.length?'<ul>'+d.picks.map(p=>'<li><span><strong>'+esc(p.name)+'</strong><small>#'+esc(p.tag)+'</small></span><b>'+esc(team(p.winner))+'</b></li>').join('')+'</ul>':'')+(d.anonymous?'<p>'+d.anonymous+' anonymous pick'+(d.anonymous===1?'':'s')+' included in the totals.</p>':'');
+  if(!d.total)return (d.websitePick?'<p><strong>Website picked '+esc(team(d.websitePick))+'</strong></p>':'')+'<p>No fan picks were saved for this game.</p>';
+  return (d.websitePick?'<p class="scoreboard-picks-site"><strong>Website picked '+esc(team(d.websitePick))+'</strong></p>':'')+'<p class="scoreboard-picks-total">'+d.total+' pick'+(d.total===1?'':'s')+' · Locked at kickoff</p>'+(d.picks.length?'<ul>'+d.picks.map(p=>'<li><span><strong>'+esc(p.name)+'</strong><small>#'+esc(p.tag)+'</small></span><b>'+esc(team(p.winner))+'</b></li>').join('')+'</ul>':'')+(d.anonymous?'<p>'+d.anonymous+' anonymous pick'+(d.anonymous===1?'':'s')+' included in the totals.</p>':'');
  }
  function control(g,reveal){if(!reveal||g.exhibition||g.pendingParticipants)return '';const s=states.get(g.id)||{};return '<details class="scoreboard-picks" data-scoreboard-picks="'+esc(g.id)+'" '+(s.open?'open':'')+'><summary aria-label="See fan picks for '+esc(team(g.away)+' at '+team(g.home))+'">Who picked whom</summary><div class="scoreboard-picks-body">'+body(s)+'</div></details>'}
  async function load(id,force=false){let s=states.get(id)||{};states.set(id,s);if(s.loading||s.data&&!force)return;s.loading=true;s.error=false;paint(id);

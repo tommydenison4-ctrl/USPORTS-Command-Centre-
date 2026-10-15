@@ -4,12 +4,11 @@
     "2026-10-15-alberta-regina": {
       "title": "Rams look to stop slide against Golden Bears",
       "paragraphs": [
-        "Regina has been close. What the Rams have not done lately is win.",
-        "Losses to UBC, Saskatchewan and Calgary have come by a combined 13 points, leaving Regina at 2–3 heading into Thursday's home game against Alberta. The latest was the toughest to take on the scoreboard, a 14–13 loss to the Dinos on October 3.",
-        "The Rams have allowed 18.6 points a game, a much better mark than Alberta's 40.0. That has kept Regina competitive, but it has not been enough to get through a stretch in which each game has stayed within reach.",
-        "Alberta, meanwhile, has shown two very different sides on offence. The Golden Bears beat Calgary 42–35 on September 25, then managed just three points in an 18–3 loss to Manitoba a week later. At 1–4, they need more of the team that beat the Dinos.",
-        "Regina won the first meeting 39–8 on September 4. Alberta's offence will have to offer more resistance in the rematch, especially against a defence that has given the Rams a chance to win most weeks.",
-        "The Golden Bears are averaging 15 points a game. Regina is scoring 25.2. For Alberta, a repeat of its Calgary performance would change the complexion of this matchup. For the Rams, the immediate job is turning another winnable game into a result."
+        "Regina has lost three straight games by a combined 13 points. Last time out, a 110-yard rushing day from Carter Ashman still wasn't enough to get the Rams past Calgary.",
+        "Thursday's home game against Alberta offers a chance to end that slide, but the Rams also have some cleaning up to do. Owen Sieben threw three interceptions in the 14–13 loss to the Dinos, a costly afternoon in a game decided by a single point.",
+        "The Golden Bears know how quickly an offence can go cold. They beat Calgary 42–35 on September 25, then managed three points against Manitoba the following week. Eli Hetlinger threw for 171 yards and was intercepted twice in that 18–3 loss.",
+        "Alberta is 1–4 and Regina 2–3. Their first meeting wasn't close: the Rams won 39–8 on September 4. Since then, Regina has been competitive without collecting the wins to show for it, falling 25–20 to UBC and 38–31 to Saskatchewan before the loss to Calgary.",
+        "The Rams are allowing 18.6 points a game, less than half Alberta's 40.0. They don't need to look far for the opportunity here. A defence that has kept them close gets a Golden Bears offence coming off its quietest recent outing."
       ],
       "sources": [
         {
@@ -51,18 +50,26 @@
         {
           "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_hww9.xml",
           "label": "October 3 · Regina at Calgary"
+        },
+        {
+          "url": "https://bearsandpandas.ca/sports/football/stats/2026/university-of-manitoba/boxscore/8950",
+          "label": "2026-10-02 · Official player box score"
+        },
+        {
+          "url": "https://godinos.com/sports/football/stats/2026/regina/boxscore/15530",
+          "label": "2026-10-03 · Official player box score"
         }
       ]
     },
     "2026-10-16-calgary-ubc": {
       "title": "UBC gets another shot at Calgary after opening loss",
       "paragraphs": [
-        "UBC has had more than a month to think about its season-opening loss to Calgary. Friday brings the chance to do something about it.",
-        "The Thunderbirds host the Dinos after losing that first meeting 23–7. Much has changed since then: UBC won three straight before a 34–24 loss to Saskatchewan, while Calgary arrives at 2–3 following a 14–13 win over Regina.",
-        "The rematch puts UBC's running game in the spotlight. Marvyn Larozar has rushed for 713 yards in the four games included in CanUFootball's player totals, earning a place on the site's Hec Crighton Watch. Keeping him involved would help the Thunderbirds avoid the kind of offensive afternoon they had in Calgary.",
-        "The Dinos have their own playmakers. UBC's pregame reporting identifies receiver Matt Sibley as a major threat, giving the Thunderbirds something else to worry about if they commit too much attention elsewhere.",
-        "Calgary has averaged 28.2 points a game, slightly more than UBC's 26.0, but the Thunderbirds have allowed fewer points. Their defence gave up just six in a win over Manitoba before surrendering 34 to Saskatchewan.",
-        "UBC is 3–2 and looking to put another win between itself and Calgary. The Dinos can pull level in wins by repeating what worked in the opener. For the Thunderbirds, the first requirement is simple: produce more than seven points this time."
+        "“We have secured nothing.”",
+        "That was UBC head coach Blake Nill's message to his players this week, according to UBC Athletics. A 3–2 record has the Thunderbirds ahead of Calgary, but Friday's rematch brings back an opponent that has already beaten them.",
+        "The Dinos won the opener 23–7. UBC then won three straight before losing 34–24 to Saskatchewan, where Marvyn Larozar's 137 rushing yards and a touchdown weren't enough to hold off the Huskies.",
+        "Larozar gives the Thunderbirds a clear place to start. He's on CanUFootball's Hec Crighton Watch with 713 rushing yards in the four games included in the site's player totals. Drew Viotto threw for 222 yards and two touchdowns against Saskatchewan, but was also intercepted twice.",
+        "Calgary returns from the bye at 2–3 after squeezing past Regina 14–13. David Jordan passed for 215 yards without an interception, and Matt Sibley caught passes for 83. It was a different kind of win for a team that had scored 36 and 35 points in its previous two games and lost both.",
+        "The Dinos have already shown they can keep UBC's offence quiet. The Thunderbirds have spent the weeks since proving they're a better team than the one held to seven points. Friday gives them a chance to prove it against Calgary."
       ],
       "sources": [
         {
@@ -124,18 +131,22 @@
         {
           "url": "https://gothunderbirds.ca/news/2026/10/14/football-navacord-bc-insurance-preview-t-birds-host-dinos-for-key-shot-at-redemption.aspx",
           "label": "UBC Thunderbirds · pregame reporting"
+        },
+        {
+          "url": "https://godinos.com/sports/football/stats/2026/regina/boxscore/15530",
+          "label": "2026-10-03 · Official player box score"
         }
       ]
     },
     "2026-10-16-concordia-montreal": {
       "title": "Stingers face stiff test against Carabins",
       "paragraphs": [
-        "Concordia has been searching for points. A visit to Montréal is an uncomfortable place to continue that search.",
-        "The Stingers are 1–4 after a 48–15 loss to Laval, and they have yet to score 20 points in a regular-season game. Friday's opponent has averaged 38.8, leaving Concordia with little reason to expect that another low-scoring offensive effort will be enough.",
-        "Montréal is 4–1, though its last outing was anything but comfortable. The Carabins beat Sherbrooke 23–17 on October 3 after losing 42–34 to Laval the previous week.",
-        "That narrow win gives Concordia something to consider. Montréal can be made to work for a result, but the Stingers must be able to hold up their end when they have the ball. Their 10–5 win over Bishop's showed they can survive a defensive struggle. Their other recent results have been less forgiving.",
-        "Concordia has allowed 29.4 points a game while scoring 11.0. Those numbers put pressure on an offence that cannot afford to spend the evening handing the ball back without points.",
-        "For Montréal, the chance is to make Concordia chase the game. For the Stingers, staying within reach will require longer drives, better use of scoring chances and a defensive effort that gives their offence time to settle in."
+        "Montréal didn't get an easy afternoon from Sherbrooke. Merton Theagene's 116 rushing yards helped the Carabins escape 23–17, keeping them a game behind unbeaten Laval.",
+        "Friday brings a different assignment against Concordia, whose offence has yet to reach 20 points in a regular-season game. The Stingers are 1–4 after losing 48–15 to Laval; Montréal is 4–1.",
+        "Concordia did get a productive receiving day from Ely Rivest against the Rouge et Or. He finished with 117 yards and a touchdown, but the Stingers couldn't turn that into enough scoring to stay with Laval.",
+        "They've averaged 11 points a game, winning once in a 10–5 struggle against Bishop's. Against a Montréal offence averaging 38.8, that leaves an uncomfortable amount of work for the defence.",
+        "The Carabins haven't been untouchable. Laval beat them 42–34, and Sherbrooke stayed within a touchdown in their next game. Pepe Gonzalez threw for 175 yards, a touchdown and an interception against the Vert & Or, while Theagene supplied the more substantial ground game.",
+        "Concordia's best recent receiving performance at least gives the Stingers something to carry into the matchup. Montréal, meanwhile, has a chance to get its scoring closer to the pace it set before Sherbrooke made it work for all 23 points."
       ],
       "sources": [
         {
@@ -177,18 +188,22 @@
         {
           "url": "https://en.usports.ca/sports/fball/composite?d=2026-10-03",
           "label": "October 3 · Sherbrooke at Montréal"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_zz6y.xml",
+          "label": "2026-10-03 · Official player box score"
         }
       ]
     },
     "2026-10-16-manitoba-saskatchewan": {
       "title": "Huskies seek payback against Bisons in Saskatoon",
       "paragraphs": [
-        "Saskatchewan has beaten everyone it has faced since losing to Manitoba in the season opener. Now the Huskies get the Bisons again.",
-        "Friday's rematch in Saskatoon gives Saskatchewan a chance to answer that 40–22 loss and clinch a playoff berth, according to the Huskies' game notes. Four straight wins have taken them to 4–1 and changed the outlook considerably since that opening defeat.",
-        "The offence has been a big reason. Saskatchewan scored 65 points against Alberta, 38 against Regina and 34 against UBC in its last three games. Quarterback Anton Amundrud has thrown for 1,543 yards in the five games included in CanUFootball's totals and is on the site's Hec Crighton Watch.",
-        "Manitoba has already shown it can beat this team. The Bisons also come back from the conference bye with a good defensive result behind them, having held Alberta to three points in an 18–3 win on October 2.",
-        "That followed a much different afternoon against UBC, which beat Manitoba 31–6. The Bisons are 3–2, averaging 22 points and allowing 23 a game.",
-        "Saskatchewan's scoring average is up to 40.6. Manitoba does not have to erase that entire threat to win, as the opener showed, but it needs enough stops to keep its own offence from having to trade touchdowns all night."
+        "Manitoba is the last team to beat Saskatchewan. Four Huskies wins later, the Bisons are back in the way.",
+        "Friday's rematch in Saskatoon comes with more than payback attached. A Saskatchewan win would clinch a playoff berth, according to the Huskies' game notes. They're 4–1 since opening the season with a 40–22 loss in Winnipeg.",
+        "Their most recent win wasn't comfortable either. Saskatchewan beat UBC 34–24, with Aulain Penner rushing for two touchdowns and Anton Amundrud throwing for 295 yards. The Huskies have scored 34 or more in each of their last three games.",
+        "Amundrud is on CanUFootball's Hec Crighton Watch, but Manitoba arrives with a defensive performance worth bringing along. The Bisons held Alberta to three points in an 18–3 win on October 2, a much better showing than their 31–6 loss to UBC the week before.",
+        "Ishe Matanga rushed for 122 yards against the Golden Bears. That helped Manitoba win without asking Cole Anseeuw, who passed for 142 yards and a touchdown, to match the sort of totals Amundrud has been producing.",
+        "Both teams return from the conference bye. Saskatchewan's four-game run has changed the picture since the opener, but the Bisons' 3–2 record still includes something no other opponent can claim: a win over these Huskies."
       ],
       "sources": [
         {
@@ -254,18 +269,22 @@
         {
           "url": "https://huskies.usask.ca/news/2026/10/15/football-no-3-huskies-eye-postseason-clinch-in-rematch-with-manitoba.aspx",
           "label": "Saskatchewan Huskies · pregame reporting"
+        },
+        {
+          "url": "https://bearsandpandas.ca/sports/football/stats/2026/university-of-manitoba/boxscore/8950",
+          "label": "2026-10-02 · Official player box score"
         }
       ]
     },
     "2026-10-17-bishops-sherbrooke": {
       "title": "Gaiters, Vert & Or look for a much-needed win",
       "paragraphs": [
-        "Sherbrooke came within six points of Montréal in its last game. The Vert & Or now need to turn a competitive afternoon into something they have not had this season: a win.",
-        "Bishop's visits Saturday with problems of its own. The Gaiters are 1–4 and have lost their last three, most recently a 47–27 game against McGill. Sherbrooke is 0–5 after its 23–17 loss to the Carabins.",
-        "For the Vert & Or, that was a considerably better showing than the previous two weeks. Laval beat them 55–24, and McGill followed with a 34–1 win. Holding Montréal to 23 gave Sherbrooke a chance to stay in the game.",
-        "Bishop's has struggled to score consistently too. The Gaiters managed nine points against Montréal and five against Concordia before putting up 27 in the loss to McGill.",
-        "Neither side has averaged 17 points a game, while both have allowed considerably more. That makes this an opportunity for two offences that have spent much of the season trying to keep pace.",
-        "Sherbrooke needs to carry its improved defensive effort into another week. Bishop's needs to pair its better scoring output with more stops. Whichever team manages both will have a good chance to leave with a much-needed result."
+        "Jeremy Fyfe threw for 310 yards against Montréal. Sherbrooke still left without its first win.",
+        "The Vert & Or lost 23–17, a much closer game than the two that preceded it, and now face a Bishop's team dealing with its own difficult stretch. Sherbrooke is 0–5; the Gaiters are 1–4 and have lost three straight.",
+        "Bishop's found more offence in a 47–27 loss to McGill, with Mathieu Bellavance throwing for 183 yards and two touchdowns without an interception. That followed games in which the Gaiters managed nine points against Montréal and five against Concordia.",
+        "The improvement came at the wrong end of a 47-point afternoon for McGill. Sherbrooke has had much the same problem, allowing 37 points a game while scoring 16.4.",
+        "There was a better defensive performance against the Carabins, though. Sherbrooke had given up 55 to Laval and 34 to McGill before holding Montréal to 23. Fyfe's passing kept the offence involved, with Theo Deslongchamp accounting for 88 receiving yards.",
+        "Neither side has had much to celebrate recently. At least both can point to something more encouraging from the last outing: better passing from the Gaiters, and a Sherbrooke team that made one of the RSEQ's stronger sides play a close game."
       ],
       "sources": [
         {
@@ -307,18 +326,26 @@
         {
           "url": "https://en.usports.ca/sports/fball/composite?d=2026-10-03",
           "label": "October 3 · Sherbrooke at Montréal"
+        },
+        {
+          "url": "https://mcgillathletics.ca/sports/football/stats/2026-27/bishop-s/boxscore/12462",
+          "label": "2026-10-04 · Official player box score"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_zz6y.xml",
+          "label": "2026-10-03 · Official player box score"
         }
       ]
     },
     "2026-10-17-carleton-laurier": {
       "title": "Ravens chase first win on road at Laurier",
       "paragraphs": [
-        "Carleton was three points from a win against Ottawa. A week later, Western made sure there would be no close finish.",
-        "The Ravens now head to Laurier looking for their first victory after a 49–7 loss to the Mustangs dropped them to 0–6. Their 35–32 loss to the Gee-Gees showed they can make a game of it, but they have not been able to turn those chances into a win.",
-        "Laurier is trying to recover from its own setback. The Golden Hawks lost 39–31 to Waterloo on October 3, leaving them 2–4 after a stretch that also included an 18–16 loss to McMaster and a 36–13 win over York.",
-        "The Ravens have been able to score more often than their record might suggest, averaging 21.8 points. Keeping opponents off the scoreboard has been the bigger problem: Carleton is allowing 44.2 a game.",
-        "That gives Laurier an obvious opening. The Golden Hawks average 28.5 points, but their own defence has allowed 27.7, and Waterloo showed what can happen when an opponent keeps answering.",
-        "Carleton needs to bring the offence it showed against Ottawa and a much better defensive effort than it managed against Western. Laurier needs to make sure the Ravens do not get another chance to hang around until the final minutes."
+        "Will Russell threw three touchdown passes without an interception against Waterloo. Laurier still lost.",
+        "The Golden Hawks gave up 39 points in that game, leaving them 2–4 ahead of Saturday's visit from Carleton. Russell's 296 passing yards and Ryan Hughes' two touchdown catches couldn't make up the difference in the 39–31 defeat.",
+        "Carleton has spent even more of the season trying to outscore its defensive problems. The Ravens are 0–6 and allowing 44.2 points a game, though they came within three of Ottawa before losing 49–7 to Western last week.",
+        "Elijah Barnes passed for 200 yards against the Mustangs, but was intercepted twice and didn't throw a touchdown. Western had no such trouble, getting three passing touchdowns from Ben Casselman as the game got away from the Ravens.",
+        "Laurier has been closer to breaking through than Carleton. An 18–16 loss to McMaster and the Waterloo result sit on either side of a 36–13 win over York. The Golden Hawks have averaged 28.5 points, enough to make them a difficult opponent when their defence holds up.",
+        "For Russell and the Laurier offence, the Ravens' points-against average is an inviting number. For Carleton, the memory of that close game with Ottawa is considerably more useful than another look at last week's scoreboard."
       ],
       "sources": [
         {
@@ -378,12 +405,12 @@
     "2026-10-17-guelph-queens": {
       "title": "Gaels look to rebound as Gryphons visit Kingston",
       "paragraphs": [
-        "Queen's lost its unbeaten record last week. The schedule offers little time to dwell on it.",
-        "Guelph brings a three-game winning streak to Kingston on Saturday, giving the Gaels another difficult OUA matchup after their 25–22 loss to Windsor. Queen's is 5–1; a Gryphons win would leave both teams with five victories.",
-        "Guelph has scored 124 points during its winning run, beating Ottawa 31–28, Waterloo 47–22 and Toronto 46–0. The Gryphons have also allowed fewer than 20 points a game over the season, giving them more than one way to stay in a contest.",
-        "Queen's had scored 41 points in consecutive wins over Ottawa and Western before Windsor held the Gaels to 22. The loss did not erase what has been a productive offence, but it did show that Queen's can be kept within reach.",
-        "The quarterbacks give this game another reason to watch. Alex Vreeken has thrown for 1,872 yards in the five games included in the site's player totals, while Guelph's Tristan Aboud has 1,722 in six. Both appear on CanUFootball's Hec Crighton Watch.",
-        "The Gaels average 39.3 points a game and the Gryphons 37.2. Guelph has the lower points-against average. Queen's will want to get its offence moving again early; the Gryphons will try to make the Gaels work for the kind of scoring they found before the Windsor game."
+        "Three interceptions and a three-point loss ended Queen's unbeaten start. Now Guelph brings a much less forgiving assignment to Kingston.",
+        "Ashton St.Germain threw for 280 yards against Windsor, but the Gaels lost 25–22 after opening 5–0. Saturday's visitors have won three straight and scored 124 points doing it.",
+        "Tristan Aboud supplied four touchdown passes in the Gryphons' 46–0 win over Toronto on October 3. He finished with 311 passing yards, while Willem Arseneau caught passes for 118 yards and two scores. Guelph had already beaten Ottawa 31–28 and Waterloo 47–22 before shutting out the Blues.",
+        "That leaves the Gryphons 4–2, one win behind Queen's. They can draw level in wins by beating a Gaels team that scored 41 points against both Ottawa and Western before Windsor interrupted the run.",
+        "The Gaels aren't suddenly short of offence. They're averaging 39.3 points to Guelph's 37.2, and Alex Vreeken remains on CanUFootball's Hec Crighton Watch alongside Aboud. His place on that list, however, doesn't change what happened in the Gaels' most recent game.",
+        "Windsor kept Queen's within reach and made the close finish count. Guelph arrives with a defence allowing 19.7 points a game and an offence that hasn't needed many favours lately."
       ],
       "sources": [
         {
@@ -483,12 +510,12 @@
     "2026-10-17-mcmaster-waterloo": {
       "title": "Marauders take stingy defence into Waterloo",
       "paragraphs": [
-        "Waterloo found enough offence to beat Laurier in its last game. Finding that much room against McMaster will be another matter.",
-        "The Marauders visit Saturday at 5–1, with a defence allowing just 15.7 points a game. They held Toronto to six in a 26–6 win on October 9 and have made a habit of keeping games manageable for their offence.",
-        "Waterloo is coming off a 39–31 win over Laurier, a welcome response after losses to Windsor and Guelph. The Warriors were outscored 91–40 in those two games before turning the result around against the Golden Hawks.",
-        "Their offence has averaged 26.7 points, slightly more than McMaster's 24.2. The difference between the teams has been at the other end: Waterloo has allowed 39.2 points a game, leaving the Warriors with far more work to do when they have the ball.",
-        "McMaster has already shown it can win a close one, edging Laurier 18–16 before losing 32–25 to Western. The Marauders do not need a high-scoring game to be comfortable.",
-        "That puts the pressure on Waterloo to get stops as well as points. Another good offensive afternoon would help, but asking the Warriors to keep answering against this McMaster defence would be a much harder route to a win."
+        "McMaster won by 20 points despite four interceptions from its quarterback. Waterloo's last win came without a touchdown pass at all.",
+        "Saturday puts those two teams together after very different routes to their latest victories. The Marauders beat Toronto 26–6; the Warriors beat Laurier 39–31.",
+        "Barresi threw two touchdown passes against the Blues, with Nathan Denkers catching passes for 102 yards. The interceptions gave Toronto opportunities, but a McMaster defence allowing 15.7 points a game kept the damage down.",
+        "Waterloo has not had that luxury. The Warriors are allowing 39.2 points, and their win over Laurier came after losses in which Windsor scored 44 and Guelph 47.",
+        "Against the Golden Hawks, Brandon Riggan rushed for 94 yards and a touchdown, while Tyler Tierney had 113 receiving yards. Nick Orr threw for 227 yards, with two interceptions and no passing touchdowns, as Waterloo found enough scoring elsewhere to get to 2–4.",
+        "“Finishing the drives is a huge point of emphasis for us,” Denkers told McMaster Athletics after the win. The Marauders are 5–1; Waterloo, which has allowed at least 31 points in each of its last three games, is 2–4."
       ],
       "sources": [
         {
@@ -542,18 +569,22 @@
         {
           "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_3xzq.xml",
           "label": "October 3 · Laurier at Waterloo"
+        },
+        {
+          "url": "https://marauders.ca/news/2026/10/9/football-marauders-claim-inaugural-battle-of-lake-ontario-with-26-6-win-over-toronto.aspx",
+          "label": "McMaster Athletics · October 9 game report"
         }
       ]
     },
     "2026-10-17-saint-marys-acadia": {
       "title": "Unbeaten Huskies visit Axemen in AUS rematch",
       "paragraphs": [
-        "Acadia knows what it is up against. Saint Mary's has already beaten the Axemen twice, and neither game gave Acadia enough offence to threaten for long.",
-        "The unbeaten Huskies visit Saturday at 5–0 after winning those meetings 29–16 and 24–7. The second came on October 2 and left the Axemen 1–4, with a 38–12 loss to StFX between the two Saint Mary's games.",
-        "The Huskies have allowed just 12.2 points a game. That has given their offence room to work without asking it to win a shootout every week, and they have scored 24 or more in each of their last three games.",
-        "Running back Malcolm Bussey is one of the players Acadia has to account for. He has 428 rushing yards in the four games included in CanUFootball's player totals and is on the site's Hec Crighton Watch.",
-        "Acadia has averaged 14.4 points while allowing 27.2. The Axemen need to keep drives going long enough to give their defence a break, then make more of the chances that do reach scoring range.",
-        "Saint Mary's has already shown it can control this matchup. For Acadia to change the result, it will need more than another solid stretch or two. It needs an offence that can keep the Huskies under pressure for the afternoon."
+        "Malcolm Bussey ran for 124 yards and a touchdown the last time Saint Mary's played Acadia. The Huskies won 24–7, and the Axemen get another look at him Saturday.",
+        "Saint Mary's has won both meetings this season, including a 29–16 result in September, and brings a 5–0 record into the return trip. Acadia is 1–4 after losing three straight.",
+        "Bussey's rushing has helped put him on CanUFootball's Hec Crighton Watch. Against the Axemen, Justin Shibley added 167 passing yards and a touchdown to a Chandler Zinck-Marier receiving effort that produced 77 yards and a score.",
+        "Acadia did move the ball through the air. Mason Jude passed for 247 yards without an interception, and Jase LeBlanc had 104 receiving yards and the Axemen's touchdown. Seven points was still all they had to show for the afternoon.",
+        "The problem has persisted against the better AUS defences. Acadia scored 16 and seven against Saint Mary's, with 12 in a loss to StFX between those games.",
+        "The Huskies are allowing just 12.2 points a game. Acadia has already seen how difficult that defence makes it to turn passing yards into points; Bussey and the Saint Mary's offence have made sure the Axemen can't afford to settle for the yards alone."
       ],
       "sources": [
         {
@@ -597,12 +628,12 @@
     "2026-10-17-stfx-mount-allison": {
       "title": "Mounties look for answers against surging X-Men",
       "paragraphs": [
-        "Mount Allison has had two recent chances to slow StFX. Neither went well.",
-        "The X-Men beat the Mounties 42–6 on September 19 and 44–14 on October 3. They meet again Saturday, with StFX at 3–2 and Mount Allison looking to improve on a 1–4 start.",
-        "StFX has won three straight, scoring 124 points while allowing 32. A 38–12 win over Acadia sits between those two Mount Allison games, giving the X-Men a run of results that has been convincing on both sides of the ball.",
-        "The Mounties did give Saint Mary's a closer game between their losses to StFX, falling 24–17. That result shows a better defensive afternoon is within reach, but Mount Allison has not brought the same resistance to this matchup.",
-        "StFX averages 30 points a game and allows 15.8. The Mounties are scoring 15.4 while giving up 32.8, leaving them with a difficult combination against an opponent that has already found plenty of scoring room.",
-        "Mount Allison needs to make the X-Men earn longer drives and keep its own offence on the field. If StFX is allowed to set the pace again, the Mounties have already seen how quickly this game can get away from them."
+        "Deion Blackwood threw for 275 yards. Aiden Rossong ran for two touchdowns. Mount Allison had few answers when StFX won 44–14 on October 3.",
+        "Saturday brings the teams together again after a stretch in which the X-Men have done much of their scoring against the Mounties. StFX also won their September meeting 42–6, with a 38–12 win over Acadia between the two.",
+        "Those three victories have taken the X-Men to 3–2. Rossong rushed for 91 yards in the most recent meeting, Blackwood threw two touchdown passes without an interception, and Ayres Perry had 111 receiving yards.",
+        "Mount Allison got 182 passing yards and a touchdown from Spencer Joudry, but couldn't keep pace. Quinten George supplied 96 receiving yards in a game that again left the Mounties looking at a large deficit.",
+        "There has been a closer result for Mount Allison in the meantime. The Mounties lost 24–17 to unbeaten Saint Mary's between the StFX games, showing their defence can keep a stronger opponent within reach.",
+        "It hasn't managed that against the X-Men. StFX has scored 86 points in their two meetings, more than half Mount Allison's season total of 77 through five games."
       ],
       "sources": [
         {
@@ -646,12 +677,12 @@
     "2026-10-17-western-ottawa": {
       "title": "Gee-Gees face Western after setback against York",
       "paragraphs": [
-        "Ottawa could use a bounce-back game. Western is not an inviting opponent for one.",
-        "The Gee-Gees host the Mustangs after losing 19–12 to York, a result that left Ottawa 4–3. Western arrives at 5–1 after beating Carleton 49–7, quickly answering its own loss to Queen's.",
-        "The Mustangs are averaging 49 points a game. Even in their 41–30 loss to the Gaels, they produced enough offence to make a game of it. The following week, Carleton could not keep up.",
-        "Ottawa has had a more uneven stretch. A 41–20 loss to Queen's was followed by a 35–32 win over Carleton before York held the Gee-Gees to 12. Another quiet offensive day would leave Ottawa with a great deal to ask of its defence.",
-        "Western's Jerome Rancourt is on CanUFootball's Hec Crighton Watch, with 1,516 passing yards in the six games included in the site's player totals. The Mustangs' scoring has given opponents little room for empty possessions.",
-        "The Gee-Gees average 28.1 points and allow 24.6. They need to make Western work for its points while finding more of their own. Letting the Mustangs turn this into a race would be a demanding way to try to recover from the York loss."
+        "Ethan Dolby rushed for 140 yards against Carleton. Ben Casselman threw three touchdown passes. Western's answer to its first loss was a 49–7 win, and Ottawa is next.",
+        "The Mustangs visit the Gee-Gees at 5–1 after recovering from a 41–30 loss to Queen's. Ottawa is 4–3 and coming off a 19–12 defeat against York, a game that left its offence well short of Western's usual scoring pace.",
+        "Casselman passed for 177 yards without an interception against the Ravens. Nik Shewchuk caught two touchdown passes, giving Western plenty to go with Dolby's work on the ground.",
+        "Ottawa got 262 passing yards and a touchdown from Josh Janssen against York, but only 12 points. Devaughn Blackwood had 75 receiving yards and the touchdown as the Gee-Gees lost for the second time in three outings.",
+        "That is a difficult result to carry into a game against a team averaging 49 points. Western has scored at least 30 in each of its last three games, even with the Queen's loss included.",
+        "The Mustangs' scoring has earned Jerome Rancourt a place on CanUFootball's Hec Crighton Watch. Casselman's three-touchdown day against Carleton is the more immediate reminder of how many ways this offence can make an opponent pay."
       ],
       "sources": [
         {
@@ -729,18 +760,22 @@
         {
           "url": "https://westernmustangs.ca/sports/football/stats/2026-27/york-lions/boxscore/17092",
           "label": "Jerome Rancourt · player statistics"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261010_kodd.xml",
+          "label": "2026-10-10 · Official player box score"
         }
       ]
     },
     "2026-10-17-york-toronto": {
       "title": "Lions seek another win as Blues look for breakthrough",
       "paragraphs": [
-        "York is coming off a win worth building on. Toronto is still trying to find one.",
-        "The Lions beat Ottawa 19–12 last week to move to 2–4, giving them a chance to put together consecutive victories when they face the Varsity Blues on Saturday.",
-        "For York, that was a sharp change from the previous two games. Laurier beat the Lions 36–13, then Windsor followed with a 51–2 win. Holding Ottawa to 12 gave York an afternoon in which its offence did not have to chase a large deficit.",
-        "Toronto has not found that balance. The Blues are 0–6 and have scored just six points in their last three games, losing 54–0 to Windsor, 46–0 to Guelph and 26–6 to McMaster.",
-        "The season averages tell much the same story. Toronto has scored four points a game while allowing 43.2. York has produced more offence, but its 13.2-point average leaves little room for complacency against anyone.",
-        "The Lions need to carry their defensive effort against Ottawa into another week. Toronto needs an offence that can sustain drives and turn field position into points. For the Blues, simply keeping the score close will not solve the problem if they cannot finish possessions."
+        "Maurice Sodja threw two interceptions against Ottawa. York won anyway, and now has a chance to make it two straight.",
+        "The Lions beat the Gee-Gees 19–12 last week to improve to 2–4. Sodja rushed for 51 yards and a touchdown, helping York find enough offence after being held to two points by Windsor a week earlier.",
+        "Toronto has been searching for any kind of scoring run. The Varsity Blues are 0–6, with six points from their last three games: losses of 54–0 to Windsor, 46–0 to Guelph and 26–6 to McMaster.",
+        "Omarion Martin rushed for 69 yards against the Marauders, while Kaleb O'Donoghue passed for 131 and was intercepted once. That still left the Blues with another game in which moving the ball didn't produce much on the scoreboard.",
+        "York's defensive effort against Ottawa changed that equation for the Lions. Their offence didn't have to erase the sort of deficit it faced against Windsor or Laurier, and Sodja's rushing touchdown helped make the difference.",
+        "Neither team has been prolific: York averages 13.2 points and Toronto four. The Lions at least arrive with a recent example of how they can win when the offence isn't having a clean afternoon."
       ],
       "sources": [
         {
@@ -794,18 +829,22 @@
         {
           "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261009_44ma.xml",
           "label": "October 9 · Toronto at McMaster"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261010_kodd.xml",
+          "label": "2026-10-10 · Official player box score"
         }
       ]
     },
     "2026-10-18-mcgill-laval": {
       "title": "McGill takes winning run into showdown with Laval",
       "paragraphs": [
-        "McGill has won three straight. Extending that run will mean doing something no one has managed this regular season: beating Laval.",
-        "The Redbirds visit Sunday at 4–1 after wins over Concordia, Sherbrooke and Bishop's. Laval is 5–0 and has been just as convincing lately, scoring 145 points in its last three games.",
-        "McGill has not been short of offence either. The Redbirds beat Concordia 29–8, Sherbrooke 34–1 and Bishop's 47–27, giving them 110 points across the winning run. Their defence has allowed 17 points a game over the season, almost identical to Laval's 17.2.",
-        "Running back Jerry Momo is a big part of McGill's appeal in this matchup. He has rushed for 733 yards in the five games included in CanUFootball's totals and is on the site's Hec Crighton Watch. Keeping him productive would help the Redbirds avoid putting everything on their passing game.",
-        "Laval has averaged 39 points, compared with McGill's 29.6. The Rouge et Or beat Montréal 42–34 before handling Concordia 48–15, showing they can win a high-scoring contest as well as pull away from an opponent.",
-        "McGill needs its defence to keep Laval within reach and its offence to make the most of possessions. The Redbirds have earned their winning run; Sunday will show how it stands up against the unbeaten Rouge et Or."
+        "Olivier Cool caught three touchdown passes against Concordia. Sunday, he and unbeaten Laval face a McGill defence that has allowed 17 points a game.",
+        "The Rouge et Or won that last outing 48–15, getting 262 passing yards and three touchdowns from Victor Charland without an interception. Cool finished with 131 receiving yards, part of a three-game stretch in which Laval has scored 145 points.",
+        "McGill has been piling up wins too. The Redbirds beat Concordia, Sherbrooke and Bishop's to reach 4–1, most recently putting 47 points on the Gaiters.",
+        "Elliott Drapeau threw two touchdown passes and ran for another in that game. He also led McGill with 80 rushing yards, giving the Redbirds offence another productive day in a run that has produced 110 points.",
+        "Jerry Momo's season rushing total of 733 yards in the five games included in CanUFootball's totals has earned him a place on the Hec Crighton Watch. Laval has Charland and Cool on the same list, bringing three of the site's watch players into one matchup.",
+        "The defensive averages are nearly identical: McGill allows 17.0 points and Laval 17.2. The scoring is less even, with the Rouge et Or averaging 39 to the Redbirds' 29.6. Cool's three-touchdown afternoon showed how quickly that difference can show up."
       ],
       "sources": [
         {
@@ -877,7 +916,7 @@
         "The Golden Bears will need a much better defensive effort in the return game. Saskatchewan has averaged 40.6 points through its first five games, while Alberta has allowed 40.0.",
         "There has been some encouragement for Alberta on offence. The Bears beat Calgary 42–35 on September 25, but followed it with an 18–3 loss to Manitoba. That inconsistency has left them at 1–4 heading into the final stretch of the schedule.",
         "Saskatchewan has won four straight since its opening loss to Manitoba. Quarterback Anton Amundrud has thrown for 1,543 yards in the five games included in CanUFootball's player totals and appears on the site's Hec Crighton Watch.",
-        "Alberta needs to give its offence a chance to work without facing another large early deficit. Saskatchewan has already shown what it can do when the Golden Bears cannot slow the scoring. The return game will test whether Alberta can make the Huskies earn a different kind of win."
+        "Alberta's Eli Hetlinger threw for 171 yards and was intercepted twice in the October 2 loss to Manitoba. Saskatchewan's latest win featured 295 passing yards from Anton Amundrud and two rushing touchdowns from Aulain Penner against UBC. The Huskies' scoring has come from more than one source."
       ],
       "sources": [
         {
@@ -939,6 +978,10 @@
         {
           "url": "https://huskies.usask.ca/sports/football/stats/2026-27/ubc-thunderbirds/boxscore/6999",
           "label": "Anton Amundrud · player statistics"
+        },
+        {
+          "url": "https://bearsandpandas.ca/sports/football/stats/2026/university-of-manitoba/boxscore/8950",
+          "label": "2026-10-02 · Official player box score"
         }
       ]
     },
@@ -949,7 +992,7 @@
         "Saint Mary's won that meeting 24–17 on September 26. It was a competitive game in a season that has otherwise been difficult for Mount Allison, which is 1–4 through its first five outings.",
         "The Mounties have averaged 15.4 points while allowing 32.8. Against a Saint Mary's defence allowing just 12.2, they will have to make scoring chances count rather than rely on getting many of them.",
         "The Huskies are 5–0 and have scored 24 or more in each of their last three games. Malcolm Bussey has given them a threat on the ground, rushing for 428 yards in the four games included in CanUFootball's player totals and making the site's Hec Crighton Watch.",
-        "Mount Allison already knows it can keep this matchup close. Finding the extra stop or scoring drive to change the result is the next step. Saint Mary's will try to avoid giving the Mounties another opportunity to stay in it until the end."
+        "Spencer Joudry threw a touchdown pass without an interception in Mount Allison's October 3 loss to StFX, with Quinten George catching passes for 96 yards. Saint Mary's got 124 rushing yards and a touchdown from Malcolm Bussey against Acadia the previous day. Those two offences have had very different amounts of help from their defences."
       ],
       "sources": [
         {
@@ -997,7 +1040,7 @@
         "UBC won the September 18 meeting 25–20. For Regina, it was the start of a three-game stretch of close losses, followed by a 38–31 defeat against Saskatchewan and a 14–13 loss to Calgary.",
         "The Rams have allowed just 18.6 points a game through five outings. That has kept them in games, but at 2–3 they need to turn more of those opportunities into wins.",
         "UBC is 3–2 over the same period. The Thunderbirds beat Manitoba 31–6 before losing 34–24 to Saskatchewan, with their running game offering a consistent threat. Marvyn Larozar has 713 rushing yards in the four games included in CanUFootball's totals and is on the Hec Crighton Watch.",
-        "Regina needs to limit that ground game without leaving easy opportunities elsewhere. UBC, which averages 26 points to Regina's 25.2, has little reason to expect an easy afternoon after the teams' first meeting stayed so close."
+        "Carter Ashman ran for 110 yards in Regina's 14–13 loss to Calgary, but three Owen Sieben interceptions left the Rams with missed opportunities. UBC's Marvyn Larozar had 137 rushing yards and a touchdown against Saskatchewan. Both teams got productive ground games in their last outings; neither got the win."
       ],
       "sources": [
         {
@@ -1055,6 +1098,10 @@
         {
           "url": "https://www.reginacougars.com/sports/football/stats/2026/ubc/boxscore/11425",
           "label": "Marvyn Larozar · player statistics"
+        },
+        {
+          "url": "https://godinos.com/sports/football/stats/2026/regina/boxscore/15530",
+          "label": "2026-10-03 · Official player box score"
         }
       ]
     },
@@ -1065,7 +1112,7 @@
         "The X-Men won their September meeting 38–12 and have scored 124 points across their last three games. Two wins over Mount Allison came on either side of that Acadia result, giving StFX a convincing run heading into the later part of the AUS schedule.",
         "The Axemen are 1–4 through five games and have been held to 16 points or fewer in each of their last three. They lost 29–16 and 24–7 to Saint Mary's around the defeat against StFX.",
         "That leaves Acadia with work to do on offence as well as defence. The Axemen average 14.4 points a game; StFX has allowed only 15.8 while scoring 30.0.",
-        "Longer drives would give Acadia's defence a break and reduce the number of chances for the X-Men to pull away. StFX will try to make the rematch follow the first game, when its offence produced more points than the Axemen could answer."
+        "Deion Blackwood threw for 275 yards and two touchdowns in StFX's October 3 win over Mount Allison. Aiden Rossong added 91 rushing yards and two scores. Acadia's Mason Jude passed for 247 yards against Saint Mary's, including a touchdown to Jase LeBlanc, yet the Axemen finished with just seven points."
       ],
       "sources": [
         {
@@ -1113,7 +1160,7 @@
         "The Stingers have scored 11 points a game through a 1–4 start. Their lone win came in a 10–5 game against Bishop's, while their last outing ended in a 48–15 loss to Laval.",
         "Sherbrooke is 0–5, allowing 37 points a game. The Vert & Or did show improvement against Montréal, losing 23–17 after being beaten 55–24 by Laval and 34–1 by McGill.",
         "That Montréal result gives Sherbrooke something to build on. Repeating the defensive effort would put pressure on a Concordia offence that has struggled to finish drives, but the Vert & Or still need enough points of their own.",
-        "Sherbrooke averages 16.4, only a little more than the Stingers. Neither team has made a habit of winning high-scoring games, and both would welcome an afternoon in which the offence gives the defence some breathing room."
+        "Jeremy Fyfe gave Sherbrooke 310 passing yards in its 23–17 loss to Montréal, with Theo Deslongchamp accounting for 88 receiving yards. Concordia's Ely Rivest had a bigger receiving day against Laval, finishing with 117 yards and a touchdown. Neither performance brought a win, but both offences at least found something that worked."
       ],
       "sources": [
         {
@@ -1159,6 +1206,10 @@
         {
           "url": "https://en.usports.ca/sports/fball/composite?d=2026-10-03",
           "label": "October 3 · Sherbrooke at Montréal"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_zz6y.xml",
+          "label": "2026-10-03 · Official player box score"
         }
       ]
     },
@@ -1169,7 +1220,7 @@
         "Western has averaged 49 points through a 5–1 start. Its last three games included a 32–25 win over McMaster, a 41–30 loss to Queen's and a 49–7 win over Carleton.",
         "The Golden Hawks are 2–4 after losing 39–31 to Waterloo. They beat York 36–13 before that, but a narrow 18–16 loss to McMaster earlier in the stretch shows how little has separated some of Laurier's results.",
         "Defensively, Laurier has allowed 27.7 points a game. Western has been held below that figure infrequently enough to make this a substantial test for the Golden Hawks.",
-        "Jerome Rancourt has thrown for 1,516 yards in the six games included in CanUFootball's player totals and is on the site's Hec Crighton Watch. Laurier needs to keep Western's offence from dictating the game, then turn its own possessions into points. Long stretches without either would give the Mustangs too much room."
+        "Will Russell's three touchdown passes against Waterloo went with 296 yards and no interceptions. Ryan Hughes caught two of the scores. Western's last win brought three touchdown passes from Ben Casselman and 140 rushing yards from Ethan Dolby, a combination that left Carleton behind 49–7 at the finish."
       ],
       "sources": [
         {
@@ -1254,7 +1305,7 @@
         "The Gaiters are 1–4, averaging 14.8 points and allowing 26.8. Their offence improved in a 47–27 loss to McGill, but the extra points did not come with enough stops to change the result.",
         "Bishop's had managed only nine points against Montréal and five against Concordia in its previous two outings. Another afternoon like that would give Laval's offence little pressure to deal with.",
         "Victor Charland has thrown for 1,267 yards in the five games included in CanUFootball's player totals. He and receiver Olivier Cool appear on the site's Hec Crighton Watch, adding to the threats Bishop's must account for.",
-        "The Gaiters need to keep the ball, finish drives and make Laval work for its scoring chances. The Rouge et Or have shown they can pile up points when an opponent cannot do those things together."
+        "Olivier Cool caught three touchdown passes from Victor Charland in Laval's 48–15 win over Concordia. Mathieu Bellavance threw two without an interception for Bishop's against McGill, but the Gaiters lost 47–27. Bishop's found some offence that day; its defence never gave it a chance to make those points stand up."
       ],
       "sources": [
         {
@@ -1308,6 +1359,10 @@
         {
           "url": "https://rougeetor.ulaval.ca/wp-content/uploads/2022/05/boxscore-20260905-concordia-laval.pdf",
           "label": "Victor Charland · player statistics"
+        },
+        {
+          "url": "https://mcgillathletics.ca/sports/football/stats/2026-27/bishop-s/boxscore/12462",
+          "label": "2026-10-04 · Official player box score"
         }
       ]
     },
@@ -1318,7 +1373,7 @@
         "The Bisons won 38–36 on September 19. Since then, Manitoba has lost 31–6 to UBC and beaten Alberta 18–3, showing just how different its games can look from one week to the next.",
         "Calgary also had a change of pace after that meeting. The Dinos lost 42–35 to Alberta before edging Regina 14–13, finding a win without needing the sort of scoring that had not been enough in the previous two games.",
         "Through five outings, Calgary is 2–3 and averaging 28.2 points. Manitoba is 3–2, scoring 22 and allowing 23 a game.",
-        "The Dinos know they can move the score against the Bisons. What they need is a better result when Manitoba has the ball. One more stop could have changed the first meeting; the return game gives Calgary a chance to find it, while the Bisons will look to avoid needing another 38-point afternoon."
+        "Ishe Matanga rushed for 122 yards in Manitoba's October 2 win over Alberta, while Cole Anseeuw threw for 142 yards and a touchdown without an interception. Calgary's David Jordan also avoided an interception in his latest outing, passing for 215 yards in the one-point win over Regina."
       ],
       "sources": [
         {
@@ -1360,6 +1415,14 @@
         {
           "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_hww9.xml",
           "label": "October 3 · Regina at Calgary"
+        },
+        {
+          "url": "https://bearsandpandas.ca/sports/football/stats/2026/university-of-manitoba/boxscore/8950",
+          "label": "2026-10-02 · Official player box score"
+        },
+        {
+          "url": "https://godinos.com/sports/football/stats/2026/regina/boxscore/15530",
+          "label": "2026-10-03 · Official player box score"
         }
       ]
     },
@@ -1370,7 +1433,7 @@
         "The teams are both 4–1 through five games, with Montréal averaging 38.8 points and McGill allowing 17.0. The Carabins have not been quite as comfortable defensively, giving up 22.2 a game.",
         "McGill has won three straight, beating Concordia 29–8, Sherbrooke 34–1 and Bishop's 47–27. The Redbirds have found plenty of offence during that run, even if their season scoring average of 29.6 remains below Montréal's.",
         "Running back Jerry Momo has rushed for 733 yards in the five games included in CanUFootball's totals and appears on the site's Hec Crighton Watch. A productive afternoon from him would help McGill control possession and keep the Carabins waiting for their next drive.",
-        "Montréal beat Sherbrooke 23–17 after losing 42–34 to Laval. The Carabins have shown they can win a close, lower-scoring game, but McGill will try to make them work for every possession. The Redbirds' defence has been a reason for their strong start; this is another chance to prove it."
+        "McGill quarterback Elliott Drapeau accounted for three touchdowns against Bishop's, two passing and one rushing, and led the Redbirds with 80 yards on the ground. Montréal's Merton Theagene rushed for 116 in the win over Sherbrooke. Both teams have recently won games with substantial help from their running attacks."
       ],
       "sources": [
         {
@@ -1436,6 +1499,10 @@
         {
           "url": "https://mcgillathletics.ca/sports/football/stats/2026-27/sherbrooke/boxscore/12461",
           "label": "Jerry Momo · player statistics"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_zz6y.xml",
+          "label": "2026-10-03 · Official player box score"
         }
       ]
     },
@@ -1446,7 +1513,7 @@
         "Both teams are 5–1 through six games, but they have reached that record in different ways. The Gaels average 39.3 points; the Marauders score 24.2 and have repeatedly kept opponents from forcing them into a high-scoring contest.",
         "McMaster beat Laurier 18–16, lost 32–25 to Western and then held Toronto to six points in a 26–6 win. That last result fit the pattern of a defence that has allowed 15.7 points a game.",
         "Queen's is coming off its first loss, a 25–22 result against Windsor. Before that, the Gaels scored 41 in consecutive wins over Ottawa and Western.",
-        "Quarterback Alex Vreeken has thrown for 1,872 yards in the five games included in CanUFootball's totals and is on the site's Hec Crighton Watch. The Gaels will want to give him room to get the offence moving again. McMaster will try to make each scoring drive take more work than Queen's is used to."
+        "Ashton St.Germain threw for 280 yards against Windsor, but his three interceptions accompanied Queen's first loss. McMaster survived four Lucas Barresi interceptions against Toronto and still won 26–6. The contrast says plenty about the support each quarterback got from the rest of his team that day."
       ],
       "sources": [
         {
@@ -1530,7 +1597,7 @@
         "The Varsity Blues are 0–6 through six games, with just 24 points scored. Their last three outings produced losses of 54–0 to Windsor, 46–0 to Guelph and 26–6 to McMaster.",
         "Carleton is also 0–6 but has found more offence, averaging 21.8 points. The Ravens took Ottawa to a 35–32 game before losing 49–7 to Western, a reminder of how quickly their defensive problems can undo their scoring.",
         "The Ravens have allowed 44.2 points a game, a little more than Toronto's 43.2. Neither side has had much room to recover from mistakes once an opponent gets rolling.",
-        "For Toronto, the first job is turning a drive into points rather than another change of possession. Carleton needs to make the Blues earn those chances. Both teams would welcome a game in which one good stretch is followed by another, instead of being wiped out by the next score."
+        "Omarion Martin rushed for 69 yards in Toronto's last outing, while Kaleb O'Donoghue passed for 131. Carleton got 200 passing yards from Elijah Barnes against Western, but two interceptions and no passing touchdowns left the Ravens short of an answer in a 49–7 defeat."
       ],
       "sources": [
         {
@@ -1595,7 +1662,7 @@
         "Both teams are 2–4 through six outings, but Waterloo has produced far more offence. The Warriors average 26.7 points, compared with York's 13.2.",
         "The gap has been much smaller defensively. Waterloo has allowed 39.2 points a game and York 39.3, leaving both offences under pressure to make their possessions count.",
         "York's effort against Ottawa offered a better route. The Lions did not need a huge scoring day because their defence kept the game under control. Repeating that against a Waterloo team coming off 39 points will take another good afternoon.",
-        "The Warriors will want to keep that offence moving while finding more stops of their own. York needs to avoid letting Waterloo's scoring turn this into a game the Lions have to chase."
+        "Waterloo's Brandon Riggan rushed for 94 yards and a touchdown against Laurier, while Tyler Tierney had 113 receiving yards. York got a rushing touchdown and 51 yards from quarterback Maurice Sodja against Ottawa. Both teams found winning points on days when their quarterbacks threw two interceptions."
       ],
       "sources": [
         {
@@ -1649,6 +1716,10 @@
         {
           "url": "https://en.usports.ca/sports/fball/composite?d=2026-10-10",
           "label": "October 10 · Ottawa at York"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261010_kodd.xml",
+          "label": "2026-10-10 · Official player box score"
         }
       ]
     },
@@ -1659,7 +1730,7 @@
         "Kareame Cotton has thrown for 2,113 yards in the seven games included in CanUFootball's player totals. Tristan Aboud has 1,722 in six for Guelph. Both are on the site's Hec Crighton Watch.",
         "The Lancers are 5–2 after a 25–22 win over Queen's, a result that showed they can win a close game as well as a blowout. Windsor had beaten Toronto 54–0 and York 51–2 in its previous two outings.",
         "Guelph is 4–2 and has won three straight, beating Ottawa 31–28, Waterloo 47–22 and Toronto 46–0. The Gryphons have averaged 37.2 points while allowing 19.7, giving them a defence capable of helping their offence rather than relying on it to do everything.",
-        "Windsor scores 40.7 a game and allows 22.0. There should be chances for both quarterbacks, but the team that gets more stops will have a much easier afternoon. Guelph will try to keep Cotton from settling in, while the Lancers need to prevent Aboud from extending the Gryphons' recent scoring run."
+        "Colby Ginn caught both of Cotton's touchdown passes against Queen's and finished with 182 receiving yards. Guelph's Willem Arseneau had 118 yards and two touchdowns against Toronto. Cotton and Aboud get the attention on the Hec Crighton Watch, but their receivers have supplied plenty of the big plays."
       ],
       "sources": [
         {
@@ -1771,7 +1842,7 @@
         "The Huskies won 34–24 on October 3, extending a four-game winning streak. Through five games, Saskatchewan is 4–1 and averaging 40.6 points.",
         "UBC is 3–2 over the same period. The Thunderbirds had won three straight before losing to the Huskies, including a 31–6 win over Manitoba that showed how difficult their defence can make an afternoon.",
         "This game also brings two Hec Crighton Watch players together. Saskatchewan's Anton Amundrud has thrown for 1,543 yards in the five games included in CanUFootball's totals. UBC's Marvyn Larozar has rushed for 713 in four.",
-        "The Thunderbirds have allowed 20.4 points a game, but Saskatchewan found enough scoring to get past them in the first meeting. UBC needs to make the Huskies work harder for those points while keeping its own running game involved. Saskatchewan will look to make the return trip end the same way as the first game."
+        "Larozar rushed for 137 yards and a touchdown in the October 3 meeting. Saskatchewan answered with two rushing scores from Aulain Penner and 295 passing yards from Amundrud. Drew Viotto threw two touchdown passes for UBC but was also intercepted twice in the 34–24 loss."
       ],
       "sources": [
         {
@@ -1855,7 +1926,7 @@
         "The Redbirds won that game 34–1 and have put together three straight victories, also beating Concordia and Bishop's. McGill is 4–1 through five games, averaging 29.6 points while allowing 17.0.",
         "Sherbrooke's next outing was more encouraging, a 23–17 loss to Montréal. The Vert & Or stayed within reach of the Carabins after losing heavily to Laval and McGill, but they are still looking for their first win at 0–5.",
         "Stopping Jerry Momo is part of the assignment. The McGill running back has 733 rushing yards in the five games included in CanUFootball's totals and is on the site's Hec Crighton Watch.",
-        "Sherbrooke needs to get its offence off the field with points rather than empty possessions. A better defensive effort would help, but the Vert & Or cannot ask that unit to carry another game if the offence has as little to show for its work as it did in the first meeting."
+        "Jeremy Fyfe passed for 310 yards against Montréal after Sherbrooke's loss to the Redbirds. Elliott Drapeau gave McGill two passing touchdowns and another on the ground against Bishop's. Sherbrooke has shown it can move the ball through the air; McGill has been turning its offence into more points."
       ],
       "sources": [
         {
@@ -1917,6 +1988,10 @@
         {
           "url": "https://mcgillathletics.ca/sports/football/stats/2026-27/sherbrooke/boxscore/12461",
           "label": "Jerry Momo · player statistics"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_zz6y.xml",
+          "label": "2026-10-03 · Official player box score"
         }
       ]
     },
@@ -1927,7 +2002,7 @@
         "The X-Men have won three straight, scoring 124 points against Mount Allison and Acadia. That run has taken StFX to 3–2 through five games, with an average of 30 points a game.",
         "Saint Mary's is 5–0 over the same period and has allowed just 12.2 points a game. The Huskies beat Acadia 29–16 and 24–7 around a closer 24–17 win over Mount Allison.",
         "Malcolm Bussey gives Saint Mary's a threat on the ground. He has rushed for 428 yards in the four games included in CanUFootball's totals and appears on the site's Hec Crighton Watch.",
-        "StFX has been good defensively too, allowing 15.8 points a game. That makes this more than a test of whether the X-Men can keep scoring. Saint Mary's also has to find enough offence against a defence that has been doing its share. Neither team can assume the room it found against other AUS opponents will be there again."
+        "Deion Blackwood threw for 275 yards and two scores in StFX's last win over Mount Allison, with Aiden Rossong adding two rushing touchdowns. Saint Mary's latest victory included 124 rushing yards and a score from Bussey. The Huskies have not needed the X-Men's recent scoring pace because their defence has allowed so little."
       ],
       "sources": [
         {
@@ -1979,7 +2054,7 @@
         "The Stingers won 10–5 on September 26, their lone victory through five games. Bishop's is also 1–4 over that span, with both teams having struggled to keep pace with the higher-scoring RSEQ sides.",
         "The Gaiters have averaged 14.8 points. Concordia has scored 11.0 a game, making the first meeting less of an exception than either offence would like.",
         "Bishop's did produce 27 points against McGill in its most recent outing, but allowed 47. Concordia followed its win over the Gaiters with a 48–15 loss to Laval.",
-        "There is room for improvement on both sides of the ball, but the immediate need is finishing drives. One touchdown could carry considerably more weight here than it would in a game between the conference's higher-scoring teams. Bishop's needs more than five points; Concordia will want to avoid relying on ten being enough a second time."
+        "Mathieu Bellavance threw for 183 yards and two touchdowns without an interception against McGill, a better passing day than Bishop's result suggested. Concordia got 117 receiving yards and a touchdown from Ely Rivest against Laval. The rematch brings two offences that have found individual performances more often than complete games."
       ],
       "sources": [
         {
@@ -2021,6 +2096,10 @@
         {
           "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_xhzw.xml",
           "label": "October 3 · Laval at Concordia"
+        },
+        {
+          "url": "https://mcgillathletics.ca/sports/football/stats/2026-27/bishop-s/boxscore/12462",
+          "label": "2026-10-04 · Official player box score"
         }
       ]
     },
@@ -2031,7 +2110,7 @@
         "The Golden Bears won that first meeting 42–35, producing by far their better recent offensive effort. A week later, Alberta was held to three points in an 18–3 loss to Manitoba.",
         "That inconsistency has left the Bears 1–4 through five games, averaging 15 points while allowing 40. Calgary is 2–3 over the same stretch and scoring 28.2 a game.",
         "The Dinos also found a different way to play after losing to Alberta. They edged Regina 14–13 on October 3, getting a result without needing another high-scoring afternoon.",
-        "Alberta already knows it can move the ball and score against Calgary. The challenge is doing it again while getting enough stops to avoid having to reach 42. The Dinos need their defence to have a better answer than it did in September, or another productive offensive game could end with the same frustration."
+        "David Jordan passed for 215 yards without an interception in Calgary's one-point win over Regina. Alberta's Eli Hetlinger was intercepted twice in the loss to Manitoba and finished with 171 passing yards. That was a much quieter Golden Bears offence than the one Calgary saw in September."
       ],
       "sources": [
         {
@@ -2073,6 +2152,14 @@
         {
           "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261002_k48e.xml",
           "label": "October 2 · Manitoba at Alberta"
+        },
+        {
+          "url": "https://godinos.com/sports/football/stats/2026/regina/boxscore/15530",
+          "label": "2026-10-03 · Official player box score"
+        },
+        {
+          "url": "https://bearsandpandas.ca/sports/football/stats/2026/university-of-manitoba/boxscore/8950",
+          "label": "2026-10-02 · Official player box score"
         }
       ]
     },
@@ -2084,7 +2171,7 @@
         "Their scoring averages are almost identical. Laval has put up 39 points a game and Montréal 38.8. The bigger difference has been on defence, with the Rouge et Or allowing 17.2 and the Carabins 22.2.",
         "Laval followed the first meeting with a 48–15 win over Concordia. Montréal had a much closer afternoon against Sherbrooke, winning 23–17.",
         "Victor Charland has thrown for 1,267 yards in the five games included in CanUFootball's totals. He and receiver Olivier Cool appear on the site's Hec Crighton Watch, giving Montréal familiar threats to prepare for.",
-        "The Carabins need more stops than they managed in the first meeting. They have shown they can score against Laval, but doing so again will mean less if the Rouge et Or are allowed to answer every time."
+        "Cool caught three touchdown passes from Charland against Concordia, finishing with 131 receiving yards. Montréal's last win leaned more on the ground, with Merton Theagene rushing for 116 yards against Sherbrooke. Both offences have players coming off productive days, though Laval had considerably more points to show for its last one."
       ],
       "sources": [
         {
@@ -2134,6 +2221,10 @@
         {
           "url": "https://rougeetor.ulaval.ca/wp-content/uploads/2022/05/boxscore-20260905-concordia-laval.pdf",
           "label": "Victor Charland · player statistics"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_zz6y.xml",
+          "label": "2026-10-03 · Official player box score"
         }
       ]
     },
@@ -2144,7 +2235,7 @@
         "Neither offence has found scoring easy since then. Through five games, Mount Allison is averaging 15.4 points and Acadia 14.4, with both teams at 1–4.",
         "The Mounties have lost their last three, falling twice to StFX around a 24–17 loss to Saint Mary's. That game against the Huskies was considerably closer than the 42–6 and 44–14 defeats against the X-Men.",
         "Acadia has also faced a difficult run, losing twice to Saint Mary's with a 38–12 defeat against StFX between those games. The Axemen scored just seven points in their latest outing.",
-        "The first meeting showed Mount Allison can find enough offence against Acadia. The Axemen need to make that harder this time while keeping their own drives alive. In a matchup between teams that have spent much of the season searching for points, a few finished possessions could make a substantial difference."
+        "Quinten George had 96 receiving yards in Mount Allison's latest game against StFX. Acadia's Jase LeBlanc finished with 104 yards and a touchdown against Saint Mary's. Each gave his quarterback a productive target, but neither team turned that receiving performance into enough scoring to stay close."
       ],
       "sources": [
         {
@@ -2196,7 +2287,7 @@
         "The Rams lost to UBC by five, Saskatchewan by seven and Calgary by one in their last three outings. That left them 2–3 through five games despite allowing just 18.6 points a game.",
         "Manitoba is 3–2 over the same span. The Bisons beat Calgary 38–36, then lost 31–6 to UBC before answering with an 18–3 win over Alberta. They have shown they can win with plenty of offence or with a defence that keeps the game under control.",
         "Regina averages 25.2 points and Manitoba 22.0. Those figures do not leave either team much reason to expect a comfortable afternoon if the opposing defence plays well.",
-        "For the Rams, the task is finishing the job when a game stays within reach. For Manitoba, it is finding the balance it had against Alberta rather than leaving its offence trying to recover from a game like the loss to UBC. Both teams need their scoring chances to produce more than promising drives."
+        "Regina got 110 rushing yards from Carter Ashman against Calgary but lost three possessions on Owen Sieben interceptions. Manitoba's Cole Anseeuw avoided an interception against Alberta, while Ishe Matanga rushed for 122 yards. The Bisons turned that cleaner offensive day into an 18–3 win."
       ],
       "sources": [
         {
@@ -2238,6 +2329,14 @@
         {
           "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261002_k48e.xml",
           "label": "October 2 · Manitoba at Alberta"
+        },
+        {
+          "url": "https://godinos.com/sports/football/stats/2026/regina/boxscore/15530",
+          "label": "2026-10-03 · Official player box score"
+        },
+        {
+          "url": "https://bearsandpandas.ca/sports/football/stats/2026/university-of-manitoba/boxscore/8950",
+          "label": "2026-10-02 · Official player box score"
         }
       ]
     }

@@ -67,7 +67,7 @@ window.US_AWM=(()=>{
    return '<div id="us-awm-panel" data-game-state="live">'+liveCard+(p.availability?.length?'<p class="awm-availability">'+p.availability.map(r=>A.esc(r.player)+(r.status==='not-participating'?' not appearing in the live box score · '+A.esc(r.replacement)+' is taking the passing snaps.':' confirmed out.')).join(' ')+' Live forecast adjusted; availability is provisional.</p>':'')+'</div>';
   }
   const leaders=window.US_PlayerLeaders?.card(window.US_PLAYER_DATA,g)||'';
-  const html=A.card(p,true,data)+(window.USScoreSimulation?.card(p)?'<details class="pregame-simulation"><summary>Explore projected scores</summary>'+window.USScoreSimulation.card(p)+'</details>':'');
+  const html=(window.USGamePreviews?.card(g)||'')+A.card(p,true,data)+(window.USScoreSimulation?.card(p)?'<details class="pregame-simulation"><summary>Explore projected scores</summary>'+window.USScoreSimulation.card(p)+'</details>':'');
   return '<div id="us-awm-panel" data-game-state="pregame"><div class="pregame-summary-layout"><aside class="pregame-left" aria-label="Podcast and player leaders">'+leaders+'</aside><main class="pregame-main">'+html+'</main><aside class="postgame-sidebar pregame-sidebar" aria-label="Pregame information and news"></aside></div></div>';
  }
  return {forecast,panel,newsLogos,card:g=>A.card(forecast(g)),data};

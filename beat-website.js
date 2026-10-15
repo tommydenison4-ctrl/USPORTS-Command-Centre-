@@ -11,7 +11,7 @@ window.BeatWebsite=(()=>{
  let latestBoard=null,latestMe=null;
  function card(board,me){latestBoard=board;latestMe=me;return render(board,me)}
  document.addEventListener('click',e=>{const b=e.target.closest('[data-beat-period]');if(!b)return;period=b.dataset.beatPeriod;const section=b.closest('.beat-website');section.outerHTML=render(latestBoard,latestMe);document.querySelector('[data-beat-period="'+period+'"]').focus()});
- function scoreboard(){const d=window.US_PREDICTION_RECORD;if(!d)return '';return '<div class="scoreboard-website-record"><strong>WEBSITE RECORD</strong>'+['week','month','season'].map(k=>'<span>'+({week:'Week',month:'Month',season:'Season'}[k])+' <b>'+record(d[k])+'</b>'+(d[k]?.graded?' <small>'+d[k].accuracy+'%</small>':'')).join('')+'<a href="#fanpicks">Beat the Website →</a></div>'}
+ function scoreboard(){const d=window.US_PREDICTION_RECORD;if(!d)return '';return '<div class="scoreboard-website-record"><strong>WEBSITE RECORD</strong>'+['week','month','season'].map(k=>'<span>'+({week:'Week',month:'Month',season:'Season'}[k])+' <b>'+record(d[k])+'</b>'+(d[k]?.graded?' <small>'+d[k].accuracy+'%</small>':'')+'</span>').join('')+'<a href="#fanpicks">Beat the Website →</a></div>'}
  queueMicrotask(()=>window.dispatchEvent(new Event('canu-scores-updated')));
  return {card,scoreboard};
 })();

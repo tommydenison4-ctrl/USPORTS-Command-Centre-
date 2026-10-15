@@ -468,7 +468,7 @@
       "paragraphs": [
         "Queen's went into last weekend trying to protect an unbeaten record. It goes into this one trying to keep its first loss from becoming the start of something more troubling.",
         "Guelph visits Kingston on Saturday with three straight wins and an offence that has scored 124 points during that run. That is an awkward opponent for a Gaels team coming off a 25–22 loss to Windsor.",
-        "Hec Crighton Watch quarterback Alex Vreeken did not throw a pass against Windsor. Ashton St. Germain handled all 26 attempts, finishing with 280 yards, a touchdown and three interceptions. The team's report does not explain the change at quarterback.",
+        "The Gaels were without Hec Crighton Watch quarterback Alex Vreeken against Windsor, as reported by 3DownNation. Ashton St. Germain handled all 26 pass attempts in his place, finishing with 280 yards, a touchdown and three interceptions. Getting Vreeken back would give Queen's a different starting point for its response, though the report did not give a return date.",
         "The Gryphons have been getting a much happier return from their passing game. Tristan Aboud threw four touchdown passes in a 46–0 win over Toronto, twice finding Willem Arseneau for scores. That production has put Aboud on CanUFootball's Hec Crighton Watch and helped turn a 1–2 start into a 4–2 record.",
         "Toronto offered less resistance than Queen's is likely to provide. But Guelph had already won a close game against Ottawa and scored 47 against Waterloo before the shutout, giving the winning streak more substance than one big afternoon.",
         "For the 5–1 Gaels, that is what makes Saturday consequential. Windsor ended their perfect start. A Guelph win would bring the Gryphons level with them in victories and turn last week's setback into a much tighter OUA race."
@@ -573,6 +573,10 @@
         {
           "url": "https://gogaelsgo.com/news/2026/10/10/queens-football-drop-tight-contest-to-windsor.aspx",
           "label": "Queen’s Athletics · October 10 game report"
+        },
+        {
+          "url": "https://3downnation.com/2026/10/10/around-u-sports-windsor-lancers-hand-queens-gaels-first-loss/",
+          "label": "3DownNation · Vreeken absent against Windsor"
         }
       ]
     },
@@ -1719,8 +1723,8 @@
       "asOf": "2026-10-15",
       "title": "Gaels offence meets Marauders defence",
       "paragraphs": [
-        "Queen's and McMaster both watched their quarterbacks throw several interceptions in their last games. Only McMaster came away with a win, but the comparison comes with an important detail: the Gaels' Hec Crighton Watch quarterback Alex Vreeken did not throw a pass against Windsor.",
-        "Ashton St. Germain handled all 26 Queen's pass attempts, throwing for 280 yards with three interceptions in the 25–22 loss. The Gaels' game report does not explain the quarterback change. McMaster, meanwhile, survived four Lucas Barresi interceptions against Toronto and still won 26–6.",
+        "Queen's and McMaster both watched their quarterbacks throw several interceptions in their last games. Only McMaster came away with a win, but the comparison comes with an important detail: the Gaels were missing Hec Crighton Watch quarterback Alex Vreeken, according to 3DownNation.",
+        "Ashton St. Germain handled all 26 Queen's pass attempts against Windsor, throwing for 280 yards with three interceptions in the 25–22 loss. The report did not give a return date for Vreeken. McMaster, meanwhile, survived four Lucas Barresi interceptions against Toronto and still won 26–6.",
         "The difference was the protection McMaster got from its defence. The Marauders have allowed 15.7 points a game, giving an offence averaging 24.2 room to survive an untidy possession or two.",
         "Queen's has more scoring power, averaging 39.3, but Windsor showed that the Gaels cannot assume it will erase every mistake. Their previous two games had both produced 41 points; the Lancers kept that attack to 22 and made the close finish count.",
         "At 5–1 each, the teams have found different routes to the same record. Their meeting asks whether Queen's can get its scoring moving again against a defence that has made a habit of giving McMaster another chance."
@@ -1805,6 +1809,10 @@
         {
           "url": "https://gogaelsgo.com/news/2026/10/10/queens-football-drop-tight-contest-to-windsor.aspx",
           "label": "Queen’s Athletics · October 10 game report"
+        },
+        {
+          "url": "https://3downnation.com/2026/10/10/around-u-sports-windsor-lancers-hand-queens-gaels-first-loss/",
+          "label": "3DownNation · Vreeken absent against Windsor"
         }
       ]
     },

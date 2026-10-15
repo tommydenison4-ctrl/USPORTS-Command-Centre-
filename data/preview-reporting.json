@@ -1,14 +1,16 @@
 {
   "2026-10-16-manitoba-saskatchewan": {
-    "published": "2026-10-15", "validThrough": "2026-10-16",
+    "published": "2026-10-15",
+    "validThrough": "2026-10-16",
     "publisher": "Saskatchewan Huskies",
     "url": "https://huskies.usask.ca/news/2026/10/15/football-no-3-huskies-eye-postseason-clinch-in-rematch-with-manitoba.aspx",
-    "summary": "Saskatchewan’s October 15 preview identifies this as a rematch of Manitoba’s 40–22 opening win and reports that a Huskies win would secure a playoff berth. Both teams return from the conference bye. That earlier result gives Manitoba evidence it can win the matchup, while Saskatchewan’s subsequent winning run makes the opener an incomplete guide to current form."
+    "summary": "Saskatchewan can clinch a playoff berth with a win, according to the Huskies’ game notes. Both teams return from the Canada West bye week, with Manitoba coming off an 18–3 win over Alberta and Saskatchewan having beaten UBC 34–24."
   },
   "2026-10-16-calgary-ubc": {
-    "published": "2026-10-14", "validThrough": "2026-10-16",
+    "published": "2026-10-14",
+    "validThrough": "2026-10-16",
     "publisher": "UBC Thunderbirds",
     "url": "https://gothunderbirds.ca/news/2026/10/14/football-navacord-bc-insurance-preview-t-birds-host-dinos-for-key-shot-at-redemption.aspx",
-    "summary": "UBC’s October 14 preview notes Calgary’s 23–7 win in the first meeting and describes the return game as consequential for playoff positioning. Its reporting highlights UBC’s rushing attack and Calgary receiver Matt Sibley. Those contrasting routes to moving the ball make early-down defensive efficiency a useful matchup to follow."
+    "summary": "Calgary won the season opener 23–7. UBC’s preview points to receiver Matt Sibley as a major threat for the Dinos, while the Thunderbirds will look to their running game to help turn the rematch their way."
   }
 }

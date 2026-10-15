@@ -1,0 +1,11 @@
+.v102-other>.canu-scoreboard-game{flex:0 0 190px;min-width:0;scroll-snap-align:start}
+.canu-scoreboard-game>.canu-game-chip{width:100%;height:auto;min-height:100px;box-sizing:border-box}
+.scoreboard-picks{border:1px solid #344255;border-radius:0 0 8px 8px;background:#111d2a;color:#e8eef5;margin-top:3px;font-size:12px}
+.scoreboard-picks summary{cursor:pointer;padding:10px;font-size:11px;font-weight:700;line-height:1.4;color:#a7dfed}
+.scoreboard-picks summary:focus-visible{outline:2px solid #8cead3;outline-offset:-2px}
+.scoreboard-picks-body{max-height:230px;overflow-y:auto;padding:0 10px 10px;overscroll-behavior:contain}
+.scoreboard-picks-body p{font-size:11px;line-height:1.5;margin:8px 0;color:#b8c7d8}
+.scoreboard-picks-body ul{padding:0;margin:0;list-style:none}.scoreboard-picks-body li{display:flex;justify-content:space-between;align-items:start;gap:8px;padding:9px 0;border-bottom:1px solid #2c3f53;overflow-wrap:anywhere}
+.scoreboard-picks-body li>span{min-width:0}.scoreboard-picks-body strong{display:block;font-size:12px}.scoreboard-picks-body li b{font-size:11px;color:#8cead3;text-align:right}.scoreboard-picks-body li small{display:block;font-size:9px;color:#9aadc3;margin:3px 0 0}
+.canu-scoreboard .scoreboard-picks-body button{min-height:0;width:auto;padding:7px 9px;font-size:11px}
+@media(max-width:600px){.scoreboard-picks-body{max-height:180px}}

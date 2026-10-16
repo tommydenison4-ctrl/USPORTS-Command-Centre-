@@ -3,7 +3,7 @@
  function mount(){
   const footer=app.querySelector('#canu-live-pregame');
   if(footer){
-   for(const [selector,label,key] of [['#game-podcast-reaction','Podcast preview','podcast'],['#canu-game-day','Game-day guide and weather','guide'],['#canu-community-game','Fan discussion','community'],['#canu-pregame-comparison','Pregame team comparison','comparison']]){
+   for(const [selector,label,key] of [['#game-podcast-reaction','Podcast preview','podcast'],['#canu-game-day','Game-day guide and weather','guide'],['#canu-community-game','Fan discussion','community'],['.fan-consensus-full','Pregame fan picks','picks']]){
     const panel=app.querySelector(selector);if(!panel||footer.contains(panel))continue;
     let section=footer.querySelector('#canu-pregame-'+key);if(!section){section=document.createElement('details');section.id='canu-pregame-'+key;section.className='v102-card';const title=document.createElement('summary');title.textContent=label;section.append(title);footer.append(section)}section.append(panel);
    }

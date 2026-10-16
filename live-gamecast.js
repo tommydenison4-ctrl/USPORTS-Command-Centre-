@@ -318,7 +318,7 @@
   function patch(){
     if(!L.rendered||!document.querySelector('.v102-live')||!L.snap)return;
     const g=game(L.selected);L.snap=finalSnapshot(g,L.snap);const d=L.snap,st=LIVE_STORE?.games?.[L.selected]||{};patchRibbon();
-    const awm=document.getElementById('us-awm-panel');if(awm){const box=document.createElement('div');box.innerHTML=US_AWM.panel(g,d);htmlIfChanged(awm,box.firstElementChild.innerHTML);}
+    const awm=document.getElementById('us-awm-panel');if(awm){const livePeriod=/Q?[1-4]|OT|start of (?:1st|2nd|3rd|4th)|halftime/i.test(String(d?.status?.period||st.q||''));awm.style.display=livePeriod?'none':'';if(!livePeriod){const box=document.createElement('div');box.innerHTML=US_AWM.panel(g,d);if(box.firstElementChild)htmlIfChanged(awm,box.firstElementChild.innerHTML);}}
     const pre=g.status!=='final'&&!/final|complete|Q?[1-4]|OT|start of (?:1st|2nd|3rd|4th)|halftime/i.test(d?.status?.period||st.q||'');document.querySelector('.v102-live')?.classList.toggle('awm-pregame',pre);patchText('v102-as',pre?'—':d?.game?.awayScore??st.as??'—');patchText('v102-hs',pre?'—':d?.game?.homeScore??st.hs??'—');
     patchText('v102-status',isFinal(g,d)?'FINAL':pre?'PREGAME':[d?.status?.period||st.q||'Awaiting feed',d?.status?.clock||st.clock||''].filter(Boolean).join(' • '));
     patchText('v102-sit',isFinal(g,d)?'':[downText(d),String(d?.situation?.spot||st.spot||'').replace(/\s+/g,'').toUpperCase()].filter(Boolean).join(' · '));
@@ -404,7 +404,7 @@
     topBusy=true;
     try{await Promise.allSettled((GAMES||[]).filter(g=>g.date===today()&&g.status!=='final').map(fetchNationalGame));window.dispatchEvent(new Event('canu-scores-updated'));}finally{topBusy=false}
   };
-  L.isLive=id=>{const g=game(id),st=LIVE_STORE.games[id];return !!(st?._realLive&&validIdentity(g,{identity:st._feedIdentity})&&!isFinal(g,{status:{period:st.q}})&&/^(?:Q?[1-4]|OT)/i.test(st.q||''))};
+  L.isLive=id=>{const g=game(id),st=LIVE_STORE.games[id];return !!(st?._realLive&&validIdentity(g,{identity:st._feedIdentity})&&!isFinal(g,{status:{period:st.q}})&&/^(?:Q?[1-4]|OT|start of (?:1st|2nd|3rd|4th))/i.test(st.q||''))};
   L.patchSchedule=()=>{
     for(const card of document.querySelectorAll('.gameCard[data-game-id]')){
       const id=card.dataset.gameId;if(!L.isLive(id))continue;

@@ -186,12 +186,14 @@ function playTypeFromDescription(desc='', raw=''){
 }
 function flattenPlays(data){
   const out=[],seen=new Set();
-  walk(data?.plays,(o)=>{
+  walk(data?.plays,(o,path)=>{
     if(Array.isArray(o))return;
     const desc=o.description??o.desc??o.text??o.play??o.summary??o.pbp;
     if(typeof desc!=='string'||desc.trim().length<4)return;
     const clock=text(firstVal(o,['clock','time','gameclock','game_clock','clk']));
-    const q=text(firstVal(o,['qtr','quarter','period','q','prd']));
+    const quarters=Array.isArray(data?.plays?.qtr)?data.plays.qtr:[data?.plays?.qtr];
+    const quarter=quarters[Number(path.match(/\.qtr\[(\d+)\]/)?.[1]||0)];
+    const q=text(firstVal(o,['qtr','quarter','period','q','prd'])??quarter?.number);
     const parsed=parseSituationText(desc);
     const down=normalizeDown(firstVal(o,['down','dn','dwn','currentDown'])) ?? parsed.down;
     let distance=firstVal(o,['distance','dist','ytg','yardsToGo','yards_to_go','togo']);
@@ -428,7 +430,8 @@ function teamComparison(data,source){
 function normalize(data,source){
   const one=v=>Array.isArray(v)?v[0]:v;
   const venue=one(data?.venue)||{};
-  const status=one(data?.status)||one(venue.status)||{};
+  const downToGo=one(data?.plays?.downtogo)||{};
+  const status=one(data?.status)||one(venue.status)||{period:downToGo.qtr,clock:downToGo.clock};
   const ps=teamAndPlayerStats(data);
   const plays=flattenPlays(data);
   const drives=flattenDrives(data);
@@ -455,7 +458,7 @@ function normalize(data,source){
     status:{complete:/^(?:Y|true|1)$/i.test(text(status.complete)),period:periodLabel(status),clock:text(status.clock),running:text(status.running)},
     game:{awayId:source.awayId,homeId:source.homeId,awayScore:away,homeScore:home,scoreSource,awayLogo:source.awayLogo||'',homeLogo:source.homeLogo||''},
     situation,plays,drives,teamStats:ps.teamStats,playerStats:ps.playerStats,statComparison:teamComparison(data,source),rawKeys:Object.keys(data||{}),
-    scoreDebug:{statusNodes:{venue:data?.venue,primetime:data?.primetime,message:data?.message,network:data?.network,downtogo:data?.plays?.downtogo,quarterMeta:(Array.isArray(data?.plays?.qtr)?data.plays.qtr:[data?.plays?.qtr]).map(q=>q&&Object.fromEntries(Object.entries(q).map(([k,v])=>[k,typeof v==='object'?Object.keys(v||{}):v])))},latestScoringEventIndex:latestScore.index,scores:data?.scores??null,candidates:scalarScoreCandidates(data,source).slice(0,12)}
+    scoreDebug:{latestScoringEventIndex:latestScore.index,scores:data?.scores??null,candidates:scalarScoreCandidates(data,source).slice(0,12)}
   };
 }
 function isLivePayload(json){ return !!(json && typeof json==='object' && !json.error && (json.status || json.plays || json.drives || json.team || json.scores || json.source==='PrestoSports')); }

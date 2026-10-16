@@ -444,7 +444,21 @@
     if(game(id)?.status!=='final'&&L.isLive(id))open(id,true);
   };
   window.addEventListener('canu-scores-updated',transitionToLive);
-  setInterval(transitionToLive,5000);
+  let pregameProbeBusy=false;
+  async function probePregameKickoff(){
+    const h=location.hash.slice(1);
+    if(!h.startsWith('game=')||pregameProbeBusy)return;
+    const id=decodeURIComponent(h.slice(5)),g=game(id);
+    if(!g||g.status==='final')return;
+    pregameProbeBusy=true;
+    try{
+      await fetchNationalGame(g);
+      transitionToLive();
+    }finally{pregameProbeBusy=false}
+  }
+  setInterval(probePregameKickoff,10000);
+  window.addEventListener('hashchange',()=>{if(location.hash.startsWith('#game='))probePregameKickoff()});
+  setTimeout(probePregameKickoff,1500);
   window.showGameCast=(id)=>open(id,true);
   window.openLiveV32=()=>{const all=(GAMES||[]),active=all.filter(g=>L.isLive(g.id)),todayGames=all.filter(g=>g.date===today()&&g.status!=='final'),upcoming=all.filter(g=>g.date>=today()&&g.status!=='final').sort((a,b)=>String(a.date+' '+(a.time||'')).localeCompare(String(b.date+' '+(b.time||''))));const selected=active[0]||todayGames[0]||upcoming[0];if(selected){history.replaceState(null,'','#live='+encodeURIComponent(selected.id));open(selected.id,false);return;}document.getElementById('app').innerHTML=shell(`<div style="max-width:1180px;margin:auto;padding:18px"><h2>National Game Center</h2><p>No live or upcoming games are currently listed. Select a completed game from the schedule to view its box score.</p><div id="canu-live-hub">${rail('')}</div></div>`,'live');L.refreshScoreboard();};
   const routeBefore=window.route;window.route=function(){const h=location.hash.slice(1);if(h==='live'){openLiveV32();return}if(h.startsWith('live=')){const id=h.slice(5);if(game(id)?.status==='final'){completedToBox(id,L.snap);return}if(L.selected===id&&document.querySelector('.v102-live')){tick();startTimer();return}open(id,false);return}return routeBefore?.()};

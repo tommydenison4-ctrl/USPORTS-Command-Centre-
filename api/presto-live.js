@@ -517,7 +517,10 @@ function expectedGame(id){const date=id.slice(0,10),teams=require('../data/uspor
 async function getHtml(url){try{const r=await fetch(url,{signal:AbortSignal.timeout(8000),redirect:'follow',headers:{...BASE_HEADERS,'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'}});return r.ok?await r.text():''}catch{return ''}}
 async function discoverSourcePage(date,awayName,homeName){
   const ck=[date,normName(awayName),normName(homeName)].join('|'); const cached=DISCOVERY_CACHE.get(ck); if(cached&&Date.now()-cached.t<6*60*60*1000)return cached.v;
+  const day=date.slice(0,4)+'-'+date.slice(4,6)+'-'+date.slice(6,8);
   const urls=[
+    'https://en.usports.ca/sports/fball/composite?d='+day,
+    'https://fr.usports.ca/sports/fball/composite?d='+day,
     'https://smu.prestosports.com/sports/fball/2026-27/schedule','https://smu.prestosports.com/sports/fball/index',
     'https://www.smuhuskies.ca/sports/fball/2026-27/schedule','https://smuhuskies.ca/sports/fball/2026-27/schedule',
     'https://mountiepriderefresh2023.prestosports.com/sports/fball/2026-27/schedule','https://mountiepriderefresh2023.prestosports.com/sports/fball/index',
@@ -547,7 +550,7 @@ module.exports=async function handler(req,res){
     try{
       const u=new URL(dynamicPage);
       const host=u.hostname.toLowerCase();
-      const allowedHosts=new Set(['oua.ca','www.oua.ca','en.usports.ca','usports.ca','www.usports.ca','atlanticuniversitysport.com','www.atlanticuniversitysport.com','aus.prestosports.com','smuhuskies.ca','www.smuhuskies.ca','mountiepride.ca','www.mountiepride.ca']);
+      const allowedHosts=new Set(['oua.ca','www.oua.ca','en.usports.ca','fr.usports.ca','usports.ca','www.usports.ca','atlanticuniversitysport.com','www.atlanticuniversitysport.com','aus.prestosports.com','smuhuskies.ca','www.smuhuskies.ca','mountiepride.ca','www.mountiepride.ca']);
       const allowed=allowedHosts.has(host)||host.endsWith('.prestosports.com');
       const validPath=/^\/sports\/fball\/2026-27\/boxscores\/\d{8}_[A-Za-z0-9]+\.xml$/i.test(u.pathname);
       if(!allowed||!validPath) return send(res,400,{ok:false,error:'Unsupported live-stat source page'});

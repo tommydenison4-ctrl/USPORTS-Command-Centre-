@@ -8,7 +8,7 @@ function dec(s=''){return s.replace(/&amp;/g,'&').replace(/&#x2F;/gi,'/').replac
 function one(html,re){const m=html.match(re);return m?dec(m[1]):'';}
 function boolVal(v){return String(v).toLowerCase()==='true';}
 function cookieHeader(r){try{if(typeof r.headers.getSetCookie==='function'){const a=r.headers.getSetCookie();if(a?.length)return a.map(x=>x.split(';')[0]).join('; ');}}catch{} const raw=r.headers.get('set-cookie');return raw?raw.split(/,(?=[^;,]+=)/).map(x=>x.split(';')[0]).join('; '):'';}
-async function getText(url){const r=await fetch(url,{redirect:'follow',headers:{...HEADERS,'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'}});return {status:r.status,ok:r.ok,text:await r.text(),cookie:cookieHeader(r),url:r.url||url};}
+async function getText(url){const r=await fetch(url,{signal:AbortSignal.timeout(8000),redirect:'follow',headers:{...HEADERS,'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'}});return {status:r.status,ok:r.ok,text:await r.text(),cookie:cookieHeader(r),url:r.url||url};}
 function confName(html,key){const m=html.match(new RegExp("conf\\."+key+"\\s*=\\s*(['\"])((?:\\\\.|(?!\\1).)*)\\1",'i'));return dec((m?.[2]||'').replace(/\\(['"\\])/g,'$1'));}
 function metaFromHtml(html,page){
   html=dec(html||'');
@@ -27,7 +27,7 @@ async function fetchLive(meta,cookie=''){
   const origin=new URL(meta.page).origin;
   const u=new URL('/action/sports/liveupdate',origin);u.searchParams.set('e',meta.event);u.searchParams.set('h',meta.hash);
   const headers={...HEADERS,'Accept':'application/json,text/plain,*/*','X-Requested-With':'XMLHttpRequest','Referer':meta.page,'Origin':origin}; if(cookie)headers.Cookie=cookie;
-  const r=await fetch(u,{headers,redirect:'follow'});const body=await r.text();let j=null;try{j=JSON.parse(body)}catch{};return {status:r.status,json:j};
+  const r=await fetch(u,{signal:AbortSignal.timeout(8000),headers,redirect:'follow'});const body=await r.text();let j=null;try{j=JSON.parse(body)}catch{};return {status:r.status,json:j};
 }
 function lastScore(j){const rows=Array.isArray(j?.scores?.score)?j.scores.score:[];if(!rows.length)return {away:0,home:0};const x=rows[rows.length-1]||{};const a=Number(x.vscore),h=Number(x.hscore);return {away:Number.isFinite(a)?a:0,home:Number.isFinite(h)?h:0};}
 function period(j){let p=Array.isArray(j?.status?.period)?j.status.period[0]:j?.status?.period;p=String(p||'').trim();return /^\d+$/.test(p)?`Q${p}`:p.toUpperCase();}
@@ -56,7 +56,10 @@ async function scanSchedule(scheduleUrl,date){
 module.exports=async function handler(req,res){
   if(req.method!=='GET')return send(res,405,{ok:false,error:'GET only'});
   const date=String(req.query.date||'20260906').replace(/\D/g,'').slice(0,8);
+  const day=date.slice(0,4)+'-'+date.slice(4,6)+'-'+date.slice(6,8);
   const scheduleUrls=[
+    'https://en.usports.ca/sports/fball/composite?d='+day,
+    'https://fr.usports.ca/sports/fball/composite?d='+day,
     'https://en.usports.ca/sports/fball/2026-27/schedule',
     'https://oua.ca/sports/fball/2026-27/schedule',
     'https://www.atlanticuniversitysport.com/sports/fball/2026-27/schedule',
@@ -71,7 +74,7 @@ module.exports=async function handler(req,res){
     'https://mountiepriderefresh2023.prestosports.com/sports/fball/index',
     'https://www.mountiepride.ca/sports/fball/2026-27/schedule'
   ];
-  let pages=[];for(const u of scheduleUrls){try{pages.push(...await scanSchedule(u,date));}catch{}}
+  let pages=(await Promise.all(scheduleUrls.map(u=>scanSchedule(u,date).catch(()=>[])))).flat();
   pages=[...new Set(pages)].slice(0,20);
   const candidates=[];
   const games=(await Promise.all(pages.map(async page=>{

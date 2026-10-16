@@ -431,7 +431,7 @@
   const previousShowGame=window.showGame;
   window.showGame=function(id){
     const g=game(id);
-    if(g&&g.status!=='final'&&L.isLive(id)){open(id,true);return;}
+    if(g&&g.status!=='final'&&(L.isLive(id)||g.date===today())){open(id,true);return;}
     return previousShowGame?.apply(this,arguments);
   };
   const previousRoute=window.route;
@@ -441,7 +441,7 @@
     const h=location.hash.slice(1);
     if(!h.startsWith('game='))return;
     const id=decodeURIComponent(h.slice(5));
-    if(game(id)?.status!=='final'&&L.isLive(id))open(id,true);
+    if(game(id)?.status!=='final'&&(L.isLive(id)||game(id)?.date===today()))open(id,true);
   };
   window.addEventListener('canu-scores-updated',transitionToLive);
   let pregameProbeBusy=false;

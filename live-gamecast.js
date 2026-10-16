@@ -426,6 +426,25 @@
   L.toggleSection=(key,button)=>{const el=document.getElementById(sectionIds[key]);if(!el)return;const show=el.style.display==='none';el.style.display=show?(key==='players'?'grid':'block'):'none';const b=button||document.querySelector(`[data-live-section="${key}"]`);b?.classList.toggle('active',show);b?.setAttribute('aria-pressed',String(show));if(key==='pbp'){L.pbp=show;document.getElementById('v102-pbp')?.classList.toggle('open',show);if(show)htmlIfChanged(document.getElementById('v102-pbp'),plays(L.snap||{}));}};
   L.view=(v)=>{const el=document.getElementById(sectionIds[v]);if(el?.style.display==='none')L.toggleSection(v);};
   // This is the only live renderer after V102. Earlier generic schedule/game functions stay intact.
+  // Keep Pregame Center intact until the official feed confirms an active period.
+  // Then switch the selected game's main view to GameCast without waiting for a click.
+  const previousShowGame=window.showGame;
+  window.showGame=function(id){
+    const g=game(id);
+    if(g&&g.status!=='final'&&L.isLive(id)){open(id,true);return;}
+    return previousShowGame?.apply(this,arguments);
+  };
+  const previousRoute=window.route;
+  // Game Center remains the owner of #live= routes; #game= routes can transition
+  // when the national feed reports that kickoff has actually occurred.
+  const transitionToLive=()=>{
+    const h=location.hash.slice(1);
+    if(!h.startsWith('game='))return;
+    const id=decodeURIComponent(h.slice(5));
+    if(game(id)?.status!=='final'&&L.isLive(id))open(id,true);
+  };
+  window.addEventListener('canu-scores-updated',transitionToLive);
+  setInterval(transitionToLive,5000);
   window.showGameCast=(id)=>open(id,true);
   window.openLiveV32=()=>{const all=(GAMES||[]),active=all.filter(g=>L.isLive(g.id)),todayGames=all.filter(g=>g.date===today()&&g.status!=='final'),upcoming=all.filter(g=>g.date>=today()&&g.status!=='final').sort((a,b)=>String(a.date+' '+(a.time||'')).localeCompare(String(b.date+' '+(b.time||''))));const selected=active[0]||todayGames[0]||upcoming[0];if(selected){open(selected.id,false);return;}document.getElementById('app').innerHTML=shell(`<div style="max-width:1180px;margin:auto;padding:18px"><h2>National Game Center</h2><p>No live or upcoming games are currently listed. Select a completed game from the schedule to view its box score.</p><div id="canu-live-hub">${rail('')}</div></div>`,'live');L.refreshScoreboard();};
   const routeBefore=window.route;window.route=function(){const h=location.hash.slice(1);if(h==='live'){openLiveV32();return}if(h.startsWith('live=')){const id=h.slice(5);if(game(id)?.status==='final'){completedToBox(id,L.snap);return}if(L.selected===id&&document.querySelector('.v102-live')){tick();startTimer();return}open(id,false);return}return routeBefore?.()};

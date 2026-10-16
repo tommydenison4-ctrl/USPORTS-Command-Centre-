@@ -1,76 +1,7 @@
 {
-  "asOf": "2026-10-15",
+  "asOf": "2026-10-16",
   "method": "Based on official results, available player box scores and credited school reporting. Team averages are not adjusted for strength of schedule.",
   "games": [
-    {
-      "id": "2026-10-15-alberta-regina",
-      "away": "alberta",
-      "home": "regina",
-      "date": "2026-10-15",
-      "conference": "CW",
-      "asOf": "2026-10-15",
-      "title": "Rams look to stop slide against Golden Bears",
-      "paragraphs": [
-        "Regina has spent three games finding out how little separates a win from another frustrating trip home. A five-point loss to UBC became a seven-point loss to Saskatchewan, then a one-point loss to Calgary. Thursday, the Rams get Alberta with a chance to finally change the ending.",
-        "The 14–13 defeat against the Dinos was particularly costly because Regina had enough running game to win. Carter Ashman rushed for 110 yards, but Owen Sieben's three interceptions helped leave the Rams at 2–3 instead of back at .500.",
-        "Alberta offers a chance to recover, although the Golden Bears have already shown how misleading their 1–4 record can be. They beat that same Calgary team 42–35 before managing just three points against Manitoba the following week.",
-        "That inconsistency is what Regina will try to exploit. The Rams held Alberta to eight points in a 39–8 win in September and have allowed only 18.6 a game over the season. Their defence has continued to give them opportunities since that first meeting. Against the Golden Bears, the question is whether the offence can leave fewer of those opportunities unused."
-      ],
-      "notes": [
-        "Records and team scoring use regular-season results completed before October 15. Exhibitions are excluded.",
-        "Player totals use the available box scores and may be incomplete. The Hec Crighton Watch is CanUFootball’s own list."
-      ],
-      "sources": [
-        {
-          "url": "https://en.usports.ca/sports/fball/composite?d=2026-10-15",
-          "label": "Official national schedule"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260904_pg8n.xml",
-          "label": "September 4 · Regina at Alberta"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260911_19fu.xml",
-          "label": "September 11 · Alberta at UBC"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260918_mge2.xml",
-          "label": "September 18 · Saskatchewan at Alberta"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260925_jbqx.xml",
-          "label": "September 25 · Alberta at Calgary"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261002_k48e.xml",
-          "label": "October 2 · Manitoba at Alberta"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260911_hvcf.xml",
-          "label": "September 11 · Manitoba at Regina"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260918_y81r.xml",
-          "label": "September 18 · Regina at UBC"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260926_u9sf.xml",
-          "label": "September 26 · Saskatchewan at Regina"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_hww9.xml",
-          "label": "October 3 · Regina at Calgary"
-        },
-        {
-          "url": "https://bearsandpandas.ca/sports/football/stats/2026/university-of-manitoba/boxscore/8950",
-          "label": "2026-10-02 · Official player box score"
-        },
-        {
-          "url": "https://godinos.com/sports/football/stats/2026/regina/boxscore/15530",
-          "label": "2026-10-03 · Official player box score"
-        }
-      ]
-    },
     {
       "id": "2026-10-16-calgary-ubc",
       "away": "calgary",

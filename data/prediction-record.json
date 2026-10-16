@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-10-15",
+  "asOf": "2026-10-16",
   "games": [
     {
       "gameId": "2026-09-25-alberta-calgary",
@@ -385,11 +385,11 @@
       "probability": 0.8520066998949568,
       "publishedAt": "2026-09-24T13:43:40.145Z",
       "source": "data/advantage-snapshots/usports-2026-09-24.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "regina",
+      "awayScore": 17,
+      "homeScore": 43,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261015_v8uv.xml"
     },
     {
       "gameId": "2026-10-16-calgary-ubc",

@@ -338,3 +338,6 @@ body{background:#080f17;color:#f1f5fa}
 .clean-ui .postgame-tabs{top:var(--canu-scoreboard-height,156px)}
 
 html,body{overflow-x:clip!important;overflow-y:visible!important}
+
+/* Event colours override the normal chip and partner border while a game is active. */
+.canu-scoreboard #canu-top-scores .canu-game-chip.has-event{border-color:var(--event-color)!important;background:var(--event-background)!important;border-top:3px solid var(--event-color)!important}.canu-scoreboard #canu-top-scores .canu-live-event{white-space:normal;line-height:1.4;letter-spacing:.02em}.canu-scoreboard #canu-top-scores .canu-chip-situation{white-space:normal;line-height:1.4}

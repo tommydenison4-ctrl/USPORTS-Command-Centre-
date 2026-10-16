@@ -9,3 +9,5 @@
 .scoreboard-picks-body li>span{min-width:0}.scoreboard-picks-body strong{display:block;font-size:12px}.scoreboard-picks-body li b{font-size:11px;color:#8cead3;text-align:right}.scoreboard-picks-body li small{display:block;font-size:9px;color:#9aadc3;margin:3px 0 0}
 .canu-scoreboard .scoreboard-picks-body button{min-height:0;width:auto;padding:7px 9px;font-size:11px}
 @media(max-width:600px){.scoreboard-picks-body{max-height:180px}}
+
+#canu-top-scores .canu-scoreboard-center{display:block;margin-top:5px;padding:8px 6px;border:1px solid #43566a;border-radius:7px;background:#192837;color:#c6e9f5;text-align:center;text-decoration:none;font-size:11px;font-weight:800;line-height:1.3}#canu-top-scores .canu-scoreboard-center:hover{background:#263e51;color:#fff}#canu-top-scores .canu-scoreboard-center:focus-visible{outline:2px solid #fff;outline-offset:2px}

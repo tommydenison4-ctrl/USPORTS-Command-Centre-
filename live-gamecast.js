@@ -10,7 +10,7 @@
   const team=s=>TEAM?.[s]||{};
   const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/saint/g,'st').replace(/[^a-z0-9]+/g,' ').trim();
   const aliases=slug=>{const t=team(slug);return [slug,t.abbr,t.short,t.name,...(slug==='windsor'?['WSR']:[]),...(slug==='laurier'?['WLU']:[]),...(slug==='stfx'?['St. Francis Xavier','St. Francis Xavier X-Men']:[]),...(slug==='mount-allison'?['Mt. Allison']:[])].map(norm).filter(Boolean)};
-  const tm=(slug,label)=>{const q=norm(label);return q&&aliases(slug).some(v=>q===v)};
+  const tm=(slug,label)=>{const q=norm(label);if(!q)return false;const a=aliases(slug);return a.some(v=>q===v||((q.startsWith(v+' ')||v.startsWith(q+' '))&&Math.min(q.length,v.length)>=4));};
   function sourceKey(id){return 'usports:v115:source:'+id} function snapKey(id){return 'usports:v116:snap:'+id} function scrollKey(id){return 'usports:v104:scroll:'+id}
   function readSession(k){for(const st of [localStorage,sessionStorage]){try{const raw=st.getItem(k);if(raw)return JSON.parse(raw)}catch{}}return null} function saveSession(k,v){for(const st of [localStorage,sessionStorage]){try{st.setItem(k,JSON.stringify(v))}catch{}}}
   function validIdentity(g,d){const x=d?.identity;return !!g&&x?.gameId===g.id&&x.date===g.date&&x.away===g.away&&x.home===g.home;}

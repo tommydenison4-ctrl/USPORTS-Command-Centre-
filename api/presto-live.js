@@ -455,7 +455,7 @@ function normalize(data,source){
     status:{complete:/^(?:Y|true|1)$/i.test(text(status.complete)),period:periodLabel(status),clock:text(status.clock),running:text(status.running)},
     game:{awayId:source.awayId,homeId:source.homeId,awayScore:away,homeScore:home,scoreSource,awayLogo:source.awayLogo||'',homeLogo:source.homeLogo||''},
     situation,plays,drives,teamStats:ps.teamStats,playerStats:ps.playerStats,statComparison:teamComparison(data,source),rawKeys:Object.keys(data||{}),
-    scoreDebug:{statusNodes:{venue:data?.venue,primetime:data?.primetime},latestScoringEventIndex:latestScore.index,scores:data?.scores??null,candidates:scalarScoreCandidates(data,source).slice(0,12)}
+    scoreDebug:{statusNodes:{venue:data?.venue,primetime:data?.primetime,message:data?.message,network:data?.network,playsKeys:Object.keys(data?.plays||{})},latestScoringEventIndex:latestScore.index,scores:data?.scores??null,candidates:scalarScoreCandidates(data,source).slice(0,12)}
   };
 }
 function isLivePayload(json){ return !!(json && typeof json==='object' && !json.error && (json.status || json.plays || json.drives || json.team || json.scores || json.source==='PrestoSports')); }

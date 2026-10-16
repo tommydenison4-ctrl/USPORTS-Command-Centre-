@@ -58,7 +58,7 @@
     liveEvents.set(g.id,{away:Number(d.game?.awayScore),home:Number(d.game?.homeScore),pos:d.situation?.possession,key,label,until:changed?Date.now()+15000:prev.until});
   }
   function setLiveState(id,d){const g=game(id);if(!validIdentity(g,d))return;d=finalSnapshot(g,d);if(Object.prototype.hasOwnProperty.call(d,'availabilityForecast')){window.US_LIVE_PLAYER_AVAILABILITY??={};if(d.availabilityForecast&&!isFinal(g,d))window.US_LIVE_PLAYER_AVAILABILITY[id]=d.availabilityForecast;else delete window.US_LIVE_PLAYER_AVAILABILITY[id];}if(Array.isArray(d.plays)||Array.isArray(d.playerStats))saveSession(snapKey(id),d);recordEvent(g,d);const st=LIVE_STORE.games[id]||(LIVE_STORE.games[id]={id,away:g.away,home:g.home});st._realLive=true;st._feedIdentity=d.identity;if(d?.game?.awayScore!=null)st.as=Number(d.game.awayScore);if(d?.game?.homeScore!=null)st.hs=Number(d.game.homeScore);st.q=d?.status?.period||st.q||'LIVE';if(/final/i.test(st.q))window.USFinalScores?.accept?.(g,{identity:d.identity,final:true,awayScore:st.as,homeScore:st.hs});st.clock=isFinal(g,d)?'':d?.status?.clock||st.clock||'';st.pos=possSlug(g,d)||d?.situation?.possession||st.pos||'';if(d.situation){st.down=d.situation.down??'';st.distance=d.situation.distance??null;st.spot=d.situation.spot||'';}if(isFinal(g,d)){st.pos='';st.down='';st.distance=null;st.spot=''}}
-  async function discover(force=false){
+  async async function discover(force=false){
     if(!L.selected)return null;
     if(!force&&L.source&&now()-L.lastDiscover<30000)return L.source;
     const selected=L.selected,g=game(selected); if(!g)return null;
@@ -80,7 +80,7 @@
     return L.source||cached||null;
   }
   function sourceIds(g){return {awayId:String(team(g.away).abbr||'').toUpperCase(),homeId:String(team(g.home).abbr||'').toUpperCase()}}
-  async function fetchSnap(){
+  async async function fetchSnap(){
     const selected=L.selected; if(!selected)return null; const g=game(selected); if(!g)return null;
     if(!L.source)L.source=readSession(sourceKey(L.selected));
     const ids=sourceIds(g);
@@ -332,7 +332,7 @@
     patchText('v102-winner',(pr>=.5?team(g.away):team(g.home)).name||'');patchField();
     // No scrollBy / scrollTo / automatic viewport correction here. Ever.
   }
-  async function fetchNationalGame(g){
+  async async function fetchNationalGame(g){
     if(!g||g.status==='final')return null;
     if(g.id===L.selected&&L.snap&&location.hash==='#live='+g.id){setLiveState(g.id,L.snap);return L.snap}
     const ids=sourceIds(g),key=sourceKey(g.id),cached=readSession(key);
@@ -354,7 +354,7 @@
     }catch{}
     return null;
   }
-  async function pollNational(force=false){
+  async async function pollNational(force=false){
     if(!L.selected)return;
     if(!force&&now()-(L.lastNational||0)<5000)return; L.lastNational=now();
     const gsel=game(L.selected),date=gsel?.date||today();
@@ -394,7 +394,7 @@
     }
     return true;
   }
-  async function tick(){if(L.inflight||!L.selected||location.hash!=='#live='+L.selected||!document.querySelector('.v102-live'))return;const selected=L.selected;if(completedToBox(selected,L.snap))return;L.inflight=true;try{const d=await fetchSnap();if(selected!==L.selected||location.hash!=='#live='+selected)return;if(completedToBox(selected,d))return;if(d){patch()}else{if(now()-L.lastDiscover>8000)discover(true);}pollNational()}finally{L.inflight=false}}
+  async async function tick(){if(L.inflight||!L.selected||location.hash!=='#live='+L.selected||!document.querySelector('.v102-live'))return;const selected=L.selected;if(completedToBox(selected,L.snap))return;L.inflight=true;try{const d=await fetchSnap();if(selected!==L.selected||location.hash!=='#live='+selected)return;if(completedToBox(selected,d))return;if(d){patch()}else{if(now()-L.lastDiscover>8000)discover(true);}pollNational()}finally{L.inflight=false}}
   function startTimer(){clearInterval(L.timer);L.timer=setInterval(tick,4000)}
   function open(id,push=true){const g=game(id);if(!g)return;if(g.status==='final'){if(push)history.pushState(null,'','#game='+encodeURIComponent(id));showGame(id);return}if(completedToBox(id,L.snap))return;const same=L.selected===id&&document.querySelector('.v102-live');if(same){if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);tick();startTimer();return}L.selected=id;L.source=readSession(sourceKey(id));L.snap=readSession(snapKey(id));if(!validIdentity(g,L.snap))L.snap=null;L.rendered=false;LIVE_STORE.selected=id;if(push&&location.hash.slice(1)!=='live='+id)history.pushState(null,'','#live='+id);render();tick();pollNational(true);startTimer()}
   L.scoreboardHtml=()=>rail('').replace('id="v102-national-rail"','id="canu-top-scores" aria-label="National football scoreboard"');

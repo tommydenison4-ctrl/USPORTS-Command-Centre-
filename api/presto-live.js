@@ -426,7 +426,9 @@ function teamComparison(data,source){
   return rows;
 }
 function normalize(data,source){
-  const status=data?.status||{};
+  const one=v=>Array.isArray(v)?v[0]:v;
+  const venue=one(data?.venue)||{};
+  const status=one(data?.status)||one(venue.status)||{};
   const ps=teamAndPlayerStats(data);
   const plays=flattenPlays(data);
   const drives=flattenDrives(data);
@@ -450,7 +452,7 @@ function normalize(data,source){
   return {
     source:data?.source||'PrestoSports',version:data?.version||null,platformId:data?.platformId||null,
     lastUpdated:data?.network?.lastUpdated||data?.generated||new Date().toISOString(),
-    status:{complete:text(status.complete).toUpperCase()==='Y',period:periodLabel(status),clock:text(status.clock),running:text(status.running)},
+    status:{complete:/^(?:Y|true|1)$/i.test(text(status.complete)),period:periodLabel(status),clock:text(status.clock),running:text(status.running)},
     game:{awayId:source.awayId,homeId:source.homeId,awayScore:away,homeScore:home,scoreSource,awayLogo:source.awayLogo||'',homeLogo:source.homeLogo||''},
     situation,plays,drives,teamStats:ps.teamStats,playerStats:ps.playerStats,statComparison:teamComparison(data,source),rawKeys:Object.keys(data||{}),
     scoreDebug:{latestScoringEventIndex:latestScore.index,scores:data?.scores??null,candidates:scalarScoreCandidates(data,source).slice(0,12)}

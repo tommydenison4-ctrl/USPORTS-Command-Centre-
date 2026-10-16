@@ -27,7 +27,7 @@
   function restoreScroll(){}
   const renderedMarkup=new WeakMap();
   function htmlIfChanged(el,html){if(el&&renderedMarkup.get(el)!==html){renderedMarkup.set(el,html);el.innerHTML=html}}
-  function today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+  function today(){return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Toronto',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
   function ymd(s){return String(s||'').replace(/\D/g,'').slice(0,8)}
   function matchSource(x,date){let best=null,score=-999;for(const g of (GAMES||[])){if(g.status==='final')continue;if(date&&g.date!==date)continue;const pd=x.page?.match(/boxscores\/(\d{8})_/)?.[1];if(pd&&pd!==ymd(g.date))continue;let s=0;if(tm(g.away,x.visitor))s+=100;if(tm(g.home,x.home))s+=100;if(tm(g.away,x.home))s-=80;if(tm(g.home,x.visitor))s-=80;if(s>score){score=s;best=g}}return score>=180?best:null}
   // Per-game event state is never shared with the selected game's feed.

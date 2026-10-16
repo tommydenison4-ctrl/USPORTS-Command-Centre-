@@ -41,6 +41,10 @@
     "api/consensus-cleanup.js": {
       "maxDuration": 60,
       "includeFiles": "{internal/**,data/**,game-day.js}"
+    },
+    "api/at-the-55.js": {
+      "includeFiles": "internal/at-the-55.cjs",
+      "maxDuration": 60
     }
   },
   "headers": [
@@ -71,6 +75,10 @@
     {
       "path": "/api/consensus-cleanup",
       "schedule": "15 5 * * *"
+    },
+    {
+      "path": "/api/at-the-55",
+      "schedule": "*/15 * * * *"
     }
   ]
 }

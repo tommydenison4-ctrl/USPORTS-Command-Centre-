@@ -495,7 +495,7 @@ async function bootstrap(source){
 }
 async function fetchLive(source,creds,cookie=''){
   const origin=new URL(source.page).origin;
-  const u=new URL('/action/sports/liveupdate',origin); u.searchParams.set('e',creds.event); u.searchParams.set('h',creds.hash);
+  const u=new URL('/action/sports/liveupdate',origin); u.searchParams.set('e',creds.event); u.searchParams.set('h',creds.hash); u.searchParams.set('_',String(Date.now()));
   const headers={...BASE_HEADERS,'Accept':'application/json,text/plain,*/*','X-Requested-With':'XMLHttpRequest','Referer':source.page,'Origin':origin,'Sec-Fetch-Site':'same-origin','Sec-Fetch-Mode':'cors','Sec-Fetch-Dest':'empty'};
   if(cookie) headers.Cookie=cookie;
   const r=await fetch(u,{signal:AbortSignal.timeout(8000),method:'GET',redirect:'follow',headers}); const body=await r.text();

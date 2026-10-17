@@ -341,3 +341,50 @@ html,body{overflow-x:clip!important;overflow-y:visible!important}
 
 /* Event colours override the normal chip and partner border while a game is active. */
 .canu-scoreboard #canu-top-scores .canu-game-chip.has-event{border-color:var(--event-color)!important;background:var(--event-background)!important;border-top:3px solid var(--event-color)!important}.canu-scoreboard #canu-top-scores .canu-live-event{white-space:normal;line-height:1.4;letter-spacing:.02em}.canu-scoreboard #canu-top-scores .canu-chip-situation{white-space:normal;line-height:1.4}
+
+/* Compact live Game Center: keep the game, rather than navigation, in view. */
+.clean-ui:has(.v102-live) .canu-scoreboard{position:relative!important;top:auto!important;padding:8px 12px!important;box-shadow:none}
+.clean-ui:has(.v102-live) .canu-scoreboard .canu-game-chip{flex-basis:158px;min-height:70px;padding:6px 9px}
+.clean-ui:has(.v102-live) .canu-chip-team{margin:3px 0;font-size:12px}
+.clean-ui:has(.v102-live) .canu-chip-logo{width:18px;height:18px}
+.clean-ui:has(.v102-live) .canu-chip-situation{font-size:10px;margin-top:3px}
+.clean-ui:has(.v102-live) .fan-join-banner{padding:10px 14px!important;gap:12px!important;margin:8px auto!important}
+.clean-ui:has(.v102-live) .fan-join-copy h2{font-size:17px!important;margin:4px 0!important}
+.clean-ui:has(.v102-live) .fan-join-copy p,.clean-ui:has(.v102-live) .fan-join-rules{display:none!important}
+.clean-ui:has(.v102-live) .fan-join-action form{gap:6px!important}
+.clean-ui:has(.v102-live) .fan-join-action input,.clean-ui:has(.v102-live) .fan-join-action select,.clean-ui:has(.v102-live) .fan-join-action button{padding:7px 9px!important;min-height:34px!important;font-size:12px!important}
+.clean-ui .v102-live{max-width:1320px;padding:8px 14px 30px}
+.clean-ui .v102-crumb{margin:4px 0 8px}
+.clean-ui .v102-predict{gap:10px;margin-bottom:8px}
+.clean-ui .v102-team{gap:8px}
+.clean-ui .v102-team img{width:40px;height:40px;padding:3px;border-radius:9px}
+.clean-ui .v102-team h2{font-size:17px}
+.clean-ui .v102-team small{font-size:10px;margin-top:2px}
+.clean-ui .v102-score{padding:10px 14px;gap:8px;border-radius:10px}
+.clean-ui .v102-num{font-size:40px}
+.clean-ui .v102-score-side{font-size:15px}
+.clean-ui .v102-sit{font-size:14px;margin-top:3px}
+.clean-ui .v102-pos{font-size:10px;margin-top:2px}
+.clean-ui .v102-live .canu-history-chart{padding:10px 12px;margin:8px 0}
+.clean-ui .v102-live .canu-history-chart h3{font-size:14px;margin:0 0 5px}
+.clean-ui .v102-live .canu-chart-legend{margin:4px 0;font-size:12px}
+.clean-ui .v102-live .canu-history-chart svg{height:140px;max-height:18vh;width:100%}
+.clean-ui .v102-live .canu-history-chart small{font-size:10px}
+.clean-ui #canu-feed-status{padding:5px 9px!important;margin:6px 0!important;font-size:11px}
+.clean-ui .v102-tabs{gap:5px;margin:8px 0}
+.clean-ui .v102-tabs button{padding:7px 11px;font-size:12px}
+.clean-ui .v102-card{padding:10px 12px;margin-bottom:8px;border-radius:10px}
+.clean-ui .v102-card h3{font-size:14px;margin:0 0 5px}
+.clean-ui .v102-last{font-size:13px;line-height:1.35}
+.clean-ui .v102-drive{font-size:14px}
+.clean-ui .v102-grid2,.clean-ui .v102-playergrid{gap:8px}
+.clean-ui .v102-field{margin:8px 0}
+@media(max-width:650px){
+ .clean-ui .v102-team h2{font-size:14px}
+ .clean-ui .v102-team img{width:32px;height:32px}
+ .clean-ui .v102-num{font-size:32px}
+ .clean-ui .v102-score{padding:8px;grid-template-columns:1fr 120px 1fr}
+ .clean-ui .v102-sit{font-size:12px}
+ .clean-ui .v102-tabs button{min-height:38px}
+ .clean-ui .v102-live .canu-history-chart svg{height:115px;max-height:none}
+}

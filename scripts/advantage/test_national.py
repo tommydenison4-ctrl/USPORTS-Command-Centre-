@@ -25,6 +25,29 @@ class NationalTests(unittest.TestCase):
         p=national.presto(g,lambda u:header+plays,text_play,metrics)
         self.assertEqual([x['yards'] for x in p['plays']],[15,0,-5]);self.assertEqual(p['away']['stats']['explosives'],1);self.assertEqual(p['home']['stats']['negatives'],2)
         bad=copy.deepcopy(g);bad['home']='acadia';self.assertIsNone(national.presto(bad,lambda u:header+plays,text_play,metrics))
+    def test_completed_gamebook_corrects_a_lagging_final(self):
+        from bs4 import BeautifulSoup
+        g=national.parse_composite(self.event('Western','Ottawa',scores=('37','17')),'2026-10-17')[0][0]
+        html='<span class="stats-header">Western</span><span class="stats-header">Ottawa</span><table><tr><th>Scoring</th><th>Final</th></tr><tr><td>Western</td><td>37</td></tr><tr><td>Ottawa</td><td>27</td></tr></table>'
+        self.assertFalse(national.reconcile_final_score(g,BeautifulSoup('<script>conf.statusFinal=false</script>'+html,'html.parser')))
+        self.assertEqual(g['homeScore'],17)
+        self.assertTrue(national.reconcile_final_score(g,BeautifulSoup(html,'html.parser')))
+        self.assertEqual(g['homeScore'],27);self.assertEqual(g['scoreSource'],g['boxscore'])
+        wrong=copy.deepcopy(g);wrong['home']='queens'
+        self.assertFalse(national.reconcile_final_score(wrong,BeautifulSoup(html,'html.parser')))
+    def test_verified_gamebook_score_survives_stale_composite(self):
+        import tempfile,json
+        from pathlib import Path
+        from unittest.mock import patch
+        date='2026-10-17'
+        html=''.join(self.event(a,h,scores=('10','20')) for a,h in [('Western','Ottawa'),('Laval','Montreal'),('UBC','Alberta'),('StFX','Acadia')])
+        previous=national.parse_composite(html,date)[0]
+        aus=next(g for g in previous if g['conference']=='AUS');aus.update(homeScore=27,scoreSource=aus['boxscore'])
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);(root/'data').mkdir();(root/'data/national-schedule-usports.json').write_text(json.dumps({'games':previous}))
+            with patch.object(national,'ROOT',root):
+                games,_=national.discover(lambda u:html,lambda fn,dates:[fn(date)],2026)
+            self.assertEqual(next(g for g in games if g['id']==aus['id'])['homeScore'],27)
     def test_partial_index_fails_closed(self):
         with self.assertRaises(ValueError):national.discover(lambda u:'composite?d=2026-09-26',lambda fn,rows:[],2026)
 

@@ -43,7 +43,7 @@ def build(only=None):
             import national
             index=json.loads((ROOT/'data/national-schedule-usports.json').read_text())
             finals=[g for g in index['games'] if g['status']=='final' and not g.get('exhibition') and g['date']<=ASOF]
-            result={'season':2026,'asOf':ASOF,'games':[dict(date=g['date'],away=national.norm(g['away']),home=national.norm(g['home']),awayScore=g['awayScore'],homeScore=g['homeScore'],source=g.get('boxscore') or g['source']) for g in finals]}
+            result={'season':2026,'asOf':ASOF,'games':[dict(date=g['date'],away=national.norm(g['away']),home=national.norm(g['home']),awayScore=g['awayScore'],homeScore=g['homeScore'],source=g.get('boxscore') or g['source'],**({'scoreSource':g['scoreSource']} if g.get('scoreSource') else {})) for g in finals]}
             (ROOT/'data/verified-results-usports.json').write_text(json.dumps(result,allow_nan=False))
             source=json.loads((ROOT/'data/player-leaders-usports.json').read_text())
             eligible_games={g['id'] for g in finals}

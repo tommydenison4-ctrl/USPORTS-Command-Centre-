@@ -102,8 +102,8 @@
       "source": "data/advantage-snapshots/usports-2026-09-24.json",
       "status": "correct",
       "winner": "guelph",
-      "awayScore": 22,
-      "homeScore": 47,
+      "awayScore": 25,
+      "homeScore": 44,
       "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260926_pvm1.xml"
     },
     {
@@ -178,7 +178,7 @@
       "status": "incorrect",
       "winner": "waterloo",
       "awayScore": 31,
-      "homeScore": 39,
+      "homeScore": 40,
       "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_3xzq.xml"
     },
     {
@@ -538,7 +538,7 @@
       "status": "correct",
       "winner": "western",
       "awayScore": 37,
-      "homeScore": 17,
+      "homeScore": 27,
       "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261017_3s3c.xml"
     },
     {

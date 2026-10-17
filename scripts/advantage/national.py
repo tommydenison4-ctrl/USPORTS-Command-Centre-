@@ -96,6 +96,8 @@ def discover(fetch,batch,season):
         # A temporarily empty or stale official date must not erase verified finals.
         fresh=games.get(g['id'])
         if g.get('date') in missing or (g.get('status')=='final' and (not fresh or fresh.get('status')!='final')):games[g['id']]=g
+        elif g.get('scoreSource') and fresh.get('status')=='final':
+            fresh.update({k:g[k] for k in ('awayScore','homeScore','scoreSource')})
     unresolved.extend(g for g in previous.get('unresolved',[]) if g.get('date') in missing)
     if missing:print('Retained verified fallback dates:',', '.join(sorted(missing)),flush=True)
     conferences={g['conference'] for g in games.values()}
@@ -110,10 +112,39 @@ def history_game(g):
     out['plays']=[]
     return out
 
+def reconcile_final_score(g, summary):
+    # A completed official gamebook can finish updating after the composite freezes.
+    if g.get('status')!='final' or re.search(r"conf\.statusFinal\s*=\s*['\"]?false",str(summary),re.I):return False
+    identities=[t['slug'] for n in summary.select('.stats-header') if (t:=team(n.get_text(' ',strip=True)))]
+    if identities[:2]!=[g['away'],g['home']]:return False
+    heading=summary.find('table')
+    dated=re.search(r'\b(\d{1,2})/(\d{1,2})/(2026)\b',heading.get_text(' ',strip=True) if heading else '')
+    if dated and f'{dated[3]}-{int(dated[1]):02d}-{int(dated[2]):02d}'!=g['date']:return False
+    for table in summary.select('table'):
+        if table.find('table'):continue
+        rows=table.select('tr')
+        if not rows:continue
+        headers=[c.get_text(' ',strip=True).lower() for c in rows[0].find_all(['th','td'],recursive=False)]
+        if not headers or headers[0]!='scoring' or 'final' not in headers:continue
+        column=headers.index('final');scores={}
+        for row in rows[1:]:
+            cells=row.find_all(['td','th'],recursive=False)
+            if len(cells)<=column:continue
+            school=team(cells[0].get_text(' ',strip=True));value=cells[column].get_text(strip=True)
+            if school and school['slug'] in (g['away'],g['home']) and value.isdigit():scores[school['slug']]=int(value)
+        if len(scores)==2:
+            changed=any(g[side+'Score']!=scores[g[side]] for side in ('away','home'))
+            for side in ('away','home'):g[side+'Score']=scores[g[side]]
+            if changed:g['scoreSource']=g['boxscore']
+            return True
+    return False
+
 def presto(g, fetch, text_play, metrics):
     out=history_game(g);url=g['boxscore']
     if not url or not all(isinstance(out[s]['score'],int) for s in ('away','home')):return None
     summary=BeautifulSoup(fetch(url),'html.parser')
+    if reconcile_final_score(g,summary):
+        for side in ('away','home'):out[side]['score']=g[side+'Score']
     soup=BeautifulSoup(fetch(url+'?view=plays'),'html.parser')
     # Verify the gamebook identity before associating its plays with the index game.
     header=soup.select('.stats-header')

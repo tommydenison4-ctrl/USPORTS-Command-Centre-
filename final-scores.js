@@ -1,6 +1,6 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.USFinalScores=api;if(typeof document!=='undefined')api.start()})(typeof globalThis!=='undefined'?globalThis:this,()=>{
  const valid=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))&&Number(v)>=0;
- function apply(g,x){if(!g||!x||!(x.final===true||x.status==='final'||x.status?.complete===true||/\bfinal\b/i.test(String(x.status?.period||'')))||!valid(x.awayScore)||!valid(x.homeScore))return false;g.awayScore=Number(x.awayScore);g.homeScore=Number(x.homeScore);g.status='final';return true}
+ function apply(g,x){if(g?.scoreSource&&!x?.scoreSource&&(Number(g.awayScore)!==Number(x?.awayScore)||Number(g.homeScore)!==Number(x?.homeScore)))return false;if(!g||!x||!(x.final===true||x.status==='final'||x.status?.complete===true||/\bfinal\b/i.test(String(x.status?.period||'')))||!valid(x.awayScore)||!valid(x.homeScore))return false;g.awayScore=Number(x.awayScore);g.homeScore=Number(x.homeScore);g.status='final';if(x.scoreSource)g.scoreSource=x.scoreSource;return true}
  function matches(g,x){
   if(!g||!x)return false;
   const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');

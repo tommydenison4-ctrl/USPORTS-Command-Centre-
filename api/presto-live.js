@@ -595,7 +595,7 @@ module.exports=async function handler(req,res){
     try{boot=await bootstrap(source)}catch(e){boot.error=String(e?.message||e)}
   }
   const registry=VERIFIED_EVENTS[game],savedBoot=VERIFIED_BOOTSTRAPS.get(source.page);
-  if(!boot.ok&&savedBoot)boot=savedBoot;
+  if((!boot.ok||!boot.found||!boot.visitor||!boot.home)&&savedBoot)boot=savedBoot;
   if(!boot.ok&&registry&&source.page.endsWith('/'+registry.box+'.xml'))boot={...boot,ok:true,visitor:registry.visitor,home:registry.home,found:{event:registry.event,hash:registry.hash},cookie:''};
   if(!boot.ok&&await rseqResponse())return;
   if(!boot.ok)return send(res,502,{ok:false,game,error:'Official source page temporarily unavailable',upstreamStatus:boot.status});

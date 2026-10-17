@@ -15,7 +15,10 @@ def fetch(url):
     def valid(text):
         return bool(text.strip()) and 'awsWafCookieDomainList' not in text and 'AwsWafIntegration' not in text
     # Recent composites and gamebooks can change as a game finishes.
-    ttl=60 if '/composite' in url or '/boxscores/' in url else 1800
+    date_match=re.search(r'(?:[?&]d=|/boxscores/)(2026-?\d{2}-?\d{2})',url)
+    source_date=date_match[1].replace('-','') if date_match else None
+    recent_cutoff=(dt.date.fromisoformat(ASOF)-dt.timedelta(days=1)).strftime('%Y%m%d')
+    ttl=(86400 if source_date and source_date<recent_cutoff else 60) if '/composite' in url or '/boxscores/' in url else 1800
     if path.exists() and path.stat().st_size>0 and ('/summary?' in url or '/boxscore/' in url or time.time()-path.stat().st_mtime<ttl):
         cached=path.read_text(encoding='utf-8')
         if valid(cached):return cached

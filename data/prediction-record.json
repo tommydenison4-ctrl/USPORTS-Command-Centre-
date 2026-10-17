@@ -254,7 +254,7 @@
       "winner": "montreal",
       "awayScore": 17,
       "homeScore": 23,
-      "resultSource": "https://en.usports.ca/sports/fball/composite?d=2026-10-03"
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_zz6y.xml"
     },
     {
       "gameId": "2026-10-03-ubc-saskatchewan",
@@ -344,7 +344,7 @@
       "winner": "york",
       "awayScore": 12,
       "homeScore": 19,
-      "resultSource": "https://en.usports.ca/sports/fball/composite?d=2026-10-10"
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261010_kodd.xml"
     },
     {
       "gameId": "2026-10-10-western-carleton",

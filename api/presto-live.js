@@ -544,6 +544,17 @@ module.exports=async function handler(req,res){
   if(req.method!=='GET') return send(res,405,{ok:false,error:'GET only'});
   const requestedGame=String(req.query.game||'');
   const dynamicPage=String(req.query.page||'').trim();
+  const rseqExpected=expectedGame(requestedGame);
+  if(rseqExpected&&require('../data/usports-teams.json').find(t=>t.slug===rseqExpected.home)?.conference==='RSEQ'){
+    try{const x=await require('../internal/rseq-live.cjs').load(rseqExpected);if(x){
+      if(x.error)return send(res,503,{ok:false,game:requestedGame,error:x.error,officialPage:x.page});
+      const identity={gameId:requestedGame,...rseqExpected},data={...normalize(x.raw,{awayId:x.awayId,homeId:x.homeId}),identity};
+      if(data.status.complete)data.status.period='FINAL';
+      else if(!data.status.period){const q=Array.isArray(x.raw.plays?.qtr)?x.raw.plays.qtr.at(-1):x.raw.plays?.qtr;data.status.period=q?.number?'Q'+q.number:'';}
+      try{await require('../internal/live-history.cjs').capture(requestedGame,data,x.raw)}catch{}
+      return send(res,200,{ok:true,game:requestedGame,visitor:x.visitor,home:x.home,officialPage:x.page,data});
+    }}catch(e){console.warn('RSEQ feed unavailable',e.message)}
+  }
   let source=SOURCES[requestedGame]||null;
   let game = source ? '2026-09-06-mcmaster-guelph' : requestedGame;
   if(!source && dynamicPage){

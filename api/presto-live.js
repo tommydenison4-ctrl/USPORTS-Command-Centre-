@@ -615,6 +615,10 @@ module.exports=async function handler(req,res){
       if(lr.json?.error){ attempts[attempts.length-1].upstreamError=String(lr.json.error); }
     }catch(e){ attempts.push({kind:c.kind,status:null,error:String(e?.message||e)}); }
   }
+  if(!req.query._localeRetry&&new URL(source.page).hostname==='en.usports.ca'){
+    const alternate=new URL(source.page);alternate.hostname='fr.usports.ca';
+    return handler({...req,query:{...req.query,page:alternate.href,_localeRetry:'1'}},res);
+  }
   if(await rseqResponse())return;
   return send(res,502,{ok:false,game,error:'PrestoSports returned a response, but it was not a usable live-stat payload',sourcePage:source.page,bootstrapStatus:boot.status,bootstrapOk:boot.ok,discoveredCredentials:!!boot.found,bootstrapLiveupdateSnippet:boot.liveupdateSnippet||'',bootstrapEventSnippet:boot.eventSnippet||'',attempts});
 };

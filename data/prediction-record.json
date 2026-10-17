@@ -415,11 +415,11 @@
       "probability": 0.5552622094377869,
       "publishedAt": "2026-10-02T16:14:10.101Z",
       "source": "data/advantage-snapshots/usports-2026-10-02.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "montreal",
+      "awayScore": 14,
+      "homeScore": 19,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261016_jv0d.xml"
     },
     {
       "gameId": "2026-10-16-manitoba-saskatchewan",

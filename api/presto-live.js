@@ -304,8 +304,17 @@ function scoreFallbackFromPlays(plays,source){
   }
   return seenAny?{away,home}:{away:null,home:null};
 }
-function reconcileConversionScore(away,home,playPair,fallback,plays,source,latestScore=null){
+function reconcileConversionScore(away,home,playPair,fallback,plays,source,latestScore=null,scoreboardPair=null){
   if(away==null||home==null)return {away,home,adjusted:false};
+  // Team totals may include a conversion before its scoring-summary entry.
+  const priorScore=latestScore?.previous;
+  const tdSide=priorScore&&latestScore.away===away&&latestScore.home===home?
+    (away-priorScore.away===6&&home===priorScore.home?'away':home-priorScore.home===6&&away===priorScore.away?'home':null):null;
+  if(tdSide&&scoreboardPair?.away!=null&&scoreboardPair?.home!=null){
+    const delta=tdSide==='away'?scoreboardPair.away-away:scoreboardPair.home-home;
+    const sameOpponent=tdSide==='away'?scoreboardPair.home===home:scoreboardPair.away===away;
+    if(sameOpponent&&(delta===1||delta===2))return {...scoreboardPair,adjusted:true};
+  }
   // Only bridge a recorded successful try after the newest touchdown. Never
   // infer a point merely because a touchdown occurred or a kick was attempted.
   const scoring=(plays||[]).find(p=>scoringDelta(p.description)>0);
@@ -320,11 +329,16 @@ function reconcileConversionScore(away,home,playPair,fallback,plays,source,lates
   // conversion is already in play-by-play. Match both to the same clock/period
   // and prove that the summary has not already included the try.
   const row=latestScore?.row,prior=latestScore?.previous;
-  const rowClock=String(row?.clock??row?.time??row?.gameclock??'').match(/\d{1,2}:\d{2}/)?.[0];
+  const seconds=value=>{const m=String(value||'').match(/(\d{1,2}):(\d{2})/);return m?Number(m[1])*60+Number(m[2]):null};
+  const rowClock=seconds(row?.clock??row?.time??row?.gameclock);
   const rowQuarter=String(row?.qtr??row?.quarter??row?.period??row?.q??'').match(/\d+/)?.[0];
   const tryQuarter=String(scoring.q||'').match(/\d+/)?.[0];
-  const touchdown=(plays||[]).find(p=>/TOUCHDOWN/i.test(p.description)&&! /NO[ -]PLAY|REVERSED|OVERTURNED/i.test(p.description)&&p.clock===scoring.clock&&p.q===scoring.q&&scoringTeamCode(p.possession)===who);
-  if(rowClock&&rowClock===scoring.clock&&(!rowQuarter||rowQuarter===tryQuarter)&&touchdown&&prior&&
+  const tryIndex=plays.indexOf(scoring),tryClock=seconds(scoring.clock);
+  const touchdown=(plays||[]).slice(tryIndex+1).find(p=>/TOUCHDOWN/i.test(p.description)&&! /NO[ -]PLAY|NULLIFIED|REVERSED|OVERTURNED/i.test(p.description)&&String(p.q||'').match(/\d+/)?.[0]===tryQuarter&&scoringTeamCode(p.possession)===who);
+  const tdClock=seconds(touchdown?.clock);
+  // Match the summary to the touchdown rather than the untimed try's clock.
+  const adjacentTry=tryClock!=null&&tdClock!=null&&tryClock<=tdClock&&tdClock-tryClock<=120;
+  if(rowClock!=null&&rowClock===tdClock&&(!rowQuarter||rowQuarter===tryQuarter)&&touchdown&&adjacentTry&&prior&&
     latestScore.away===away&&latestScore.home===home&&
     ((side==='home'&&home-prior.home===6&&away===prior.away)||(side==='away'&&away-prior.away===6&&home===prior.home)))return {away:away+(side==='away'?points:0),home:home+(side==='home'?points:0),adjusted:true};
   return {away,home,adjusted:false};
@@ -449,7 +463,7 @@ function normalize(data,source){
       else {if(away==null)away=fb.away;if(home==null)home=fb.home;scoreSource='scoring-plays';}
     }
   }
-  const conversion=reconcileConversionScore(away,home,playPair,fb,plays,source,latestScore);
+  const conversion=reconcileConversionScore(away,home,playPair,fb,plays,source,latestScore,pair);
   if(conversion.adjusted){away=conversion.away;home=conversion.home;scoreSource+=' + verified-conversion';}
   const situation=currentSituationFromLatestPlay(plays,drives);
   return {

@@ -25,3 +25,23 @@ result=ctx.reconcileConversionScore(25,22,{},{away:13,home:15},[queenTry,queenTD
 result=ctx.reconcileConversionScore(25,20,{},{},[queenTry,queenTD],source,{...summary,row:{time:'14:47',qtr:'4'}});assert.equal(result.home,20);
 result=ctx.reconcileConversionScore(25,20,{},{},[queenTry,queenTD],source,{...summary,row:{time:'10:34',qtr:'3'}});assert.equal(result.home,20);
 console.log('PASS: actual Queen’s rush conversion adds two to the matching touchdown summary even when older play history is truncated; updated/mismatched summaries never add twice');
+
+const tdSummary={away:0,home:6,row:{time:'02:34',qtr:'1'},previous:{away:0,home:0}};
+result=ctx.reconcileConversionScore(0,6,{},{},[],source,tdSummary,{away:0,home:7});assert.equal(result.home,7);assert.equal(result.adjusted,true);
+result=ctx.reconcileConversionScore(0,6,{},{},[],source,tdSummary,{away:0,home:8});assert.equal(result.home,8);
+result=ctx.reconcileConversionScore(0,7,{},{},[],source,{...tdSummary,home:7},{away:0,home:7});assert.equal(result.adjusted,false);
+result=ctx.reconcileConversionScore(0,6,{},{},[],source,tdSummary,{away:3,home:7});assert.equal(result.adjusted,false);
+result=ctx.reconcileConversionScore(0,6,{},{},[],source,tdSummary,{away:0,home:13});assert.equal(result.adjusted,false);
+result=ctx.reconcileConversionScore(0,6,{},{},[],source,tdSummary,{away:0,home:0});assert.equal(result.adjusted,false);
+const delayedTry={description:'Kicker kick attempt GOOD',possession:'QUE',q:'1',clock:'2:33'},delayedTD={description:'Runner rush TOUCHDOWN',possession:'QUE',q:'1',clock:'2:34'};
+result=ctx.reconcileConversionScore(0,6,{},{},[delayedTry,delayedTD],source,tdSummary);assert.equal(result.home,7);
+result=ctx.reconcileConversionScore(0,6,{},{},[{...delayedTry,description:'Kick attempt NO GOOD'},delayedTD],source,tdSummary);assert.equal(result.home,6);
+result=ctx.reconcileConversionScore(0,6,{},{},[{...delayedTry,clock:'0:01'},delayedTD],source,tdSummary);assert.equal(result.adjusted,false);
+result=ctx.reconcileConversionScore(0,6,{},{},[{...delayedTry,q:'2'},delayedTD],source,tdSummary);assert.equal(result.adjusted,false);
+console.log('PASS: current scoreboard PAT totals, differing conversion clocks, no duplicate/missed/unrelated adjustments');
+
+const all={};vm.runInNewContext(src.slice(0,src.indexOf('const BASE_HEADERS')),all);
+const raw={scores:{visitor:{score:0},home:{score:7},score:[{vscore:0,hscore:6,time:'02:34',qtr:'1'}]},status:{period:'1',clock:'02:30'},plays:{qtr:[]}};
+let normalized=all.normalize(raw,source);assert.equal(normalized.game.homeScore,7);assert.match(normalized.game.scoreSource,/verified-conversion/);
+raw.scores.score.push({vscore:0,hscore:7,time:'02:34',qtr:'1'});normalized=all.normalize(raw,source);assert.equal(normalized.game.homeScore,7);assert.doesNotMatch(normalized.game.scoreSource,/verified-conversion/);
+console.log('PASS: full live normalizer exposes PAT immediately and stops adjusting once scoring summary catches up');

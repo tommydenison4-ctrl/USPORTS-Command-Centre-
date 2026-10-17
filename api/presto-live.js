@@ -531,7 +531,7 @@ async function discoverSourcePage(date,awayName,homeName){
   const reAbs=new RegExp(`https?:\\/\\/[^\"'<>\\s]+\\/sports\\/fball\\/[^\"'<>\\s]+\\/boxscores\\/${date}_[A-Za-z0-9_-]+\\.xml`,'gi');
   const reRel=new RegExp(`(?:href|data-url|data-link)=[\"']([^\"']*boxscores\\/${date}_[A-Za-z0-9_-]+\\.xml[^\"']*)[\"']`,'gi');
   const docs=await Promise.all(urls.map(async u=>[u,htmlDecode(await getHtml(u))]));
-  for(const [u,html] of docs){if(!html)continue;const origin=new URL(u).origin;for(const m of html.matchAll(reAbs))pages.add(m[0]);for(const m of html.matchAll(reRel)){try{pages.add(new URL(m[1],origin).href)}catch{}}}
+  for(const [u,html] of docs){if(!html)continue;const origin=new URL(u).origin;for(const m of html.matchAll(reAbs))pages.add(m[0]);for(const m of html.matchAll(new RegExp('/sports/fball/[^\"\'<>\\s]+/boxscores/'+date+'_[A-Za-z0-9_-]+\\.xml','gi')))pages.add(new URL(m[0],origin).href);for(const m of html.matchAll(reRel)){try{pages.add(new URL(m[1],origin).href)}catch{}}}
 
   for(const page of pages){
     try{const html=htmlDecode(await getHtml(page));if(!html)continue;const v=confName(html,'visitor'),h=confName(html,'home');if(namesMatch(v,awayName)&&namesMatch(h,homeName)){DISCOVERY_CACHE.set(ck,{t:Date.now(),v:page});return page}}catch{}

@@ -120,7 +120,7 @@ async function legacyHandler(req,res){
 
 // Coalesce callers and use the date-specific national index before broad discovery.
 const detailCache=new Map(),detailPending=new Map();
-function ready(r){return r?.tables?.length&&Object.values(r.teams||{}).length===2&&Object.values(r.teams).every(t=>['passing','rushing','receiving'].every(k=>Array.isArray(t[k])))}
+function ready(r){return (r?.tables?.length||r?.pages?.some(p=>typeof p==='string'&&p.trim()))&&Object.values(r.teams||{}).length===2&&Object.values(r.teams).every(t=>['passing','rushing','receiving'].every(k=>Array.isArray(t[k])))}
 async function getFinalDetails(req){
  const date=String(req.query.date||'').replace(/\D/g,'').slice(0,8),away=String(req.query.away||''),home=String(req.query.home||'');
  const indexed=require('../data/completed-boxscores.json').find(r=>r.date.replace(/-/g,'')===date&&matches({visitor:r.away,home:r.home},away,home));

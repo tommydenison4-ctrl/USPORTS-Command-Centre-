@@ -39,6 +39,8 @@ jobs:
       - run: node scripts/advantage/check-national.cjs
       - name: Publish verified final gamebooks
         run: node scripts/build-completed-boxscores.cjs
+      - name: Verify final gamebook coverage including PDFs
+        run: node scripts/advantage/check-pdf-finals.cjs
       - name: Refresh saved standings, rankings, news and podcasts
         continue-on-error: true
         run: node scripts/refresh-feeds.cjs

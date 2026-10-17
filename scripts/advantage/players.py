@@ -65,7 +65,7 @@ def build():
             out.append(retained)
     for g in games:
         retained=saved_by_id.get(g['id'])
-        if retained and retained.get('date')==g['date'][:10] and all(retained.get(side+'Score')==g[side]['score'] for side in ('away','home')):
+        if retained and g['date'][:10]<str(datetime.date.fromisoformat(train.ASOF)-datetime.timedelta(days=1)) and retained.get('date')==g['date'][:10] and all(retained.get(side+'Score')==g[side]['score'] for side in ('away','home')):
             out.append(retained)
             continue
         try:

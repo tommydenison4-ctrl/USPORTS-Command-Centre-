@@ -35,6 +35,10 @@ async function load(conf){
  const checkedAt=new Date().toISOString();try{
   const r=await fetch(SOURCES[conf],{signal:AbortSignal.timeout(10000),headers:{'User-Agent':'Mozilla/5.0','Accept':'application/json,text/html'}});if(!r.ok)throw Error('Source HTTP '+r.status);
   const rows=parseStandings(await r.text(),conf);if(rows.length!==TEAMS.filter(t=>t.conference===conf).length)throw Error('Incomplete conference standings');
+  const finals=resultStandings(conf);
+  if(finals.length===rows.length&&finals.every(r=>r.record.g>=rows.find(x=>x.slug===r.slug).record.g)&&finals.some(r=>['g','w','l','t','pf','pa'].some(k=>r.record[k]!==rows.find(x=>x.slug===r.slug).record[k]))){
+   finals.forEach(r=>Object.assign(r,{checkedAt,stale:false}));cache.set(conf,{time:now,rows:finals});return finals;
+  }
   rows.forEach(r=>Object.assign(r,{checkedAt,verifiedAt:checkedAt,stale:false}));cache.set(conf,{time:now,rows});return rows;
  }catch(e){return (previous?.rows||(resultStandings(conf).length?resultStandings(conf):TEAMS.filter(t=>t.conference===conf).map(t=>({...t,url:SOURCES[conf],record:null})))).map(r=>({...r,checkedAt,stale:true,error:String(e.message)}));}
 }

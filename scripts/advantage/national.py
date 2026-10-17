@@ -93,7 +93,9 @@ def discover(fetch,batch,season):
         for g in rows:games[g['id']]=g
         unresolved.extend(unknown)
     for g in previous.get('games',[]):
-        if g.get('date') in missing:games[g['id']]=g
+        # A temporarily empty or stale official date must not erase verified finals.
+        fresh=games.get(g['id'])
+        if g.get('date') in missing or (g.get('status')=='final' and (not fresh or fresh.get('status')!='final')):games[g['id']]=g
     unresolved.extend(g for g in previous.get('unresolved',[]) if g.get('date') in missing)
     if missing:print('Retained verified fallback dates:',', '.join(sorted(missing)),flush=True)
     conferences={g['conference'] for g in games.values()}

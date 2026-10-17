@@ -297,6 +297,9 @@
   window.addEventListener('hashchange', () => {
     if (location.hash.slice(1).startsWith('projections')) page(location.hash.slice(1).split('=')[1] || 'OUA');
   });
+  window.addEventListener('canu-game-final', () => {
+    if (location.hash.startsWith('#projections')) page(location.hash.slice(1).split('=')[1] || 'OUA');
+  });
   function renderInitialProjection() {
     if (location.hash.slice(1).startsWith('projections')) page(location.hash.slice(1).split('=')[1] || 'OUA');
   }

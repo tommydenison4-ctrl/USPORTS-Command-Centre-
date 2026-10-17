@@ -14,7 +14,9 @@ def fetch(url):
     path=CACHE/(hashlib.sha256(url.encode()).hexdigest()+'.txt')
     def valid(text):
         return bool(text.strip()) and 'awsWafCookieDomainList' not in text and 'AwsWafIntegration' not in text
-    if path.exists() and path.stat().st_size>0 and ('/summary?' in url or '/boxscore/' in url or time.time()-path.stat().st_mtime<1800):
+    # Recent composites and gamebooks can change as a game finishes.
+    ttl=60 if '/composite' in url or '/boxscores/' in url else 1800
+    if path.exists() and path.stat().st_size>0 and ('/summary?' in url or '/boxscore/' in url or time.time()-path.stat().st_mtime<ttl):
         cached=path.read_text(encoding='utf-8')
         if valid(cached):return cached
     for attempt in range(3):

@@ -209,21 +209,7 @@ function flattenPlays(data){
   return out.slice(-100).reverse();
 }
 
-function latestScoringScorePair(data){
-  const rows = Array.isArray(data?.scores?.score) ? data.scores.score : [];
-  // Presto's scoring array is chronological and every scoring row carries the
-  // cumulative visitor/home score after that event. The LAST valid row is the
-  // authoritative running scoreboard.
-  for(let i=rows.length-1;i>=0;i--){
-    const r=rows[i]||{};
-    const away=numericScore(r.vscore), home=numericScore(r.hscore);
-    if(away!=null && home!=null){
-      let previous={away:0,home:0};for(let j=i-1;j>=0;j--){const a=numericScore(rows[j]?.vscore),h=numericScore(rows[j]?.hscore);if(a!=null&&h!=null){previous={away:a,home:h};break;}}
-      return {away,home,index:i,row:r,previous,source:'latest-scoring-event'};
-    }
-  }
-  return {away:null,home:null,index:null,source:''};
-}
+function latestScoringScorePair(data){return require('../internal/presto-score.cjs').latestScoringScorePair(data);}
 
 function parseDestinationSpot(desc=''){
   const m=[...String(desc).matchAll(/\bto the ([A-Z]{2,5})(-?\d{1,2})\b/gi)].at(-1);
@@ -305,7 +291,7 @@ function scoreFallbackFromPlays(plays,source){
   return seenAny?{away,home}:{away:null,home:null};
 }
 function reconcileConversionScore(away,home,playPair,fallback,plays,source,latestScore=null,scoreboardPair=null){
-  if(away==null||home==null)return {away,home,adjusted:false};
+  if(away==null||home==null||latestScore?.conversionIncluded)return {away,home,adjusted:false};
   // Team totals may include a conversion before its scoring-summary entry.
   const priorScore=latestScore?.previous;
   const tdSide=priorScore&&latestScore.away===away&&latestScore.home===home?

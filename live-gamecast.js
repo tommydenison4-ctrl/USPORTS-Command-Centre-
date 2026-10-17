@@ -361,12 +361,15 @@
       // Primary national path: probe each scheduled game through the same official
       // live endpoint used by the selected GameCenter. This prevents the rail from
       // depending on one aggregate discovery response or stale kickoff cards.
-      await Promise.allSettled(todays.map(fetchNationalGame));
+      const primary=await Promise.allSettled(todays.map(fetchNationalGame));
+      const verifiedIds=new Set(todays.filter((g,i)=>primary[i].status==='fulfilled'&&primary[i].value).map(g=>g.id));
       // Secondary path: merge anything the aggregate scanner has discovered too.
       try{
         const r=await fetch(`/api/live-games?date=${ymd(date)}&_=${now()}`,{cache:'no-store'}),j=await r.json();
         if(j?.ok)for(const x of (j.games||[])){
           const g=matchSource(x,date); if(!g)continue;
+          if(x.page)saveSession(sourceKey(g.id),{page:x.page});
+          if(verifiedIds.has(g.id))continue;
           const st=LIVE_STORE.games[g.id]||(LIVE_STORE.games[g.id]={id:g.id,away:g.away,home:g.home});
           setLiveState(g.id,{identity:{gameId:g.id,date:g.date,away:g.away,home:g.home},game:{awayScore:x.awayScore,homeScore:x.homeScore},status:{period:x.period,clock:x.clock}});
           if(x.page)saveSession(sourceKey(g.id),{page:x.page});

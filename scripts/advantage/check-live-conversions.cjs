@@ -40,7 +40,7 @@ result=ctx.reconcileConversionScore(0,6,{},{},[{...delayedTry,clock:'0:01'},dela
 result=ctx.reconcileConversionScore(0,6,{},{},[{...delayedTry,q:'2'},delayedTD],source,tdSummary);assert.equal(result.adjusted,false);
 console.log('PASS: current scoreboard PAT totals, differing conversion clocks, no duplicate/missed/unrelated adjustments');
 
-const all={};vm.runInNewContext(src.slice(0,src.indexOf('const BASE_HEADERS')),all);
+const all={require:p=>require(require('node:path').resolve('api',p))};vm.runInNewContext(src.slice(0,src.indexOf('const BASE_HEADERS')),all);
 const raw={scores:{visitor:{score:0},home:{score:7},score:[{vscore:0,hscore:6,time:'02:34',qtr:'1'}]},status:{period:'1',clock:'02:30'},plays:{qtr:[]}};
 let normalized=all.normalize(raw,source);assert.equal(normalized.game.homeScore,7);assert.match(normalized.game.scoreSource,/verified-conversion/);
 raw.scores.score.push({vscore:0,hscore:7,time:'02:34',qtr:'1'});normalized=all.normalize(raw,source);assert.equal(normalized.game.homeScore,7);assert.doesNotMatch(normalized.game.scoreSource,/verified-conversion/);

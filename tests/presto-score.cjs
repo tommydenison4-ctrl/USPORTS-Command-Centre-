@@ -1,0 +1,21 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
+const {latestScoringScorePair:score}=require('../internal/presto-score.cjs');
+// Actual Oct 17 McMaster/Waterloo scoring rows, including both confirmed PATs.
+const rows=[{type:'TD',vh:'V',vscore:'6',hscore:'0',patres:'GOOD',patpts:'1'},{type:'TD',vh:'H',vscore:'7',hscore:'6',patres:'GOOD',patpts:'1'}];
+const run=r=>score({scores:{score:r}});
+assert.equal(run(rows.slice(0,1)).away,7);assert.equal(run(rows).away,7);assert.equal(run(rows).home,7);
+assert.equal(run([...rows,{type:'TD',vh:'V',vscore:'13',hscore:'7',patres:'GOOD',patpts:'1'}]).away,14);
+assert.equal(run([rows[0],{...rows[1],hscore:'7'}]).home,7);
+for(const patres of ['NO GOOD','BLOCKED',undefined])assert.equal(run([{...rows[0],patres}]).away,6);
+assert.equal(run([{...rows[0],patpts:'2'}]).away,8);
+assert.equal(run([{...rows[0],vscore:'7'}]).away,7);
+assert.equal(run([...rows,{type:'FG',vh:'H',vscore:'7',hscore:'10'}]).home,10);
+const source=fs.readFileSync('api/presto-live.js','utf8'),ctx={require:p=>require(path.resolve('api',p))};
+vm.runInNewContext(source.slice(0,source.indexOf('const BASE_HEADERS')),ctx);
+const fixture={scores:{score:rows},status:{period:'2',clock:'15:00'},plays:{qtr:[]}};
+const normalized=ctx.normalize(fixture,{awayId:'MAC',homeId:'WAT'});
+assert.equal(normalized.game.awayScore,7);assert.equal(normalized.game.homeScore,7);assert.match(normalized.game.scoreSource,/recorded-conversion/);
+const aggregateSource=fs.readFileSync('api/live-games.js','utf8'),aggregate={require:p=>require(path.resolve('api',p))};
+vm.runInNewContext(aggregateSource.slice(aggregateSource.indexOf('function lastScore'),aggregateSource.indexOf('\n',aggregateSource.indexOf('function lastScore'))),aggregate);
+assert.equal(aggregate.lastScore(fixture).home,7);
+console.log('PASS: real attached PATs in both APIs; missed/blocked tries, two-point tries, subsequent scores, and no double counting');

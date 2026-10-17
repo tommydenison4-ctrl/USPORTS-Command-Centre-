@@ -29,7 +29,7 @@ async function fetchLive(meta,cookie=''){
   const headers={...HEADERS,'Accept':'application/json,text/plain,*/*','X-Requested-With':'XMLHttpRequest','Referer':meta.page,'Origin':origin}; if(cookie)headers.Cookie=cookie;
   const r=await fetch(u,{signal:AbortSignal.timeout(8000),headers,redirect:'follow'});const body=await r.text();let j=null;try{j=JSON.parse(body)}catch{};return {status:r.status,json:j};
 }
-function lastScore(j){const rows=Array.isArray(j?.scores?.score)?j.scores.score:[];if(!rows.length)return {away:0,home:0};const x=rows[rows.length-1]||{};const a=Number(x.vscore),h=Number(x.hscore);return {away:Number.isFinite(a)?a:0,home:Number.isFinite(h)?h:0};}
+function lastScore(j){const score=require('../internal/presto-score.cjs').latestScoringScorePair(j);return {away:score.away??0,home:score.home??0};}
 function period(j){let p=Array.isArray(j?.status?.period)?j.status.period[0]:j?.status?.period;p=String(p||'').trim();return /^\d+$/.test(p)?`Q${p}`:p.toUpperCase();}
 function isActuallyLive(meta,j){if(meta.final)return false;const complete=String(j?.status?.complete||'').toUpperCase()==='Y';if(complete)return false;const p=period(j),clock=String(j?.status?.clock||'');return meta.pregame===false && (!!p||!!clock||Array.isArray(j?.plays?.play)||Array.isArray(j?.scores?.score));}
 async function scanSchedule(scheduleUrl,date){

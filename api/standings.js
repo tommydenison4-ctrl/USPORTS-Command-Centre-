@@ -20,13 +20,23 @@ function parseStandings(text,conf){
   }return out;
  }return [];
 }
+function resultStandings(conf){
+ const schedule=require('../data/national-schedule-usports.json');
+ const teams=TEAMS.filter(t=>t.conference===conf),ids=new Set(teams.map(t=>t.slug));
+ const games=schedule.games.filter(g=>ids.has(g.away)&&ids.has(g.home)&&!g.exhibition&&!g.playoff&&!g.postseason&&g.status==='final'&&[g.awayScore,g.homeScore].every(n=>Number.isInteger(n)&&n>=0));
+ if(!games.length)return [];
+ const records=Object.fromEntries(teams.map(t=>[t.slug,{slug:t.slug,w:0,l:0,t:0,gp:0,pf:0,pa:0}]));
+ for(const g of games){for(const side of ['away','home']){const r=records[g[side]],other=side==='away'?'home':'away',pf=g[side+'Score'],pa=g[other+'Score'];r.gp++;r.pf+=pf;r.pa+=pa;if(pf>pa)r.w++;else if(pf<pa)r.l++;else r.t++;}}
+ const ranked=require('../playoff-tiebreaks.js').rank(conf,records,games.map(g=>({...g,result:{away:g.awayScore,home:g.homeScore}})));
+ return ranked.rows.map((r,i)=>({...teams.find(t=>t.slug===r.slug),record:{w:r.w,l:r.l,t:r.t,g:r.gp,pf:r.pf,pa:r.pa},position:i+1,season:2026,url:schedule.source,verifiedAt:schedule.asOf,derivedFromFinals:true}));
+}
 async function load(conf){
  const now=Date.now(),previous=cache.get(conf);if(previous&&now-previous.time<55000)return previous.rows;
  const checkedAt=new Date().toISOString();try{
   const r=await fetch(SOURCES[conf],{signal:AbortSignal.timeout(10000),headers:{'User-Agent':'Mozilla/5.0','Accept':'application/json,text/html'}});if(!r.ok)throw Error('Source HTTP '+r.status);
   const rows=parseStandings(await r.text(),conf);if(rows.length!==TEAMS.filter(t=>t.conference===conf).length)throw Error('Incomplete conference standings');
   rows.forEach(r=>Object.assign(r,{checkedAt,verifiedAt:checkedAt,stale:false}));cache.set(conf,{time:now,rows});return rows;
- }catch(e){return (previous?.rows||TEAMS.filter(t=>t.conference===conf).map(t=>({...t,url:SOURCES[conf],record:null}))).map(r=>({...r,checkedAt,stale:true,error:String(e.message)}));}
+ }catch(e){return (previous?.rows||(resultStandings(conf).length?resultStandings(conf):TEAMS.filter(t=>t.conference===conf).map(t=>({...t,url:SOURCES[conf],record:null})))).map(r=>({...r,checkedAt,stale:true,error:String(e.message)}));}
 }
 export default async function handler(req,res){
  const rows=(await Promise.all(Object.keys(SOURCES).map(load))).flat();

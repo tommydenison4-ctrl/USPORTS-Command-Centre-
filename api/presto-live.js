@@ -560,6 +560,12 @@ module.exports=async function handler(req,res){
   }
   let source=SOURCES[requestedGame]||null;
   let game = source ? '2026-09-06-mcmaster-guelph' : requestedGame;
+  // Event pages confirmed by the official October 16 daily composite.
+  const published={'2026-10-16-concordia-montreal':'20261016_jv0d','2026-10-16-calgary-ubc':'20261016_nuqi','2026-10-16-manitoba-saskatchewan':'20261016_dycj'};
+  if(!source&&!dynamicPage&&published[requestedGame]){
+    const expected=expectedGame(requestedGame),teams=require('../data/usports-teams.json');
+    source={page:'https://fr.usports.ca/sports/fball/2026-27/boxscores/'+published[requestedGame]+'.xml',awayId:teams.find(t=>t.slug===expected.away)?.abbr||'',homeId:teams.find(t=>t.slug===expected.home)?.abbr||''};
+  }
   if(!source && dynamicPage){
     try{
       const u=new URL(dynamicPage);

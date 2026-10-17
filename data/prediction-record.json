@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-10-16",
+  "asOf": "2026-10-17",
   "games": [
     {
       "gameId": "2026-09-25-alberta-calgary",
@@ -400,11 +400,11 @@
       "probability": 0.7577613384327859,
       "publishedAt": "2026-09-24T13:43:40.145Z",
       "source": "data/advantage-snapshots/usports-2026-09-24.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "ubc",
+      "awayScore": 18,
+      "homeScore": 34,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261016_nuqi.xml"
     },
     {
       "gameId": "2026-10-16-concordia-montreal",
@@ -430,11 +430,11 @@
       "probability": 0.7774866527410248,
       "publishedAt": "2026-09-24T13:43:40.145Z",
       "source": "data/advantage-snapshots/usports-2026-09-24.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "saskatchewan",
+      "awayScore": 20,
+      "homeScore": 39,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261016_dycj.xml"
     },
     {
       "gameId": "2026-10-17-bishops-sherbrooke",

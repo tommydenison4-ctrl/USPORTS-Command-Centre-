@@ -544,16 +544,19 @@ module.exports=async function handler(req,res){
   if(req.method!=='GET') return send(res,405,{ok:false,error:'GET only'});
   const requestedGame=String(req.query.game||'');
   const dynamicPage=String(req.query.page||'').trim();
+  async function rseqResponse(){
   const rseqExpected=expectedGame(requestedGame);
   if(rseqExpected&&require('../data/usports-teams.json').find(t=>t.slug===rseqExpected.home)?.conference==='RSEQ'){
     try{const x=await require('../internal/rseq-live.cjs').load(rseqExpected);if(x){
-      if(x.error)return send(res,503,{ok:false,game:requestedGame,error:x.error,officialPage:x.page});
+      if(x.error){send(res,503,{ok:false,game:requestedGame,error:x.error,officialPage:x.page});return true;}
       const identity={gameId:requestedGame,...rseqExpected},data={...normalize(x.raw,{awayId:x.awayId,homeId:x.homeId}),identity};
       if(data.status.complete)data.status.period='FINAL';
       else if(!data.status.period){const q=Array.isArray(x.raw.plays?.qtr)?x.raw.plays.qtr.at(-1):x.raw.plays?.qtr;data.status.period=q?.number?'Q'+q.number:'';}
       try{await require('../internal/live-history.cjs').capture(requestedGame,data,x.raw)}catch{}
-      return send(res,200,{ok:true,game:requestedGame,visitor:x.visitor,home:x.home,officialPage:x.page,data});
+      send(res,200,{ok:true,game:requestedGame,visitor:x.visitor,home:x.home,officialPage:x.page,data});return true;
     }}catch(e){console.warn('RSEQ feed unavailable',e.message)}
+  }
+  return false;
   }
   let source=SOURCES[requestedGame]||null;
   let game = source ? '2026-09-06-mcmaster-guelph' : requestedGame;
@@ -574,6 +577,7 @@ module.exports=async function handler(req,res){
     const page=await discoverSourcePage(date,awayName,homeName);
     if(page) source={page,fallbackEvent:'',fallbackHash:'',awayId:String(req.query.awayId||'').toUpperCase(),homeId:String(req.query.homeId||'').toUpperCase()};
   }
+  if(!source&&await rseqResponse())return;
   if(!source) return send(res,404,{ok:false,error:'No verified Presto source registered for this game',game:requestedGame});
   const expected=expectedGame(game);
   let boot={status:null,ok:false,cookie:'',found:null,sample:''}, attempts=[];
@@ -587,6 +591,7 @@ module.exports=async function handler(req,res){
   const registry=VERIFIED_EVENTS[game],savedBoot=VERIFIED_BOOTSTRAPS.get(source.page);
   if(!boot.ok&&savedBoot)boot=savedBoot;
   if(!boot.ok&&registry&&source.page.endsWith('/'+registry.box+'.xml'))boot={...boot,ok:true,visitor:registry.visitor,home:registry.home,found:{event:registry.event,hash:registry.hash},cookie:''};
+  if(!boot.ok&&await rseqResponse())return;
   if(!boot.ok)return send(res,502,{ok:false,game,error:'Official source page temporarily unavailable',upstreamStatus:boot.status});
   const sourceDate=source.page.match(/boxscores\/(\d{8})_/)?.[1];
   if(!expected||sourceDate!==expected.date.replace(/-/g,'')||!namesMatch(boot.visitor,expected.away)||!namesMatch(boot.home,expected.home))return send(res,409,{ok:false,game,error:'Live source does not match the requested teams and date'});
@@ -610,5 +615,6 @@ module.exports=async function handler(req,res){
       if(lr.json?.error){ attempts[attempts.length-1].upstreamError=String(lr.json.error); }
     }catch(e){ attempts.push({kind:c.kind,status:null,error:String(e?.message||e)}); }
   }
+  if(await rseqResponse())return;
   return send(res,502,{ok:false,game,error:'PrestoSports returned a response, but it was not a usable live-stat payload',sourcePage:source.page,bootstrapStatus:boot.status,bootstrapOk:boot.ok,discoveredCredentials:!!boot.found,bootstrapLiveupdateSnippet:boot.liveupdateSnippet||'',bootstrapEventSnippet:boot.eventSnippet||'',attempts});
 };

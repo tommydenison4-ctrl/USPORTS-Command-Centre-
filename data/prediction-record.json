@@ -102,8 +102,8 @@
       "source": "data/advantage-snapshots/usports-2026-09-24.json",
       "status": "correct",
       "winner": "guelph",
-      "awayScore": 25,
-      "homeScore": 44,
+      "awayScore": 22,
+      "homeScore": 47,
       "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260926_pvm1.xml"
     },
     {

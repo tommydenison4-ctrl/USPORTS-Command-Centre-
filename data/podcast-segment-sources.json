@@ -1,6 +1,42 @@
 {
   "episodes": [
     {
+      "id": "2026-week-8",
+      "episode": "Week 8 Review",
+      "published": "2026-10-20",
+      "durationSeconds": 4557,
+      "url": "https://www.youtube.com/watch?v=20eyAmd44KQ",
+      "videoId": "20eyAmd44KQ",
+      "audioUrl": null,
+      "sourceChapters": "https://www.youtube.com/watch?v=20eyAmd44KQ",
+      "chapters": [
+        {
+          "label": "Players of the Week",
+          "start": 78
+        },
+        {
+          "label": "Battle of Toronto",
+          "start": 237
+        },
+        {
+          "label": "Guelph @ Queen's",
+          "start": 900
+        },
+        {
+          "label": "Western @ Ottawa",
+          "start": 2172
+        },
+        {
+          "label": "McMaster @ Waterloo",
+          "start": 2783
+        },
+        {
+          "label": "Carleton @ Laurier",
+          "start": 3693
+        }
+      ]
+    },
+    {
       "id": "2026-week-7",
       "episode": "Week 7 Review",
       "published": "2026-10-12",
@@ -277,6 +313,46 @@
     }
   ],
   "segments": [
+    {
+      "episodeId": "2026-week-8",
+      "gameId": "2026-10-17-york-toronto",
+      "label": "Battle of Toronto",
+      "start": 237,
+      "end": 900,
+      "endsAtEpisodeEnd": false
+    },
+    {
+      "episodeId": "2026-week-8",
+      "gameId": "2026-10-17-guelph-queens",
+      "label": "Guelph at Queen's",
+      "start": 900,
+      "end": 2172,
+      "endsAtEpisodeEnd": false
+    },
+    {
+      "episodeId": "2026-week-8",
+      "gameId": "2026-10-17-western-ottawa",
+      "label": "Western at Ottawa",
+      "start": 2172,
+      "end": 2783,
+      "endsAtEpisodeEnd": false
+    },
+    {
+      "episodeId": "2026-week-8",
+      "gameId": "2026-10-17-mcmaster-waterloo",
+      "label": "McMaster at Waterloo",
+      "start": 2783,
+      "end": 3693,
+      "endsAtEpisodeEnd": false
+    },
+    {
+      "episodeId": "2026-week-8",
+      "gameId": "2026-10-17-carleton-laurier",
+      "label": "Carleton at Laurier",
+      "start": 3693,
+      "end": 4557,
+      "endsAtEpisodeEnd": true
+    },
     {
       "episodeId": "2026-week-7",
       "gameId": "2026-10-09-toronto-mcmaster",

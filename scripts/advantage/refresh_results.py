@@ -4,6 +4,14 @@ from collections import defaultdict
 import numpy as np
 import national, train
 
+def covers_previous(previous, history):
+    """A refresh may retrain only when every team's verified play sources survive."""
+    for tid, profile in previous['profiles'].items():
+        games=[g for g in history if any(g[side]['id']==tid for side in ('away','home'))]
+        if len(games)<profile['games'] or not set(profile.get('sources',[]))<={g['source'] for g in games}:
+            return False
+    return True
+
 def update(previous, source, history):
     result=copy.deepcopy(previous)
     finals=[national.history_game(g) for g in source['schedule']
@@ -28,7 +36,7 @@ def update(previous, source, history):
                  resultGames=len(games),lastGame=games[-1][0]['date'],
                  resultSources=list(dict.fromkeys(g.get('boxscore') or g['source'] for g,s in games)))
         # A subset of newly reachable gamebooks must not replace broader coverage.
-        if len(plays[tid])>=p['games']:
+        if len(plays[tid])>=p['games'] and set(p.get('sources',[]))<={g['source'] for g,s in plays[tid]}:
             fresh=train.profile(plays[tid],elo[tid],games)
             if fresh:
                 for key in ('off','defense','games','sources'):p[key]=fresh[key]

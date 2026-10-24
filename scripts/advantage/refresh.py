@@ -2,6 +2,7 @@
 import json,subprocess,sys
 from pathlib import Path
 import train
+import refresh_results
 ROOT=Path(__file__).resolve().parents[2]
 target=ROOT/'data/advantage-usports.json'
 subprocess.run(['node',str(Path(__file__).with_name('snapshots.cjs')),'freeze'],check=True)
@@ -9,7 +10,7 @@ old=json.loads(target.read_text())
 subprocess.run([sys.executable,str(Path(__file__).with_name('ingest.py')),'USPORTS'],check=True)
 source=json.loads(Path(__file__).with_name('usports-history.json').read_text())
 history=train.clean(source['history'],'USPORTS')
-if len(history)>=old['coverage']['completedGames']*.95:
+if refresh_results.covers_previous(old,history):
     train.train('USPORTS')
     new=json.loads(Path(__file__).with_name('usports-model.json').read_text())
     missing=set(old['profiles'])-set(new['profiles'])

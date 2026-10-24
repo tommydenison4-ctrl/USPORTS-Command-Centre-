@@ -88,63 +88,6 @@
       ]
     },
     {
-      "id": "2026-10-23-mount-allison-saint-marys",
-      "away": "mount-allison",
-      "home": "saint-marys",
-      "date": "2026-10-23",
-      "conference": "AUS",
-      "asOf": "2026-10-15",
-      "title": "Mounties take another run at Huskies",
-      "paragraphs": [
-        "Mount Allison came closer to beating Saint Mary's than its other recent results would suggest. Between two heavy losses to StFX, the Mounties kept the Huskies within a touchdown in a 24–17 game.",
-        "That gives the return meeting a more useful starting point than Mount Allison's 1–4 record alone. The Mounties did not need to match Saint Mary's with a string of big offensive plays to stay involved; they needed to keep the score low enough that their own drives still mattered.",
-        "It is a difficult balance against a team with Malcolm Bussey carrying the ball. He rushed for 124 yards and a touchdown in Saint Mary's latest win over Acadia, helping the Huskies control a game in which their defence allowed only seven points.",
-        "The Mounties have been able to find receiving yards through Quinten George, who had 96 against StFX, but that game showed the limits of chasing a large deficit. Their closer meeting with Saint Mary's offers a different route. Keeping Bussey from letting the Huskies settle into control would make George's catches worth more than a contribution to the yardage total."
-      ],
-      "notes": [
-        "Records and team scoring use regular-season results completed before October 15. Exhibitions are excluded.",
-        "Player totals use the available box scores and may be incomplete. The Hec Crighton Watch is CanUFootball’s own list."
-      ],
-      "sources": [
-        {
-          "url": "https://en.usports.ca/sports/fball/composite?d=2026-10-23",
-          "label": "Official national schedule"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260904_m54m.xml",
-          "label": "September 4 · Acadia at Mount Allison"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260911_aecb.xml",
-          "label": "September 11 · Mount Allison at Saint Mary's"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260919_2r1j.xml",
-          "label": "September 19 · StFX at Mount Allison"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260926_e8ye.xml",
-          "label": "September 26 · Saint Mary's at Mount Allison"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_n4x7.xml",
-          "label": "October 3 · Mount Allison at StFX"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260905_olce.xml",
-          "label": "September 5 · Saint Mary's at StFX"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260919_vzdr.xml",
-          "label": "September 19 · Saint Mary's at Acadia"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261002_b8gs.xml",
-          "label": "October 2 · Acadia at Saint Mary's"
-        }
-      ]
-    },
-    {
       "id": "2026-10-23-ubc-regina",
       "away": "ubc",
       "home": "regina",

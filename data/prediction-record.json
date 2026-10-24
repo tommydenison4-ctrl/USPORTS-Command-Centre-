@@ -595,11 +595,11 @@
       "probability": 0.858574096629151,
       "publishedAt": "2026-10-02T16:14:10.101Z",
       "source": "data/advantage-snapshots/usports-2026-10-02.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "saint-marys",
+      "awayScore": 7,
+      "homeScore": 17,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261023_hrtm.xml"
     },
     {
       "gameId": "2026-10-23-ubc-regina",

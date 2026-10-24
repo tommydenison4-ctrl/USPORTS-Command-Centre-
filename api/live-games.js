@@ -84,11 +84,11 @@ module.exports=async function handler(req,res){
       candidates.push(candidate);
       LIVE_SOURCE_CACHE.set([date,String(meta.visitor).toLowerCase(),String(meta.home).toLowerCase()].join('|'),{t:Date.now(),v:candidate});
       if(meta.final)return null;
-      const live=await fetchLive(meta,b.cookie);if(!live?.json||live.json.error||!isActuallyLive(meta,live.json))return null;const sc=lastScore(live.json);return {...candidate,awayScore:sc.away,homeScore:sc.home,period:period(live.json),clock:String(live.json?.status?.clock||''),lastUpdated:String(live.json?.network?.lastUpdated||'')};
+      const live=await fetchLive(meta,b.cookie);if(!live?.json||live.json.error||!isActuallyLive(meta,live.json)){const team=require('./scoreboard').team,away=team(meta.visitor),home=team(meta.home);if(!away||!home)return null;const d=require('../internal/presto-page-live.cjs').normalize(b.text,{date:day,away,home},page);return d&&!d.status.complete?{...candidate,awayScore:d.game.awayScore,homeScore:d.game.homeScore,period:d.status.period,clock:d.status.clock}:null;}const sc=lastScore(live.json);return {...candidate,awayScore:sc.away,homeScore:sc.home,period:period(live.json),clock:String(live.json?.status?.clock||''),lastUpdated:String(live.json?.network?.lastUpdated||'')};
     }catch{return null;}
   }))).filter(Boolean);
   // Official host feeds do not depend on national Presto discovery.
-  const fixtures=require('../data/national-schedule-usports.json').games.filter(g=>g.date===day&&['toronto','regina','saskatchewan'].includes(g.home));
+  const fixtures=require('../data/national-schedule-usports.json').games.filter(g=>g.date===day&&require('../internal/host-live.cjs').HOSTS[g.home]);
   await Promise.all(fixtures.map(async g=>{try{const x=await require('../internal/host-live.cjs').load({date:g.date,away:g.away,home:g.home});if(!x||x.data.status.complete)return;const d=x.data;games.push({page:x.page,visitor:x.visitor,home:x.home,awayScore:d.game.awayScore,homeScore:d.game.homeScore,period:d.status.period,clock:d.status.clock});}catch{}}));
   // Warm-instance fallback: if upstream schedule discovery flickers, keep returning the
   // last proven source candidates instead of making clients forget a working page.

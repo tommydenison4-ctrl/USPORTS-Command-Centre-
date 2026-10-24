@@ -492,11 +492,12 @@ function discover(html){
   for(const p of patterns){ const m=html.match(p); if(m) return {event:decodeURIComponent(m[1]),hash:decodeURIComponent(m[2])}; }
   return null;
 }
-function confName(html,key){const m=html.match(new RegExp("conf\\."+key+"\\s*=\\s*(['\"])((?:\\\\.|(?!\\1).)*)\\1",'i'));return htmlDecode((m?.[2]||'').replace(/\\(['"\\])/g,'$1'));}
+function decodeJsName(value){return value.replace(/\\u([0-9a-f]{4})/gi,(_,h)=>String.fromCharCode(parseInt(h,16)));}
+function confName(html,key){const m=html.match(new RegExp("conf\\."+key+"\\s*=\\s*(['\"])((?:\\\\.|(?!\\1).)*)\\1",'i'));return decodeJsName(htmlDecode((m?.[2]||'').replace(/\\(['"\\])/g,'$1')));}
 async function bootstrap(source){
   const r=await fetch(source.page,{signal:AbortSignal.timeout(8000),redirect:'follow',headers:{...BASE_HEADERS,'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Upgrade-Insecure-Requests':'1','Sec-Fetch-Site':'none','Sec-Fetch-Mode':'navigate','Sec-Fetch-Dest':'document'}});
   const html=await r.text();
-  const visitor=confName(html,'visitor'),home=confName(html,'home');const found=discover(html); const li=html.toLowerCase().indexOf('liveupdate'); const ei=html.toLowerCase().indexOf('zejwko'); const vm=html.match(/conf\.visitorTeamLogo\s*=\s*['"]([^'"]+)['"]/i); const hm=html.match(/conf\.homeTeamLogo\s*=\s*['"]([^'"]+)['"]/i); return {status:r.status,ok:r.ok,cookie:cookieHeader(r),found,visitor,home,visitorLogo:htmlDecode(vm?.[1]||''),homeLogo:htmlDecode(hm?.[1]||''),sample:html.slice(0,120),liveupdateSnippet:li>=0?html.slice(Math.max(0,li-180),li+500):'',eventSnippet:ei>=0?html.slice(Math.max(0,ei-180),ei+500):''};
+  const visitor=confName(html,'visitor'),home=confName(html,'home');const found=discover(html); const li=html.toLowerCase().indexOf('liveupdate'); const ei=html.toLowerCase().indexOf('zejwko'); const vm=html.match(/conf\.visitorTeamLogo\s*=\s*['"]([^'"]+)['"]/i); const hm=html.match(/conf\.homeTeamLogo\s*=\s*['"]([^'"]+)['"]/i); return {status:r.status,ok:r.ok,cookie:cookieHeader(r),found,visitor,home,visitorLogo:htmlDecode(vm?.[1]||''),homeLogo:htmlDecode(hm?.[1]||''),html,sample:html.slice(0,120),liveupdateSnippet:li>=0?html.slice(Math.max(0,li-180),li+500):'',eventSnippet:ei>=0?html.slice(Math.max(0,ei-180),ei+500):''};
 }
 async function fetchLive(source,creds,cookie=''){
   const origin=new URL(source.page).origin;
@@ -546,7 +547,7 @@ module.exports=async function handler(req,res){
   const dynamicPage=String(req.query.page||'').trim();
   // Toronto publishes this host feed directly on its official football schedule.
   // It remains reachable when the conference's Presto bootstrap is blocked.
-  if(['toronto','regina','saskatchewan'].includes(expectedGame(requestedGame)?.home)){
+  if(require('../internal/host-live.cjs').HOSTS[expectedGame(requestedGame)?.home]){
     try{const official=await require('../internal/host-live.cjs').load(expectedGame(requestedGame));if(official){
       try{await require('../internal/live-history.cjs').capture(requestedGame,official.data,official.raw)}catch{}
       return send(res,200,{ok:true,game:requestedGame,visitor:official.visitor,home:official.home,officialPage:official.page,data:official.data});
@@ -567,6 +568,7 @@ module.exports=async function handler(req,res){
   }
   return false;
   }
+  if(await rseqResponse())return;
   let source=SOURCES[requestedGame]||null;
   let game = source ? '2026-09-06-mcmaster-guelph' : requestedGame;
   // Event pages confirmed by the official October 16 daily composite.
@@ -586,6 +588,10 @@ module.exports=async function handler(req,res){
       source={page:u.toString(),fallbackEvent:'',fallbackHash:'',awayId:String(req.query.awayId||'').toUpperCase(),homeId:String(req.query.homeId||'').toUpperCase()};
     }catch{return send(res,400,{ok:false,error:'Invalid source page'});}
   }
+  if(!source){
+    const fixture=require('../data/national-schedule-usports.json').games.find(g=>g.id===requestedGame);
+    if(fixture?.boxscore){const teams=require('../data/usports-teams.json');source={page:fixture.boxscore,awayId:teams.find(t=>t.slug===fixture.away)?.abbr||'',homeId:teams.find(t=>t.slug===fixture.home)?.abbr||''};}
+  }
   if(!source && String(req.query.discover||'')==='1'){
     const date=String(req.query.date||requestedGame.match(/^(\d{4})-(\d{2})-(\d{2})/)?.slice(1).join('')||'').replace(/\D/g,'').slice(0,8);
     const awayName=String(req.query.away||'').replace(/-/g,' '), homeName=String(req.query.home||'').replace(/-/g,' ');
@@ -595,13 +601,21 @@ module.exports=async function handler(req,res){
   if(!source&&await rseqResponse())return;
   if(!source) return send(res,404,{ok:false,error:'No verified Presto source registered for this game',game:requestedGame});
   const expected=expectedGame(game);
-  let boot={status:null,ok:false,cookie:'',found:null,sample:''}, attempts=[];
-  try{ boot=await bootstrap(source); }catch(e){ boot.error=String(e?.message||e); }
-  // The national page can be unavailable while the same official conference
-  // event is live. Try its identical OUA event, then verify participants again.
-  if(!boot.ok&&expected&&require('../data/usports-teams.json').find(t=>t.slug===expected.away)?.conference==='OUA'&&new URL(source.page).hostname==='en.usports.ca'){
-    source={...source,page:'https://oua.ca'+new URL(source.page).pathname};
-    try{boot=await bootstrap(source)}catch(e){boot.error=String(e?.message||e)}
+  // Event credentials are stable; scores are always fetched fresh. Avoid making
+  // every four-second refresh rediscover a page that was already verified.
+  const requestedPage=source.page;
+  const saved=VERIFIED_BOOTSTRAPS.get(requestedPage);
+  if(saved?.page)source={...source,page:saved.page};
+  let boot=saved&&Date.now()-saved.verifiedAt<300000?saved:{status:null,ok:false,cookie:'',found:null,sample:''},attempts=[];
+  if(!boot.found){
+    const pages=[source.page],u=new URL(source.page);
+    if(['en.usports.ca','fr.usports.ca'].includes(u.hostname)){
+      pages.push('https://'+(u.hostname==='en.usports.ca'?'fr.usports.ca':'en.usports.ca')+u.pathname);
+      if(expected&&require('../data/usports-teams.json').find(t=>t.slug===expected.home)?.conference==='OUA')pages.push('https://oua.ca'+u.pathname);
+    }
+    const candidates=await Promise.all(pages.map(async page=>{try{return {page,boot:await bootstrap({...source,page})}}catch{return null}}));
+    const match=candidates.find(x=>x?.boot.ok&&x.boot.found&&expected&&namesMatch(x.boot.visitor,expected.away)&&namesMatch(x.boot.home,expected.home));
+    if(match){source={...source,page:match.page};boot=match.boot;}else boot=candidates.find(x=>x?.page===source.page)?.boot||boot;
   }
   const registry=VERIFIED_EVENTS[game],savedBoot=VERIFIED_BOOTSTRAPS.get(source.page);
   if((!boot.ok||!boot.found||!boot.visitor||!boot.home)&&savedBoot)boot=savedBoot;
@@ -610,7 +624,8 @@ module.exports=async function handler(req,res){
   if(!boot.ok)return send(res,502,{ok:false,game,error:'Official source page temporarily unavailable',upstreamStatus:boot.status});
   const sourceDate=source.page.match(/boxscores\/(\d{8})_/)?.[1];
   if(!expected||sourceDate!==expected.date.replace(/-/g,'')||!namesMatch(boot.visitor,expected.away)||!namesMatch(boot.home,expected.home))return send(res,409,{ok:false,game,error:'Live source does not match the requested teams and date'});
-  VERIFIED_BOOTSTRAPS.set(source.page,boot);
+  const freshHtml=boot.html;
+  boot={...boot,html:undefined,page:source.page,verifiedAt:Date.now()};VERIFIED_BOOTSTRAPS.set(source.page,boot);VERIFIED_BOOTSTRAPS.set(requestedPage,boot);
   const identity={gameId:game,...expected};
   const candidates=[];
   if(boot.found) candidates.push({...boot.found,kind:'discovered'});
@@ -630,6 +645,12 @@ module.exports=async function handler(req,res){
       if(lr.json?.error){ attempts[attempts.length-1].upstreamError=String(lr.json.error); }
     }catch(e){ attempts.push({kind:c.kind,status:null,error:String(e?.message||e)}); }
   }
+  // The HTML scoreboard is an independent official source. It can update even
+  // when the provider's liveupdate endpoint rejects requests.
+  try{
+    const html=freshHtml||await getHtml(source.page),data=require('../internal/presto-page-live.cjs').normalize(html,expected,source.page);
+    if(data)return send(res,200,{ok:true,game,page:source.page,visitor:boot.visitor,home:boot.home,data,cadenceSeconds:10});
+  }catch{}
   if(!req.query._localeRetry&&new URL(source.page).hostname==='en.usports.ca'){
     const alternate=new URL(source.page);alternate.hostname='fr.usports.ca';
     return handler({...req,query:{...req.query,page:alternate.href,_localeRetry:'1'}},res);

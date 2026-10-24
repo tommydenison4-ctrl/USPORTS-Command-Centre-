@@ -45,6 +45,10 @@
     "api/at-the-55.js": {
       "includeFiles": "internal/at-the-55.cjs",
       "maxDuration": 60
+    },
+    "api/live-games.js": {
+      "includeFiles": "{internal/**,data/**}",
+      "maxDuration": 60
     }
   },
   "headers": [

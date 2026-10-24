@@ -9,7 +9,7 @@ module.exports=async(req,res)=>{
   if(kick===null||now<kick-30||now>kick+360){results.push({game:g.id,status:'outside game window'});return;}
   const old=await H.history(g.id);if(old?.complete){results.push({game:g.id,status:'final archived'});return;}
   const teams=require('../data/usports-teams.json'),a=teams.find(t=>t.slug===g.away),h=teams.find(t=>t.slug===g.home);
-  await live({method:'GET',query:{game:g.id,page:g.boxscore||'',discover:'1',date:date.replace(/-/g,''),away:g.away,home:g.home,awayId:a?.abbr||'',homeId:h?.abbr||''}},{setHeader(){},status(code){this.code=code;return this;},json(body){results.push({game:g.id,status:body.ok?(body.archiveSaved?'captured':'capture failed'):'feed unavailable'});return this;}});
+  await live({method:'GET',query:{game:g.id,page:g.boxscore||'',discover:'1',date:date.replace(/-/g,''),away:g.away,home:g.home,awayId:a?.abbr||'',homeId:h?.abbr||''}},{setHeader(){},status(code){this.code=code;return this;},end(text){return this.json(JSON.parse(text));},json(body){results.push({game:g.id,status:body.ok?(body.archiveSaved?'captured':'capture failed'):'feed unavailable'});return this;}});
   }catch{results.push({game:g.id,status:'capture failed'});}
  }));return res.status(200).json({date,results});
 };

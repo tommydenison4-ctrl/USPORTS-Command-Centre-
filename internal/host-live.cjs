@@ -1,10 +1,14 @@
 const PAGE='https://varsityblues.ca/sidearmstats/football/summary';
-const FEED='https://sidearmstats.com/toronto/football/game.json?detail=full';
+// Provider IDs verified from window.livestats_foldername on official school pages.
+const HOSTS={toronto:'toronto',regina:'regina',saskatchewan:'saskatchewan',mcmaster:'mcmaster',western:'uwo',queens:'queensu',windsor:'uwindsor',laurier:'wilfrid_laurier',york:'yorku',alberta:'alberta',calgary:'calgary',manitoba:'umanitoba',ubc:'ubc'};
 const clock=n=>Number.isFinite(Number(n))&&Number(n)>=0?`${Math.floor(Number(n)/60)}:${String(Number(n)%60).padStart(2,'0')}`:'';
+const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+function hostTeam(name){const n=norm(name),extra={britishcolumbia:'ubc',wilfridlaurier:'laurier',universityoftoronto:'toronto',universityofsaskatchewan:'saskatchewan'};return extra[n]||require('../data/usports-teams.json').find(t=>['slug','name','short','abbr'].some(k=>norm(t[k])===n))?.slug;}
+function hostDate(value){const m=String(value||'').match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);return m?`${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`:String(value||'').slice(0,10);}
 function normalize(payload,expected){
  const g=payload?.Game;
- const team=require('../api/scoreboard').team;
- if(!g||!expected||team(g.VisitingTeam?.Name)!==expected.away||team(g.HomeTeam?.Name)!==expected.home||new Date(g.Date).toISOString().slice(0,10)!==expected.date||!g.HasStarted)return null;
+ const team=hostTeam;
+ if(!g||!expected||team(g.VisitingTeam?.Name)!==expected.away||team(g.HomeTeam?.Name)!==expected.home||hostDate(g.Date)!==expected.date||!g.HasStarted)return null;
  const code=t=>t==='VisitingTeam'?g.VisitingTeam.Id:t==='HomeTeam'?g.HomeTeam.Id:'';
  const ctx=payload.FootballGame?.Context||{};
  const plays=(payload.Plays||[]).slice().reverse().map(p=>({q:String(p.Period||''),clock:clock(p.ClockSeconds),description:p.Narrative||'',type:p.Type||'',down:p.Down??null,distance:p.ToGo??null,spot:p.Spot||'',possession:code(p.Team)}));
@@ -19,12 +23,11 @@ function normalize(payload,expected){
  return {source:'Official host SIDEARM live stats',status:{complete:g.IsComplete===true,period:g.IsComplete?'FINAL':`Q${g.Period}`,clock:clock(g.ClockSeconds)},game:{awayId:g.VisitingTeam.Id,homeId:g.HomeTeam.Id,awayScore:g.VisitingTeam.Score,homeScore:g.HomeTeam.Score,awayLogo:g.VisitingTeam.Logo,homeLogo:g.HomeTeam.Logo,scoreSource:'official-team-totals'},identity:{gameId:`${expected.date}-${expected.away}-${expected.home}`,...expected},situation:{possession:code(ctx.Possession),down:Number(ctx.Down)||null,distance:ctx.ToGo||null,spot:ctx.Spot||''},plays,drives,statComparison,playerStats,teamStats:[]};
 }
 async function load(expected){
- const hosts={toronto:'toronto',regina:'regina',saskatchewan:'saskatchewan'};
- const host=hosts[expected?.home];if(!host)return null;
+ const host=HOSTS[expected?.home];if(!host)return null;
  const feed='https://sidearmstats.com/'+host+'/football/game.json?detail=full';
  const r=await fetch(feed+'&_='+Date.now(),{signal:AbortSignal.timeout(6000),headers:{'Cache-Control':'no-cache','User-Agent':'Mozilla/5.0'}});
  if(!r.ok)return null;
  const raw=await r.json(),data=normalize(raw,expected);
- return data?{data,raw,page:raw.Game.ClientLiveStatsUrl||PAGE,visitor:raw.Game.VisitingTeam.Name,home:raw.Game.HomeTeam.Name}:null;
+ return data?{data,raw,page:raw.Game.ClientLiveStatsUrl||feed,visitor:raw.Game.VisitingTeam.Name,home:raw.Game.HomeTeam.Name}:null;
 }
-module.exports={normalize,load,PAGE};
+module.exports={normalize,load,PAGE,HOSTS};

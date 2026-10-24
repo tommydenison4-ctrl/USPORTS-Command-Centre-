@@ -4,9 +4,10 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/advantage-refresh.yml'
-      - 'scripts/advantage/national.py'
-      - 'scripts/advantage/players.py'
-      - 'scripts/advantage/ingest.py'
+      - 'scripts/advantage/**'
+      - 'scripts/build-completed-boxscores.cjs'
+      - 'scripts/build-prediction-record.cjs'
+      - 'scripts/refresh-feeds.cjs'
   workflow_dispatch:
   schedule:
     - cron: '2-59/5 * * * *'

@@ -88,7 +88,7 @@ module.exports=async function handler(req,res){
     }catch{return null;}
   }))).filter(Boolean);
   // Official host feeds do not depend on national Presto discovery.
-  const fixtures=require('../data/national-schedule-usports.json').games.filter(g=>g.date===day&&require('../internal/host-live.cjs').HOSTS[g.home]);
+  const fixtures=require('../data/national-schedule-usports.json').games.filter(g=>g.date===day&&[g.home,g.away].some(t=>require('../internal/host-live.cjs').HOSTS[t]));
   await Promise.all(fixtures.map(async g=>{try{const x=await require('../internal/host-live.cjs').load({date:g.date,away:g.away,home:g.home});if(!x||x.data.status.complete)return;const d=x.data;games.push({page:x.page,visitor:x.visitor,home:x.home,awayScore:d.game.awayScore,homeScore:d.game.homeScore,period:d.status.period,clock:d.status.clock});}catch{}}));
   // Warm-instance fallback: if upstream schedule discovery flickers, keep returning the
   // last proven source candidates instead of making clients forget a working page.

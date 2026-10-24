@@ -547,7 +547,7 @@ module.exports=async function handler(req,res){
   const dynamicPage=String(req.query.page||'').trim();
   // Toronto publishes this host feed directly on its official football schedule.
   // It remains reachable when the conference's Presto bootstrap is blocked.
-  if(require('../internal/host-live.cjs').HOSTS[expectedGame(requestedGame)?.home]){
+  if([expectedGame(requestedGame)?.home,expectedGame(requestedGame)?.away].some(t=>require('../internal/host-live.cjs').HOSTS[t])){
     try{const official=await require('../internal/host-live.cjs').load(expectedGame(requestedGame));if(official){
       let archiveSaved=false;try{await require('../internal/live-history.cjs').capture(requestedGame,official.data,official.raw);archiveSaved=true}catch{}
       return send(res,200,{ok:true,archiveSaved,game:requestedGame,visitor:official.visitor,home:official.home,officialPage:official.page,data:official.data});

@@ -23,11 +23,17 @@ function normalize(payload,expected){
  return {source:'Official host SIDEARM live stats',status:{complete:g.IsComplete===true,period:g.IsComplete?'FINAL':`Q${g.Period}`,clock:clock(g.ClockSeconds)},game:{awayId:g.VisitingTeam.Id,homeId:g.HomeTeam.Id,awayScore:g.VisitingTeam.Score,homeScore:g.HomeTeam.Score,awayLogo:g.VisitingTeam.Logo,homeLogo:g.HomeTeam.Logo,scoreSource:'official-team-totals'},identity:{gameId:`${expected.date}-${expected.away}-${expected.home}`,...expected},situation:{possession:code(ctx.Possession),down:Number(ctx.Down)||null,distance:ctx.ToGo||null,spot:ctx.Spot||''},plays,drives,statComparison,playerStats,teamStats:[]};
 }
 async function load(expected){
- const host=HOSTS[expected?.home];if(!host)return null;
- const feed='https://sidearmstats.com/'+host+'/football/game.json?detail=full';
- const r=await fetch(feed+'&_='+Date.now(),{signal:AbortSignal.timeout(6000),headers:{'Cache-Control':'no-cache','User-Agent':'Mozilla/5.0'}});
- if(!r.ok)return null;
- const raw=await r.json(),data=normalize(raw,expected);
- return data?{data,raw,page:raw.Game.ClientLiveStatsUrl||feed,visitor:raw.Game.VisitingTeam.Name,home:raw.Game.HomeTeam.Name}:null;
+ // A school's official feed can cover its away fixtures too. Both schools are
+ // candidates, but every payload must match the exact date and participants.
+ const hosts=[...new Set([HOSTS[expected?.home],HOSTS[expected?.away]].filter(Boolean))];
+ if(!hosts.length)return null;
+ return Promise.any(hosts.map(async host=>{
+  const feed='https://sidearmstats.com/'+host+'/football/game.json?detail=full';
+  const r=await fetch(feed+'&_='+Date.now(),{signal:AbortSignal.timeout(6000),headers:{'Cache-Control':'no-cache','User-Agent':'Mozilla/5.0'}});
+  if(!r.ok)throw Error('Host feed unavailable');
+  const raw=await r.json(),data=normalize(raw,expected);
+  if(!data)throw Error('Host feed does not match requested game');
+  return {data,raw,page:raw.Game.ClientLiveStatsUrl||feed,visitor:raw.Game.VisitingTeam.Name,home:raw.Game.HomeTeam.Name};
+ })).catch(()=>null);
 }
 module.exports={normalize,load,PAGE,HOSTS};

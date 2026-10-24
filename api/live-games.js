@@ -1,3 +1,4 @@
+const COMPOSITE_LIVE_CACHE=new Map();
 const LIVE_SOURCE_CACHE=globalThis.__LIVE_SOURCE_CACHE||(globalThis.__LIVE_SOURCE_CACHE=new Map());
 const HEADERS={
   'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36',
@@ -37,6 +38,7 @@ async function scanSchedule(scheduleUrl,date){
   const origin=new URL(scheduleUrl).origin;
   const set=new Set();
   const html=dec(s.text||'');
+  for(const g of require('./scoreboard').parseLive(html,date.slice(0,4)+'-'+date.slice(4,6)+'-'+date.slice(6,8),scheduleUrl))COMPOSITE_LIVE_CACHE.set(g.id,{at:Date.now(),game:g});
   // Presto pages can expose the live-stat XML as absolute, root-relative, or
   // season-relative hrefs. Do not require one specific host/path shape.
   const patterns=[
@@ -90,6 +92,7 @@ module.exports=async function handler(req,res){
   // Official host feeds do not depend on national Presto discovery.
   const fixtures=require('../data/national-schedule-usports.json').games.filter(g=>g.date===day&&[g.home,g.away].some(t=>require('../internal/host-live.cjs').HOSTS[t]));
   await Promise.all(fixtures.map(async g=>{try{const x=await require('../internal/host-live.cjs').load({date:g.date,away:g.away,home:g.home});if(!x||x.data.status.complete)return;const d=x.data;games.push({page:x.page,visitor:x.visitor,home:x.home,awayScore:d.game.awayScore,homeScore:d.game.homeScore,period:d.status.period,clock:d.status.clock});}catch{}}));
+  for(const x of COMPOSITE_LIVE_CACHE.values())if(x.game.date===day&&Date.now()-x.at<30000&&!games.some(g=>g.visitor===x.game.visitor&&g.home===x.game.home))games.push(x.game);
   // Warm-instance fallback: if upstream schedule discovery flickers, keep returning the
   // last proven source candidates instead of making clients forget a working page.
   if(!candidates.length){for(const [k,o] of LIVE_SOURCE_CACHE){if(k.startsWith(date+'|')&&Date.now()-o.t<6*60*60*1000)candidates.push(o.v)}}

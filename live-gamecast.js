@@ -54,7 +54,7 @@
     if(isFinal(g,d))label='';
     liveEvents.set(g.id,{away:Number(d.game?.awayScore),home:Number(d.game?.homeScore),pos,key,label,red,until:changed?Date.now()+20000:prev.until});
   }
-  function setLiveState(id,d){const g=game(id);if(!validIdentity(g,d))return;d=finalSnapshot(g,d);if(Object.prototype.hasOwnProperty.call(d,'availabilityForecast')){window.US_LIVE_PLAYER_AVAILABILITY??={};if(d.availabilityForecast&&!isFinal(g,d))window.US_LIVE_PLAYER_AVAILABILITY[id]=d.availabilityForecast;else delete window.US_LIVE_PLAYER_AVAILABILITY[id];}if(Array.isArray(d.plays)||Array.isArray(d.playerStats))saveSession(snapKey(id),d);recordEvent(g,d);const st=LIVE_STORE.games[id]||(LIVE_STORE.games[id]={id,away:g.away,home:g.home});st._realLive=true;st._feedIdentity=d.identity;if(d?.game?.awayScore!=null)st.as=Number(d.game.awayScore);if(d?.game?.homeScore!=null)st.hs=Number(d.game.homeScore);st.q=d?.status?.period||st.q||'';if(/final/i.test(st.q))window.USFinalScores?.accept?.(g,{identity:d.identity,final:true,awayScore:st.as,homeScore:st.hs});st.clock=isFinal(g,d)?'':d?.status?.clock||st.clock||'';st.pos=possSlug(g,d)||d?.situation?.possession||st.pos||'';if(d.situation){st.down=d.situation.down??'';st.distance=d.situation.distance??null;st.spot=d.situation.spot||'';}if(isFinal(g,d)){st.pos='';st.down='';st.distance=null;st.spot=''}}
+  function setLiveState(id,d){const g=game(id);if(!validIdentity(g,d))return;d=finalSnapshot(g,d);if(Object.prototype.hasOwnProperty.call(d,'availabilityForecast')){window.US_LIVE_PLAYER_AVAILABILITY??={};if(d.availabilityForecast&&!isFinal(g,d))window.US_LIVE_PLAYER_AVAILABILITY[id]=d.availabilityForecast;else delete window.US_LIVE_PLAYER_AVAILABILITY[id];}if(Array.isArray(d.plays)||Array.isArray(d.playerStats))saveSession(snapKey(id),d);recordEvent(g,d);const st=LIVE_STORE.games[id]||(LIVE_STORE.games[id]={id,away:g.away,home:g.home});st._realLive=true;st._feedUnavailable=false;st._feedIdentity=d.identity;if(d?.game?.awayScore!=null)st.as=Number(d.game.awayScore);if(d?.game?.homeScore!=null)st.hs=Number(d.game.homeScore);st.q=d?.status?.period||st.q||'';if(/final/i.test(st.q))window.USFinalScores?.accept?.(g,{identity:d.identity,final:true,awayScore:st.as,homeScore:st.hs});st.clock=isFinal(g,d)?'':d?.status?.clock||st.clock||'';st.pos=possSlug(g,d)||d?.situation?.possession||st.pos||'';if(d.situation){st.down=d.situation.down??'';st.distance=d.situation.distance??null;st.spot=d.situation.spot||'';}if(isFinal(g,d)){st.pos='';st.down='';st.distance=null;st.spot=''}}
   async function discover(force=false){
     if(!L.selected)return null;
     if(!force&&L.source&&now()-L.lastDiscover<30000)return L.source;
@@ -76,6 +76,18 @@
     }catch(e){console.warn('V104 discover',e)}
     return L.source||cached||null;
   }
+  const sourceScans=new Map();
+  async function sourcePageFor(g){
+    const key=g.date;let scan=sourceScans.get(key);
+    if(!scan||now()-scan.at>30000){
+      scan={at:now(),work:(async()=>{try{
+        const r=await fetch(`/api/live-games?date=${ymd(g.date)}&_=${now()}`,{cache:'no-store',signal:AbortSignal.timeout(20000)}),j=await r.json();
+        if(j?.ok)for(const x of [...(j.games||[]),...(j.candidates||[])]){const m=matchSource(x,g.date);if(m&&x.page)saveSession(sourceKey(m.id),{page:x.page});}
+      }catch{}})()};sourceScans.set(key,scan);
+    }
+    await scan.work;return readSession(sourceKey(g.id))?.page||'';
+  }
+  function markUnavailable(g){const st=LIVE_STORE.games[g.id]||(LIVE_STORE.games[g.id]={id:g.id,away:g.away,home:g.home});if(!st._feedUnavailable){st._feedUnavailable=true;window.dispatchEvent(new Event('canu-scores-updated'));}}
   function sourceIds(g){return {awayId:String(team(g.away).abbr||'').toUpperCase(),homeId:String(team(g.home).abbr||'').toUpperCase()}}
   async function fetchSnap(){
     const selected=L.selected; if(!selected)return null; const g=game(selected); if(!g)return null;
@@ -84,11 +96,11 @@
     let j=null;
     try{
       const params=new URLSearchParams({game:selected,discover:'1',date:ymd(g.date||today()),away:g.away,home:g.home,...ids,_:String(now())});
-      const page=L.source?.page||g.boxscore;if(page)params.set('page',page);
+      const page=L.source?.page||g.boxscore||await sourcePageFor(g);if(page)params.set('page',page);
       const r=await fetch('/api/presto-live?'+params,{cache:'no-store',signal:AbortSignal.timeout(25000)}),z=await r.json();
       if(verified(g,z))j=z;else if(selected===L.selected)L.feedError='Official live feed unavailable · Retrying automatically.';
     }catch(e){if(selected===L.selected)L.feedError='Live feed reconnecting · Retrying automatically.';}
-    if(!verified(g,j)||selected!==L.selected)return null;
+    if(!verified(g,j)||selected!==L.selected){if(selected===L.selected)markUnavailable(g);return null;}
     L.feedError='';L.receivedAt=now();
     if(j.page){L.source={...(L.source||{}),page:j.page,visitor:j.visitor||L.source?.visitor,home:j.home||L.source?.home};saveSession(sourceKey(L.selected),L.source)}
     L.snap=finalSnapshot(g,j.data||{}); saveSession(snapKey(L.selected),L.snap); setLiveState(L.selected,L.snap); return L.snap;
@@ -174,7 +186,7 @@
     const dates=(GAMES||[]).map(g=>g.date).sort(),d=game(id)?.date||(dates.includes(today())?today():dates.find(d=>d>today())||dates.at(-1)||today());
     return `<div class="v102-other" id="v102-national-rail">${(GAMES||[]).filter(x=>(id?x.date===d:scoreboardWeek(x.date,d))&&x.id!==id).map(x=>{
       const st=LIVE_STORE?.games?.[x.id],verified=st?._realLive&&validIdentity(x,{identity:st._feedIdentity}),final=x.status==='final'||/final|complete/i.test(verified?st.q:x.status||''),live=verified&&!final&&/Q?[1-4]|OT/i.test(st.q||''),pos=live?possSlug(x,{situation:{possession:st.pos}}):'',event=live?(currentEvent(x.id)):'',situation=live?window.CanuScoreboardEvents.situation({down:st?.down,distance:st?.distance,spot:st?.spot}):'';
-      return `<div class="canu-scoreboard-game"><button data-game-id="${esc2(x.id)}" class="canu-game-chip ${live?'is-live':''} ${event?'has-event event-'+eventKind(event):''} ${x.id===L.selected?'is-selected':''}" onclick="V102_LIVE.open('${x.id}')"><small><span>${esc2(x.conference||'')} · ${esc2(x.date.slice(5))}</span><span>${final?'FINAL':live?esc2([st.q,st.clock].filter(Boolean).join(' ')):esc2(x.time||'')}</span></small>${['away','home'].map(side=>`<span class="canu-chip-team"><span>${img(team(x[side]),'canu-chip-logo')}<b>${esc2(team(x[side]).short||team(x[side]).abbr||x[side])}</b>${pos===x[side]?'<span aria-label="Possession">🏈</span>':''}</span><strong class="canu-chip-score">${final?(side==='away'?x.awayScore:x.homeScore)??'—':live?(side==='away'?st.as:st.hs)??'—':'—'}</strong></span>`).join('')}${situation?`<span class="canu-chip-situation">${esc2(situation)}</span>`:''}${event?`<em class="canu-live-event event-${eventKind(event)}">${esc2(event)}</em>`:''}</button>${top&&!final&&!['cancelled','canceled','postponed'].includes(x.status)?`<a class="canu-scoreboard-center" href="#live=${encodeURIComponent(x.id)}" aria-label="Live Game Center: ${esc2(team(x.away).short||x.away)} at ${esc2(team(x.home).short||x.home)}">Live Game Center →</a>`:''}${window.USScoreboardPicks?.control(x,live||final)||''}</div>`;
+      return `<div class="canu-scoreboard-game"><button data-game-id="${esc2(x.id)}" class="canu-game-chip ${live?'is-live':''} ${event?'has-event event-'+eventKind(event):''} ${x.id===L.selected?'is-selected':''}" onclick="V102_LIVE.open('${x.id}')"><small><span>${esc2(x.conference||'')} · ${esc2(x.date.slice(5))}</span><span>${final?'FINAL':live?esc2([st.q,st.clock,st._feedUnavailable?'RECONNECTING':''].filter(Boolean).join(' ')):st._feedUnavailable&&pendingLabel(x)!=='PREGAME'?'FEED UNAVAILABLE · RETRYING':esc2(x.time||'')}</span></small>${['away','home'].map(side=>`<span class="canu-chip-team"><span>${img(team(x[side]),'canu-chip-logo')}<b>${esc2(team(x[side]).short||team(x[side]).abbr||x[side])}</b>${pos===x[side]?'<span aria-label="Possession">🏈</span>':''}</span><strong class="canu-chip-score">${final?(side==='away'?x.awayScore:x.homeScore)??'—':live?(side==='away'?st.as:st.hs)??'—':'—'}</strong></span>`).join('')}${situation?`<span class="canu-chip-situation">${esc2(situation)}</span>`:''}${event?`<em class="canu-live-event event-${eventKind(event)}">${esc2(event)}</em>`:''}</button>${top&&!final&&!['cancelled','canceled','postponed'].includes(x.status)?`<a class="canu-scoreboard-center" href="#live=${encodeURIComponent(x.id)}" aria-label="Live Game Center: ${esc2(team(x.away).short||x.away)} at ${esc2(team(x.home).short||x.home)}">Live Game Center →</a>`:''}${window.USScoreboardPicks?.control(x,live||final)||''}</div>`;
     }).join('')}</div>`;
   }
   const chartCache=new Map();
@@ -330,7 +342,7 @@
     const ids=sourceIds(g),key=sourceKey(g.id),cached=readSession(key);
     try{
       const params=new URLSearchParams({game:g.id,discover:'1',date:ymd(g.date||today()),away:g.away,home:g.home,...ids,_:String(now())});
-      const page=cached?.page||g.boxscore;if(page)params.set('page',page);
+      const page=cached?.page||g.boxscore||await sourcePageFor(g);if(page)params.set('page',page);
       const r=await fetch('/api/presto-live?'+params,{cache:'no-store',signal:AbortSignal.timeout(25000)}),j=await r.json();
       if(verified(g,j)){
         if(j.page)saveSession(key,{page:j.page});setLiveState(g.id,j.data||{});
@@ -338,7 +350,7 @@
         window.dispatchEvent(new Event('canu-scores-updated'));return j.data||{};
       }
     }catch{}
-    return null;
+    markUnavailable(g);return null;
   }
   async function pollNational(force=false){
     if(!L.selected)return;

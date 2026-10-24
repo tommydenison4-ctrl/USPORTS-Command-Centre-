@@ -556,11 +556,13 @@ module.exports=async function handler(req,res){
     }}catch(e){console.warn('Toronto official feed unavailable',e.message)}
   }
 
+  let rseqTried=false,rseqUnavailable=null;
   async function rseqResponse(){
+  if(rseqTried)return false;rseqTried=true;
   const rseqExpected=expectedGame(requestedGame);
   if(rseqExpected&&require('../data/usports-teams.json').find(t=>t.slug===rseqExpected.home)?.conference==='RSEQ'){
     try{const x=await require('../internal/rseq-live.cjs').load(rseqExpected);if(x){
-      if(x.error){send(res,503,{ok:false,game:requestedGame,error:x.error,officialPage:x.page});return true;}
+      if(x.error){rseqUnavailable=x;return false;}
       const identity={gameId:requestedGame,...rseqExpected},data={...normalize(x.raw,{awayId:x.awayId,homeId:x.homeId}),identity};
       if(data.status.complete)data.status.period='FINAL';
       else if(!data.status.period){const q=Array.isArray(x.raw.plays?.qtr)?x.raw.plays.qtr.at(-1):x.raw.plays?.qtr;data.status.period=q?.number?'Q'+q.number:'';}
@@ -601,7 +603,7 @@ module.exports=async function handler(req,res){
     if(page) source={page,fallbackEvent:'',fallbackHash:'',awayId:String(req.query.awayId||'').toUpperCase(),homeId:String(req.query.homeId||'').toUpperCase()};
   }
   if(!source&&await rseqResponse())return;
-  if(!source) return send(res,404,{ok:false,error:'No verified Presto source registered for this game',game:requestedGame});
+  if(!source) return send(res,rseqUnavailable?503:404,{ok:false,error:rseqUnavailable?.error||'No verified Presto source registered for this game',officialPage:rseqUnavailable?.page,game:requestedGame});
   const expected=expectedGame(game);
   // Event credentials are stable; scores are always fetched fresh. Avoid making
   // every four-second refresh rediscover a page that was already verified.
@@ -624,7 +626,7 @@ module.exports=async function handler(req,res){
   if((!boot.ok||!boot.found||!boot.visitor||!boot.home)&&savedBoot)boot=savedBoot;
   if(!boot.ok&&registry&&source.page.endsWith('/'+registry.box+'.xml'))boot={...boot,ok:true,visitor:registry.visitor,home:registry.home,found:{event:registry.event,hash:registry.hash},cookie:''};
   if(!boot.ok&&await rseqResponse())return;
-  if(!boot.ok)return send(res,502,{ok:false,game,error:'Official source page temporarily unavailable',upstreamStatus:boot.status});
+  if(!boot.ok)return send(res,rseqUnavailable?503:502,{ok:false,game,error:rseqUnavailable?.error||'Official source page temporarily unavailable',officialPage:rseqUnavailable?.page,upstreamStatus:boot.status});
   const sourceDate=source.page.match(/boxscores\/(\d{8})_/)?.[1];
   if(!expected||sourceDate!==expected.date.replace(/-/g,'')||!namesMatch(boot.visitor,expected.away)||!namesMatch(boot.home,expected.home))return send(res,409,{ok:false,game,error:'Live source does not match the requested teams and date'});
   const freshHtml=boot.html;
@@ -659,5 +661,6 @@ module.exports=async function handler(req,res){
     return handler({...req,query:{...req.query,page:alternate.href,_localeRetry:'1'}},res);
   }
   if(await rseqResponse())return;
+  if(rseqUnavailable)return send(res,503,{ok:false,game,error:rseqUnavailable.error,officialPage:rseqUnavailable.page});
   return send(res,502,{ok:false,game,error:'PrestoSports returned a response, but it was not a usable live-stat payload',sourcePage:source.page,bootstrapStatus:boot.status,bootstrapOk:boot.ok,discoveredCredentials:!!boot.found,bootstrapLiveupdateSnippet:boot.liveupdateSnippet||'',bootstrapEventSnippet:boot.eventSnippet||'',attempts});
 };

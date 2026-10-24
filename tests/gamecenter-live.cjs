@@ -20,7 +20,7 @@ test('real handler keeps scores refreshing when AJAX fails and never declares a 
 test('official host feed rejects stale and unrelated payloads',()=>{
  const {normalize,HOSTS}=require('../internal/host-live.cjs');assert.equal(HOSTS.western,'uwo');
  const raw={Game:{Date:'10/24/2026',HasStarted:true,IsComplete:false,Period:2,ClockSeconds:500,VisitingTeam:{Name:'Laurier',Id:'WLU',Score:7},HomeTeam:{Name:'Western',Id:'UWO',Score:3}}};
- assert.equal(normalize(raw,expected).game.awayScore,7);assert.equal(normalize(raw,{...expected,date:'2026-10-17'}),null);raw.Game.HomeTeam.Name='Western Colorado';assert.equal(normalize(raw,expected),null);
+ assert.equal(normalize(raw,expected).game.awayScore,7);assert.equal(normalize(raw,{...expected,date:'2026-10-17'}),null);raw.Game.HomeTeam.Name='Western Colorado';raw.Game.HomeTeam.Id='WCU';assert.equal(normalize(raw,expected),null);
 });
 test('schedule gameCard renders final scores without crashing initialization',()=>{
  const s=fs.readFileSync(require.resolve('../index.html'),'utf8'),a=s.indexOf('gameCard=function(g){'),b=s.indexOf('\n',a),ctx={TEAM:{a:{},h:{}},mark:()=>'',esc:String,cl:String};vm.runInNewContext(s.slice(a,b),ctx);assert.match(ctx.gameCard({id:'g',away:'a',home:'h',status:'final',awayScore:0,homeScore:7}),/FINAL/);

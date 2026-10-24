@@ -15,6 +15,8 @@ const VERIFIED_EVENTS={
  '2026-10-03-guelph-toronto':{visitor:'Guelph',home:'Toronto',box:'20261003_07bf',event:'07bflszglke35olj',hash:'dlsFOlN2zDjmv4ljKTFUUcnD8QKvJYUz'},
  '2026-10-03-mount-allison-stfx':{visitor:'Mount Allison',home:'StFX',box:'20261003_n4x7',event:'n4x7cckuh06szkka',hash:'PG3vsDK+DmCBMt8PL/4GJcnD8QKvJYUz'}
 };
+// Official school Presto pages provide an independent path to the same event.
+const SCHOOL_ORIGINS={carleton:'https://goravens.ca',...Object.fromEntries(Object.entries(require('../roster-sources.json')).filter(([,r])=>r.adapter==='presto').map(([slug,r])=>[slug,r.url.split('/sports/')[0]]))};
 const VERIFIED_BOOTSTRAPS=new Map();
 function send(res, status, body) {
   res.statusCode = status;
@@ -582,7 +584,7 @@ module.exports=async function handler(req,res){
       const u=new URL(dynamicPage);
       const host=u.hostname.toLowerCase();
       const allowedHosts=new Set(['oua.ca','www.oua.ca','en.usports.ca','fr.usports.ca','usports.ca','www.usports.ca','atlanticuniversitysport.com','www.atlanticuniversitysport.com','aus.prestosports.com','smuhuskies.ca','www.smuhuskies.ca','mountiepride.ca','www.mountiepride.ca']);
-      const allowed=allowedHosts.has(host)||host.endsWith('.prestosports.com');
+      const allowed=allowedHosts.has(host)||Object.values(SCHOOL_ORIGINS).some(o=>new URL(o).hostname===host)||host.endsWith('.prestosports.com');
       const validPath=/^\/sports\/fball\/2026-27\/boxscores\/\d{8}_[A-Za-z0-9]+\.xml$/i.test(u.pathname);
       if(!allowed||!validPath) return send(res,400,{ok:false,error:'Unsupported live-stat source page'});
       source={page:u.toString(),fallbackEvent:'',fallbackHash:'',awayId:String(req.query.awayId||'').toUpperCase(),homeId:String(req.query.homeId||'').toUpperCase()};
@@ -609,11 +611,12 @@ module.exports=async function handler(req,res){
   let boot=saved&&Date.now()-saved.verifiedAt<300000?saved:{status:null,ok:false,cookie:'',found:null,sample:''},attempts=[];
   if(!boot.found){
     const pages=[source.page],u=new URL(source.page);
+    if(expected)for(const slug of [expected.home,expected.away])if(SCHOOL_ORIGINS[slug])pages.push(SCHOOL_ORIGINS[slug]+u.pathname);
     if(['en.usports.ca','fr.usports.ca'].includes(u.hostname)){
       pages.push('https://'+(u.hostname==='en.usports.ca'?'fr.usports.ca':'en.usports.ca')+u.pathname);
       if(expected&&require('../data/usports-teams.json').find(t=>t.slug===expected.home)?.conference==='OUA')pages.push('https://oua.ca'+u.pathname);
     }
-    const candidates=await Promise.all(pages.map(async page=>{try{return {page,boot:await bootstrap({...source,page})}}catch{return null}}));
+    const candidates=await Promise.all([...new Set(pages)].map(async page=>{try{return {page,boot:await bootstrap({...source,page})}}catch{return null}}));
     const match=candidates.find(x=>x?.boot.ok&&expected&&namesMatch(x.boot.visitor,expected.away)&&namesMatch(x.boot.home,expected.home));
     if(match){source={...source,page:match.page};boot=match.boot;}else boot=candidates.find(x=>x?.page===source.page)?.boot||boot;
   }

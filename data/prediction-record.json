@@ -625,11 +625,11 @@
       "probability": 0.7484976028437623,
       "publishedAt": "2026-10-02T16:14:10.101Z",
       "source": "data/advantage-snapshots/usports-2026-10-02.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "stfx",
+      "awayScore": 18,
+      "homeScore": 21,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261024_3nz4.xml"
     },
     {
       "gameId": "2026-10-24-concordia-sherbrooke",
@@ -640,11 +640,11 @@
       "probability": 0.8107163278380467,
       "publishedAt": "2026-10-02T16:14:10.101Z",
       "source": "data/advantage-snapshots/usports-2026-10-02.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "concordia",
+      "awayScore": 34,
+      "homeScore": 13,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261024_ds4z.xml"
     },
     {
       "gameId": "2026-10-24-laurier-western",
@@ -655,11 +655,11 @@
       "probability": 0.89484131465957,
       "publishedAt": "2026-09-24T13:43:40.145Z",
       "source": "data/advantage-snapshots/usports-2026-09-24.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "incorrect",
+      "winner": "laurier",
+      "awayScore": 55,
+      "homeScore": 39,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261024_xmef.xml"
     },
     {
       "gameId": "2026-10-24-laval-bishops",
@@ -685,11 +685,11 @@
       "probability": 0.7239275211738486,
       "publishedAt": "2026-09-24T13:43:40.145Z",
       "source": "data/advantage-snapshots/usports-2026-09-24.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "incorrect",
+      "winner": "manitoba",
+      "awayScore": 33,
+      "homeScore": 11,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261024_tpmh.xml"
     },
     {
       "gameId": "2026-10-24-montreal-mcgill",
@@ -700,11 +700,11 @@
       "probability": 0.5071708988595496,
       "publishedAt": "2026-10-02T16:14:10.101Z",
       "source": "data/advantage-snapshots/usports-2026-10-02.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "montreal",
+      "awayScore": 37,
+      "homeScore": 36,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261024_bxeo.xml"
     },
     {
       "gameId": "2026-10-24-queens-mcmaster",
@@ -715,11 +715,11 @@
       "probability": 0.8082921078978292,
       "publishedAt": "2026-09-24T13:43:40.145Z",
       "source": "data/advantage-snapshots/usports-2026-09-24.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "queens",
+      "awayScore": 25,
+      "homeScore": 17,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261024_crbv.xml"
     },
     {
       "gameId": "2026-10-24-toronto-carleton",
@@ -730,11 +730,11 @@
       "probability": 0.7293261674095373,
       "publishedAt": "2026-09-24T13:43:40.145Z",
       "source": "data/advantage-snapshots/usports-2026-09-24.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "carleton",
+      "awayScore": 16,
+      "homeScore": 31,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261024_lsxp.xml"
     },
     {
       "gameId": "2026-10-24-waterloo-york",
@@ -745,11 +745,11 @@
       "probability": 0.7142037831485836,
       "publishedAt": "2026-09-24T13:43:40.145Z",
       "source": "data/advantage-snapshots/usports-2026-09-24.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "incorrect",
+      "winner": "waterloo",
+      "awayScore": 26,
+      "homeScore": 25,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261024_w8pm.xml"
     },
     {
       "gameId": "2026-10-24-windsor-guelph",
@@ -760,11 +760,11 @@
       "probability": 0.6817487980258734,
       "publishedAt": "2026-09-24T13:43:40.145Z",
       "source": "data/advantage-snapshots/usports-2026-09-24.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "incorrect",
+      "winner": "windsor",
+      "awayScore": 27,
+      "homeScore": 23,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261024_8852.xml"
     },
     {
       "gameId": "2026-10-30-saskatchewan-ubc",
@@ -842,6 +842,36 @@
       "resultSource": null
     },
     {
+      "gameId": "2026-10-31-guelph-windsor",
+      "date": "2026-10-31",
+      "away": "guelph",
+      "home": "windsor",
+      "pick": "windsor",
+      "probability": 0.739824977853925,
+      "publishedAt": "2026-10-24T23:14:19.913Z",
+      "source": "data/pregame-predictions-usports.json",
+      "status": "pending",
+      "winner": null,
+      "awayScore": null,
+      "homeScore": null,
+      "resultSource": null
+    },
+    {
+      "gameId": "2026-10-31-laurier-western",
+      "date": "2026-10-31",
+      "away": "laurier",
+      "home": "western",
+      "pick": "western",
+      "probability": 0.809149588634839,
+      "publishedAt": "2026-10-24T23:14:19.913Z",
+      "source": "data/pregame-predictions-usports.json",
+      "status": "pending",
+      "winner": null,
+      "awayScore": null,
+      "homeScore": null,
+      "resultSource": null
+    },
+    {
       "gameId": "2026-10-31-laval-montreal",
       "date": "2026-10-31",
       "away": "laval",
@@ -865,6 +895,21 @@
       "probability": 0.6515304601546441,
       "publishedAt": "2026-10-02T16:14:10.101Z",
       "source": "data/advantage-snapshots/usports-2026-10-02.json",
+      "status": "pending",
+      "winner": null,
+      "awayScore": null,
+      "homeScore": null,
+      "resultSource": null
+    },
+    {
+      "gameId": "2026-10-31-ottawa-mcmaster",
+      "date": "2026-10-31",
+      "away": "ottawa",
+      "home": "mcmaster",
+      "pick": "mcmaster",
+      "probability": 0.6050613771018201,
+      "publishedAt": "2026-10-24T23:14:19.913Z",
+      "source": "data/pregame-predictions-usports.json",
       "status": "pending",
       "winner": null,
       "awayScore": null,

@@ -670,11 +670,11 @@
       "probability": 0.9086856083971656,
       "publishedAt": "2026-10-02T16:14:10.101Z",
       "source": "data/advantage-snapshots/usports-2026-10-02.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "laval",
+      "awayScore": 58,
+      "homeScore": 0,
+      "resultSource": "https://en.usports.ca/sports/fball/composite?d=2026-10-24"
     },
     {
       "gameId": "2026-10-24-manitoba-calgary",

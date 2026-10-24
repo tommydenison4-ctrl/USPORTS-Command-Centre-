@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-10-23",
+  "asOf": "2026-10-24",
   "games": [
     {
       "gameId": "2026-09-25-alberta-calgary",
@@ -580,11 +580,11 @@
       "probability": 0.8840424927431175,
       "publishedAt": "2026-09-24T13:43:40.145Z",
       "source": "data/advantage-snapshots/usports-2026-09-24.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "saskatchewan",
+      "awayScore": 19,
+      "homeScore": 21,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261023_91gc.xml"
     },
     {
       "gameId": "2026-10-23-mount-allison-saint-marys",
@@ -610,11 +610,11 @@
       "probability": 0.5957344691120896,
       "publishedAt": "2026-09-24T13:43:40.145Z",
       "source": "data/advantage-snapshots/usports-2026-09-24.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "ubc",
+      "awayScore": 21,
+      "homeScore": 17,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261023_gjwj.xml"
     },
     {
       "gameId": "2026-10-24-acadia-stfx",

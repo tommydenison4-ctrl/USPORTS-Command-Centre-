@@ -549,8 +549,8 @@ module.exports=async function handler(req,res){
   // It remains reachable when the conference's Presto bootstrap is blocked.
   if(require('../internal/host-live.cjs').HOSTS[expectedGame(requestedGame)?.home]){
     try{const official=await require('../internal/host-live.cjs').load(expectedGame(requestedGame));if(official){
-      try{await require('../internal/live-history.cjs').capture(requestedGame,official.data,official.raw)}catch{}
-      return send(res,200,{ok:true,game:requestedGame,visitor:official.visitor,home:official.home,officialPage:official.page,data:official.data});
+      let archiveSaved=false;try{await require('../internal/live-history.cjs').capture(requestedGame,official.data,official.raw);archiveSaved=true}catch{}
+      return send(res,200,{ok:true,archiveSaved,game:requestedGame,visitor:official.visitor,home:official.home,officialPage:official.page,data:official.data});
     }}catch(e){console.warn('Toronto official feed unavailable',e.message)}
   }
 
@@ -562,8 +562,8 @@ module.exports=async function handler(req,res){
       const identity={gameId:requestedGame,...rseqExpected},data={...normalize(x.raw,{awayId:x.awayId,homeId:x.homeId}),identity};
       if(data.status.complete)data.status.period='FINAL';
       else if(!data.status.period){const q=Array.isArray(x.raw.plays?.qtr)?x.raw.plays.qtr.at(-1):x.raw.plays?.qtr;data.status.period=q?.number?'Q'+q.number:'';}
-      try{await require('../internal/live-history.cjs').capture(requestedGame,data,x.raw)}catch{}
-      send(res,200,{ok:true,game:requestedGame,visitor:x.visitor,home:x.home,officialPage:x.page,data});return true;
+      let archiveSaved=false;try{await require('../internal/live-history.cjs').capture(requestedGame,data,x.raw);archiveSaved=true}catch{}
+      send(res,200,{ok:true,archiveSaved,game:requestedGame,visitor:x.visitor,home:x.home,officialPage:x.page,data});return true;
     }}catch(e){console.warn('RSEQ feed unavailable',e.message)}
   }
   return false;
@@ -614,7 +614,7 @@ module.exports=async function handler(req,res){
       if(expected&&require('../data/usports-teams.json').find(t=>t.slug===expected.home)?.conference==='OUA')pages.push('https://oua.ca'+u.pathname);
     }
     const candidates=await Promise.all(pages.map(async page=>{try{return {page,boot:await bootstrap({...source,page})}}catch{return null}}));
-    const match=candidates.find(x=>x?.boot.ok&&x.boot.found&&expected&&namesMatch(x.boot.visitor,expected.away)&&namesMatch(x.boot.home,expected.home));
+    const match=candidates.find(x=>x?.boot.ok&&expected&&namesMatch(x.boot.visitor,expected.away)&&namesMatch(x.boot.home,expected.home));
     if(match){source={...source,page:match.page};boot=match.boot;}else boot=candidates.find(x=>x?.page===source.page)?.boot||boot;
   }
   const registry=VERIFIED_EVENTS[game],savedBoot=VERIFIED_BOOTSTRAPS.get(source.page);

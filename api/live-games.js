@@ -75,7 +75,7 @@ module.exports=async function handler(req,res){
     'https://www.mountiepride.ca/sports/fball/2026-27/schedule'
   ];
   let pages=(await Promise.all(scheduleUrls.map(u=>scanSchedule(u,date).catch(()=>[])))).flat();
-  pages=[...new Set(pages)].slice(0,20);
+  pages=[...new Set([...require('../data/national-schedule-usports.json').games.filter(g=>g.date===day).flatMap(g=>g.boxscores||[g.boxscore]).filter(Boolean),...pages])].slice(0,20);
   const candidates=[];
   const games=(await Promise.all(pages.map(async page=>{
     try{
@@ -87,6 +87,9 @@ module.exports=async function handler(req,res){
       const live=await fetchLive(meta,b.cookie);if(!live?.json||live.json.error||!isActuallyLive(meta,live.json))return null;const sc=lastScore(live.json);return {...candidate,awayScore:sc.away,homeScore:sc.home,period:period(live.json),clock:String(live.json?.status?.clock||''),lastUpdated:String(live.json?.network?.lastUpdated||'')};
     }catch{return null;}
   }))).filter(Boolean);
+  // Official host feeds do not depend on national Presto discovery.
+  const fixtures=require('../data/national-schedule-usports.json').games.filter(g=>g.date===day&&['toronto','regina','saskatchewan'].includes(g.home));
+  await Promise.all(fixtures.map(async g=>{try{const x=await require('../internal/host-live.cjs').load({date:g.date,away:g.away,home:g.home});if(!x||x.data.status.complete)return;const d=x.data;games.push({page:x.page,visitor:x.visitor,home:x.home,awayScore:d.game.awayScore,homeScore:d.game.homeScore,period:d.status.period,clock:d.status.clock});}catch{}}));
   // Warm-instance fallback: if upstream schedule discovery flickers, keep returning the
   // last proven source candidates instead of making clients forget a working page.
   if(!candidates.length){for(const [k,o] of LIVE_SOURCE_CACHE){if(k.startsWith(date+'|')&&Date.now()-o.t<6*60*60*1000)candidates.push(o.v)}}

@@ -546,8 +546,8 @@ module.exports=async function handler(req,res){
   const dynamicPage=String(req.query.page||'').trim();
   // Toronto publishes this host feed directly on its official football schedule.
   // It remains reachable when the conference's Presto bootstrap is blocked.
-  if(requestedGame==='2026-10-17-york-toronto'){
-    try{const official=await require('../internal/toronto-live.cjs').load(expectedGame(requestedGame));if(official){
+  if(['toronto','regina','saskatchewan'].includes(expectedGame(requestedGame)?.home)){
+    try{const official=await require('../internal/host-live.cjs').load(expectedGame(requestedGame));if(official){
       try{await require('../internal/live-history.cjs').capture(requestedGame,official.data,official.raw)}catch{}
       return send(res,200,{ok:true,game:requestedGame,visitor:official.visitor,home:official.home,officialPage:official.page,data:official.data});
     }}catch(e){console.warn('Toronto official feed unavailable',e.message)}

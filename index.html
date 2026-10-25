@@ -1312,7 +1312,7 @@ shell=function(content,active='schedule'){return `<div class="shell"><header cla
 
 /* Scheduled game cards now open GameCast; finals keep full box score. */
 const _v7OldGameCard=gameCard;
-gameCard=function(g){const a=TEAM[g.away],h=TEAM[g.home],fin=g.status==='final',hasScore=g.awayScore!=null&&g.homeScore!=null&&Number.isFinite(Number(g.awayScore))&&Number.isFinite(Number(g.homeScore));return `<div class="gameCard" onclick="${fin?`showGame('${g.id}')`:`showGameCast('${g.id}')`}"><div class="gameTop"><span>${cl(g.conference)} • ${esc(g.time)}${window.PostseasonStatus?.isPlayoff(g)?' · PLAYOFF':''}</span><span class="gameStatus ${fin?'final':''}">${fin?(hasScore?'FINAL':'RESULT PENDING'):'GAMECAST'}</span></div><div class="teamRow">${mark(a)}<div><div class="name">${esc(a.short)}</div><div class="city">${esc(a.city)}</div></div><div class="${fin?'score':'at'}">${fin?g.awayScore:'@'}</div></div><div class="teamRow">${mark(h)}<div><div class="name">${esc(h.short)}</div><div class="city">${esc(h.city)}</div></div><div class="score">${fin?g.homeScore:''}</div></div>${g.venue?`<div class="venue">${esc(g.venue)}</div>`:''}<div class="gameAction"><button class="miniBtn">${fin?'BOX SCORE':'OPEN GAMECAST'} →</button></div></div>`};
+gameCard=function(g){const a=TEAM[g.away],h=TEAM[g.home],fin=g.status==='final',hasScore=g.awayScore!=null&&g.homeScore!=null&&Number.isFinite(Number(g.awayScore))&&Number.isFinite(Number(g.homeScore));return `<div class="gameCard" onclick="${fin?`showGame('${g.id}')`:`showGameCast('${g.id}')`}"><div class="gameTop"><span>${cl(g.conference)} • ${esc(g.time)}${globalThis.PostseasonStatus?.isPlayoff(g)?' · PLAYOFF':''}</span><span class="gameStatus ${fin?'final':''}">${fin?(hasScore?'FINAL':'RESULT PENDING'):'GAMECAST'}</span></div><div class="teamRow">${mark(a)}<div><div class="name">${esc(a.short)}</div><div class="city">${esc(a.city)}</div></div><div class="${fin?'score':'at'}">${fin?g.awayScore:'@'}</div></div><div class="teamRow">${mark(h)}<div><div class="name">${esc(h.short)}</div><div class="city">${esc(h.city)}</div></div><div class="score">${fin?g.homeScore:''}</div></div>${g.venue?`<div class="venue">${esc(g.venue)}</div>`:''}<div class="gameAction"><button class="miniBtn">${fin?'BOX SCORE':'OPEN GAMECAST'} →</button></div></div>`};
 
 /* Extend routing. */
 const _routeV7=route;
@@ -4288,7 +4288,7 @@ body{background:#08111a}
     const statusText=fin?'FINAL':'GAMECAST';
     const actionText=fin?'BOX SCORE':'OPEN GAMECAST';
     return `<div class="gameCard" onclick="${fin?`showGame('${g.id}')`:`showGameCast('${g.id}')`}">
-      <div class="gameTop"><span>${cl(g.conference)} • ${esc(g.time)}${window.PostseasonStatus?.isPlayoff(g)?' · PLAYOFF':''}</span><span class="gameStatus ${fin?'final':''}">${statusText}</span></div>
+      <div class="gameTop"><span>${cl(g.conference)} • ${esc(g.time)}${globalThis.PostseasonStatus?.isPlayoff(g)?' · PLAYOFF':''}</span><span class="gameStatus ${fin?'final':''}">${statusText}</span></div>
       <div class="teamRow">${mark(a)}<div><div class="name">${esc(a.short)}</div><div class="city">${esc(a.city)}</div></div><div class="${fin?'score':'at'}">${fin&&hasScore?g.awayScore:'@'}</div></div>
       <div class="teamRow">${mark(h)}<div><div class="name">${esc(h.short)}</div><div class="city">${esc(h.city)}</div></div><div class="score">${fin&&hasScore?g.homeScore:''}</div></div>
       ${g.venue?`<div class="venue">${esc(g.venue)}</div>`:''}
@@ -4349,8 +4349,8 @@ body{background:#08111a}
   // Correct the historical card renderer: null is not a score, and past games can hydrate from Presto.
   gameCard=function(g){
     const a=TEAM[g.away],h=TEAM[g.home],fin=g.status==='final',hasScore=scoreKnown58(g);
-    return `<div class="gameCard ${window.PostseasonStatus?.isPlayoff(g)?'playoff-game':''}" data-game-id="${esc(g.id)}" onclick="${fin?`showGame('${g.id}')`:`showGameCast('${g.id}')`}">
-      <div class="gameTop"><span>${cl(g.conference)} • ${esc(g.time)}${window.PostseasonStatus?.isPlayoff(g)?' · PLAYOFF':''}</span><span class="gameStatus ${fin?'final':''}">${fin?(hasScore?'FINAL':'RESULT PENDING'):'GAMECAST'}</span></div>
+    return `<div class="gameCard ${globalThis.PostseasonStatus?.isPlayoff(g)?'playoff-game':''}" data-game-id="${esc(g.id)}" onclick="${fin?`showGame('${g.id}')`:`showGameCast('${g.id}')`}">
+      <div class="gameTop"><span>${cl(g.conference)} • ${esc(g.time)}${globalThis.PostseasonStatus?.isPlayoff(g)?' · PLAYOFF':''}</span><span class="gameStatus ${fin?'final':''}">${fin?(hasScore?'FINAL':'RESULT PENDING'):'GAMECAST'}</span></div>
       <div class="teamRow">${mark(a)}<div><div class="name">${esc(a.short)}</div><div class="city">${esc(a.city)}</div></div><div class="${fin?'score':'at'}">${fin?(hasScore?g.awayScore:'—'):'@'}</div></div>
       <div class="teamRow">${mark(h)}<div><div class="name">${esc(h.short)}</div><div class="city">${esc(h.city)}</div></div><div class="score">${fin?(hasScore?g.homeScore:'—'):''}</div></div>
       ${g.venue?`<div class="venue">${esc(g.venue)}</div>`:''}

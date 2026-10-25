@@ -25,3 +25,11 @@ test('official host feed rejects stale and unrelated payloads',()=>{
 test('schedule gameCard renders final scores without crashing initialization',()=>{
  const s=fs.readFileSync(require.resolve('../index.html'),'utf8'),a=s.indexOf('gameCard=function(g){'),b=s.indexOf('\n',a),ctx={TEAM:{a:{},h:{}},mark:()=>'',esc:String,cl:String};vm.runInNewContext(s.slice(a,b),ctx);assert.match(ctx.gameCard({id:'g',away:'a',home:'h',status:'final',awayScore:0,homeScore:7}),/FINAL/);
 });
+test('scoreboard renders upcoming games before any live-feed object exists',()=>{
+ const source=fs.readFileSync(require.resolve('../live-gamecast.js'),'utf8');
+ const start=source.indexOf('  function rail(id,top=false){'),end=source.indexOf('  const chartCache=',start);
+ const g={id:'upcoming',date:'2026-10-31',away:'a',home:'b',conference:'OUA',status:'scheduled',time:'1 PM'};
+ const ctx={GAMES:[g],LIVE_STORE:{games:{}},game:()=>null,today:()=>g.date,scoreboardWeek:()=>true,L:{selected:null},window:{},esc2:String,img:()=>'',team:id=>({short:id}),pendingLabel:()=> 'PREGAME'};
+ vm.runInNewContext(source.slice(start,end),ctx);
+ assert.match(ctx.rail(null,true),/1 PM/);assert.match(ctx.rail(null,true),/Live Game Center/);
+});

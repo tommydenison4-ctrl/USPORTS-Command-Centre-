@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-10-24",
+  "asOf": "2026-10-25",
   "method": "Based on official results, available player box scores and credited school reporting. Team averages are not adjusted for strength of schedule.",
   "games": [
     {
@@ -384,15 +384,17 @@
       "home": "windsor",
       "date": "2026-10-31",
       "conference": "OUA",
-      "asOf": "2026-10-24",
+      "asOf": "2026-10-25",
       "title": "Guelph at Windsor",
       "paragraphs": [
-        "Guelph heads to Windsor on October 31, with both teams looking to pick up a conference win. Guelph is 4–3; Windsor is 5–2.",
-        "Guelph (4–3) last played on October 17, losing to Queen's 42–41. Before that, it won 47–22 over Waterloo and 46–0 over Toronto. Through 7 games, Guelph is scoring 37.7 points a game and giving up 22.9.",
-        "Windsor (5–2) last played on October 10, beating Queen's 25–22. Before that, it won 54–0 over Toronto and 51–2 over York. Through 7 games, Windsor is scoring 40.7 points a game and giving up 22.0."
+        "Guelph heads to Windsor on October 31, with both teams looking to pick up a conference win. Guelph is 4–4; Windsor is 6–2.",
+        "Guelph (4–4) last played on October 24, losing to Windsor 27–23. Before that, its results were a 46–0 win over Toronto and a 42–41 loss to Queen's. Through 8 games, Guelph is scoring 35.9 points a game and giving up 23.4.",
+        "Windsor (6–2) last played on October 24, beating Guelph 27–23. Before that, it won 51–2 over York and 25–22 over Queen's. Through 8 games, Windsor is scoring 39.0 points a game and giving up 22.1.",
+        "Windsor won the last meeting 27–23 on October 24.",
+        "Kareame Cotton of Windsor has thrown for 2,308 yards in 8 games. Kareame Cotton is on CanUFootball’s Hec Crighton Watch."
       ],
       "notes": [
-        "Records and team scoring use regular-season results completed before October 24. Exhibitions are excluded.",
+        "Records and team scoring use regular-season results completed before October 25. Exhibitions are excluded.",
         "Player totals use the available box scores and may be incomplete. The Hec Crighton Watch is CanUFootball’s own list."
       ],
       "sources": [
@@ -429,6 +431,10 @@
           "label": "October 17 · Guelph at Queen's"
         },
         {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261024_8852.xml",
+          "label": "October 24 · Windsor at Guelph"
+        },
+        {
           "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260829_uxji.xml",
           "label": "August 29 · Windsor at McMaster"
         },
@@ -455,6 +461,30 @@
         {
           "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261010_11lr.xml",
           "label": "October 10 · Windsor at Queen's"
+        },
+        {
+          "url": "https://athletics.uwaterloo.ca/sports/football/stats/2026-27/windsor-lancers/boxscore/9407",
+          "label": "Kareame Cotton · player statistics"
+        },
+        {
+          "url": "https://golancers.ca/sports/football/stats/2026/laurier-golden-hawks/boxscore/6118",
+          "label": "Kareame Cotton · player statistics"
+        },
+        {
+          "url": "https://golancers.ca/sports/football/stats/2026/mcmaster-marauders/boxscore/6117",
+          "label": "Kareame Cotton · player statistics"
+        },
+        {
+          "url": "https://golancers.ca/sports/football/stats/2026/toronto-varsity-blues/boxscore/6121",
+          "label": "Kareame Cotton · player statistics"
+        },
+        {
+          "url": "https://golancers.ca/sports/football/stats/2026/western-mustangs/boxscore/6119",
+          "label": "Kareame Cotton · player statistics"
+        },
+        {
+          "url": "https://golancers.ca/sports/football/stats/2026/york-lions/boxscore/6122",
+          "label": "Kareame Cotton · player statistics"
         }
       ]
     },
@@ -464,15 +494,17 @@
       "home": "western",
       "date": "2026-10-31",
       "conference": "OUA",
-      "asOf": "2026-10-24",
+      "asOf": "2026-10-25",
       "title": "Laurier at Western",
       "paragraphs": [
-        "Laurier heads to Western on October 31, with both teams looking to pick up a conference win. Laurier is 3–4; Western is 6–1.",
-        "Laurier (3–4) last played on October 17, beating Carleton 68–8. Before that, its results were a 36–13 win over York and a 40–31 loss to Waterloo. Through 7 games, Laurier is scoring 34.1 points a game and giving up 25.0.",
-        "Western (6–1) last played on October 17, beating Ottawa 37–27. Before that, its results were a 41–30 loss to Queen's and a 49–7 win over Carleton. Through 7 games, Western is scoring 47.3 points a game and giving up 21.0."
+        "Laurier heads to Western on October 31, with both teams looking to pick up a conference win. Laurier is 4–4; Western is 6–2.",
+        "Laurier (4–4) last played on October 24, beating Western 55–39. Before that, its results were a 40–31 loss to Waterloo and a 68–8 win over Carleton. Through 8 games, Laurier is scoring 36.8 points a game and giving up 26.8.",
+        "Western (6–2) last played on October 24, losing to Laurier 55–39. Before that, it won 49–7 over Carleton and 37–27 over Ottawa. Through 8 games, Western is scoring 46.2 points a game and giving up 25.2.",
+        "Laurier won the last meeting 55–39 on October 24.",
+        "Will Russell of Laurier has thrown for 2,619 yards in 8 games. Will Russell is on CanUFootball’s Hec Crighton Watch."
       ],
       "notes": [
-        "Records and team scoring use regular-season results completed before October 24. Exhibitions are excluded.",
+        "Records and team scoring use regular-season results completed before October 25. Exhibitions are excluded.",
         "Player totals use the available box scores and may be incomplete. The Hec Crighton Watch is CanUFootball’s own list."
       ],
       "sources": [
@@ -509,6 +541,10 @@
           "label": "October 17 · Carleton at Laurier"
         },
         {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261024_xmef.xml",
+          "label": "October 24 · Laurier at Western"
+        },
+        {
           "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260906_bmmb.xml",
           "label": "September 6 · York at Western"
         },
@@ -535,6 +571,26 @@
         {
           "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261017_3s3c.xml",
           "label": "October 17 · Western at Ottawa"
+        },
+        {
+          "url": "https://golancers.ca/sports/football/stats/2026/laurier-golden-hawks/boxscore/6118",
+          "label": "Will Russell · player statistics"
+        },
+        {
+          "url": "https://gryphons.ca/sports/football/stats/2026-27/laurier-golden-hawks/boxscore/9557",
+          "label": "Will Russell · player statistics"
+        },
+        {
+          "url": "https://laurierathletics.com/sports/football/stats/2026/mcmaster/boxscore/10588",
+          "label": "Will Russell · player statistics"
+        },
+        {
+          "url": "https://laurierathletics.com/sports/football/stats/2026/ottawa/boxscore/10587",
+          "label": "Will Russell · player statistics"
+        },
+        {
+          "url": "https://laurierathletics.com/sports/football/stats/2026/york/boxscore/10589",
+          "label": "Will Russell · player statistics"
         }
       ]
     },
@@ -679,15 +735,15 @@
       "home": "mcmaster",
       "date": "2026-10-31",
       "conference": "OUA",
-      "asOf": "2026-10-24",
+      "asOf": "2026-10-25",
       "title": "Ottawa at McMaster",
       "paragraphs": [
-        "Ottawa heads to McMaster on October 31, with both teams looking to pick up a conference win. Ottawa is 4–4; McMaster is 6–1.",
+        "Ottawa heads to McMaster on October 31, with both teams looking to pick up a conference win. Ottawa is 4–4; McMaster is 6–2.",
         "Ottawa (4–4) last played on October 17, losing to Western 37–27. Before that, its results were a 35–32 win over Carleton and a 19–12 loss to York. Through 8 games, Ottawa is scoring 28.0 points a game and giving up 26.1.",
-        "McMaster (6–1) last played on October 17, beating Waterloo 20–12. Before that, its results were a 32–25 loss to Western and a 26–6 win over Toronto. Through 7 games, McMaster is scoring 23.6 points a game and giving up 15.1."
+        "McMaster (6–2) last played on October 24, losing to Queen's 25–17. Before that, it won 26–6 over Toronto and 20–12 over Waterloo. Through 8 games, McMaster is scoring 22.8 points a game and giving up 16.4."
       ],
       "notes": [
-        "Records and team scoring use regular-season results completed before October 24. Exhibitions are excluded.",
+        "Records and team scoring use regular-season results completed before October 25. Exhibitions are excluded.",
         "Player totals use the available box scores and may be incomplete. The Hec Crighton Watch is CanUFootball’s own list."
       ],
       "sources": [
@@ -754,6 +810,10 @@
         {
           "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261017_cmyk.xml",
           "label": "October 17 · McMaster at Waterloo"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261024_crbv.xml",
+          "label": "October 24 · Queen's at McMaster"
         }
       ]
     },

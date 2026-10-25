@@ -23,7 +23,7 @@ function parseStandings(text,conf){
 function resultStandings(conf){
  const schedule=require('../data/national-schedule-usports.json');
  const teams=TEAMS.filter(t=>t.conference===conf),ids=new Set(teams.map(t=>t.slug));
- const games=schedule.games.filter(g=>ids.has(g.away)&&ids.has(g.home)&&!g.exhibition&&!g.playoff&&!g.postseason&&g.status==='final'&&[g.awayScore,g.homeScore].every(n=>Number.isInteger(n)&&n>=0));
+ const games=schedule.games.filter(g=>ids.has(g.away)&&ids.has(g.home)&&!g.exhibition&&!g.playoff&&!g.postseason&&!require('../postseason-status.js').isPlayoff(g)&&g.status==='final'&&[g.awayScore,g.homeScore].every(n=>Number.isInteger(n)&&n>=0));
  if(!games.length)return [];
  const records=Object.fromEntries(teams.map(t=>[t.slug,{slug:t.slug,w:0,l:0,t:0,gp:0,pf:0,pa:0}]));
  for(const g of games){for(const side of ['away','home']){const r=records[g[side]],other=side==='away'?'home':'away',pf=g[side+'Score'],pa=g[other+'Score'];r.gp++;r.pf+=pf;r.pa+=pa;if(pf>pa)r.w++;else if(pf<pa)r.l++;else r.t++;}}

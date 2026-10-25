@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
+const core=require('../postseason-status'),engine=require('../playoff-tiebreaks');
+const games=require('../data/national-schedule-usports.json').games,teams=require('../data/standings-usports.json').rows;
+const status=core.calculate(teams,games,engine);
+for(const id of ['waterloo','york','carleton','toronto','alberta','sherbrooke'])assert.equal(status[id].eliminated,true,id);
+for(const id of ['calgary','regina','bishops','acadia','mountallison','concordia'])assert.equal(status[id].eliminated,false,id+' remains alive');
+assert.equal(core.isPlayoff(games.find(g=>g.id==='2026-10-31-guelph-windsor')),true);
+assert.equal(core.isPlayoff(games.find(g=>g.id==='2026-10-31-laval-montreal')),false);
+assert.equal(core.calculate(teams,[],engine).toronto.eliminated,false,'Incomplete data cannot eliminate');
+const loss={id:'post',away:'laval',home:'montreal',postseason:true,status:'final',awayScore:10,homeScore:20};
+assert.equal(core.calculate(teams,[...games,loss],engine).laval.eliminated,true);
+assert.equal(core.calculate(teams,[...games,{...loss,status:'live'}],engine).laval.eliminated,false);
+const ctx={TEAMS:teams,GAMES:games,FootballTiebreaks:engine,AdvantageModel:require('../advantage-model'),AWM_DATA:{USPORTS:require('../data/advantage-usports.json')},SEASON_WATCH:require('../data/season-watch.json')};
+vm.runInNewContext(fs.readFileSync('postseason-status.js','utf8'),ctx);vm.runInNewContext(fs.readFileSync('season-watch.js','utf8'),ctx);
+const html=ctx.SeasonWatch.render('USPORTS');assert.match(html,/eliminated-badge/);assert.match(html,/does not mean award ineligibility/);
+console.log('PASS elimination, open non-OUA races, postseason identity, final-only elimination, and watch rendering');

@@ -1104,7 +1104,7 @@ linear-gradient(#f2f2f2,#ededed)}
 @media(max-width:760px){.gameCenterTabsV26{overflow-x:auto}.pregamePaneMainV26,.previewSplitV26,.statsSplitV26,.pregameRail{grid-template-columns:1fr}.scoreTileV26{min-width:160px;flex-basis:160px}}
 </style>
 <script src="play-ribbons.js?v=20261010fieldfix1"></script><style>.featured-open{border:1px solid #59697c;background:#131b25;color:#fff;padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer}.hero.featured-game{padding:24px 0;gap:24px}.featured-game h2{font-size:clamp(24px,3vw,36px);margin:8px 0}.featured-teams{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0}.featured-teams .logoHero{width:52px;height:52px}.featured-teams b span{display:block;color:var(--muted);font-size:14px}.featured-game .awm-card{margin:0}@media(max-width:760px){.hero.featured-game{grid-template-columns:1fr}}</style></head><body><div id="app"></div>
-<link rel="stylesheet" href="advantage.css?v=20261010liveprojection1"><script src="national-schedule-data.js?v=national1"></script><script src="national-schedule.js?v=national1"></script><script src="advantage-model.js?v=20261014compact2"></script><script src="advantage-data.js?v=20261003featured1"></script><script src="player-leaders-data.js?v=20261003featured1"></script><script src="player-leaders.js?v=20261003leaders3"></script><script src="score-simulation.js?v=20261003sim1"></script><script src="featured-matchup.js?v=20261003featured3"></script><script src="game-venues.js?v=20261010pregame1"></script><link rel="stylesheet" href="game-previews.css?v=20261015"><script src="game-previews-data.js?v=20261015"></script><script src="game-previews.js?v=20261015"></script><script src="usports-awm.js?v=20261015previews"></script><script id="score-identity-cache-repair">
+<link rel="stylesheet" href="advantage.css?v=20261010liveprojection1"><script src="national-schedule-data.js?v=national1"></script><script src="national-schedule.js?v=national1"></script><script src="playoff-tiebreaks.js?v=20261025"></script><script src="postseason-status.js?v=20261025"></script><script src="advantage-model.js?v=20261014compact2"></script><script src="advantage-data.js?v=20261003featured1"></script><script src="player-leaders-data.js?v=20261003featured1"></script><script src="player-leaders.js?v=20261003leaders3"></script><script src="score-simulation.js?v=20261003sim1"></script><script src="featured-matchup.js?v=20261003featured3"></script><script src="game-venues.js?v=20261010pregame1"></script><link rel="stylesheet" href="game-previews.css?v=20261015"><script src="game-previews-data.js?v=20261015"></script><script src="game-previews.js?v=20261015"></script><script src="usports-awm.js?v=20261015previews"></script><script id="score-identity-cache-repair">
 (()=>{const marker='usports:score-identity-repair:2';try{if(localStorage.getItem(marker))return;
  const affected=['2026-10-10-western-carleton','2026-10-10-windsor-queens'];
  for(const store of [localStorage,sessionStorage]){
@@ -1312,7 +1312,7 @@ shell=function(content,active='schedule'){return `<div class="shell"><header cla
 
 /* Scheduled game cards now open GameCast; finals keep full box score. */
 const _v7OldGameCard=gameCard;
-gameCard=function(g){const a=TEAM[g.away],h=TEAM[g.home],fin=g.status==='final',hasScore=g.awayScore!=null&&g.homeScore!=null&&Number.isFinite(Number(g.awayScore))&&Number.isFinite(Number(g.homeScore));return `<div class="gameCard" onclick="${fin?`showGame('${g.id}')`:`showGameCast('${g.id}')`}"><div class="gameTop"><span>${cl(g.conference)} • ${esc(g.time)}</span><span class="gameStatus ${fin?'final':''}">${fin?(hasScore?'FINAL':'RESULT PENDING'):'GAMECAST'}</span></div><div class="teamRow">${mark(a)}<div><div class="name">${esc(a.short)}</div><div class="city">${esc(a.city)}</div></div><div class="${fin?'score':'at'}">${fin?g.awayScore:'@'}</div></div><div class="teamRow">${mark(h)}<div><div class="name">${esc(h.short)}</div><div class="city">${esc(h.city)}</div></div><div class="score">${fin?g.homeScore:''}</div></div>${g.venue?`<div class="venue">${esc(g.venue)}</div>`:''}<div class="gameAction"><button class="miniBtn">${fin?'BOX SCORE':'OPEN GAMECAST'} →</button></div></div>`};
+gameCard=function(g){const a=TEAM[g.away],h=TEAM[g.home],fin=g.status==='final',hasScore=g.awayScore!=null&&g.homeScore!=null&&Number.isFinite(Number(g.awayScore))&&Number.isFinite(Number(g.homeScore));return `<div class="gameCard" onclick="${fin?`showGame('${g.id}')`:`showGameCast('${g.id}')`}"><div class="gameTop"><span>${cl(g.conference)} • ${esc(g.time)}${window.PostseasonStatus?.isPlayoff(g)?' · PLAYOFF':''}</span><span class="gameStatus ${fin?'final':''}">${fin?(hasScore?'FINAL':'RESULT PENDING'):'GAMECAST'}</span></div><div class="teamRow">${mark(a)}<div><div class="name">${esc(a.short)}</div><div class="city">${esc(a.city)}</div></div><div class="${fin?'score':'at'}">${fin?g.awayScore:'@'}</div></div><div class="teamRow">${mark(h)}<div><div class="name">${esc(h.short)}</div><div class="city">${esc(h.city)}</div></div><div class="score">${fin?g.homeScore:''}</div></div>${g.venue?`<div class="venue">${esc(g.venue)}</div>`:''}<div class="gameAction"><button class="miniBtn">${fin?'BOX SCORE':'OPEN GAMECAST'} →</button></div></div>`};
 
 /* Extend routing. */
 const _routeV7=route;
@@ -4288,7 +4288,7 @@ body{background:#08111a}
     const statusText=fin?'FINAL':'GAMECAST';
     const actionText=fin?'BOX SCORE':'OPEN GAMECAST';
     return `<div class="gameCard" onclick="${fin?`showGame('${g.id}')`:`showGameCast('${g.id}')`}">
-      <div class="gameTop"><span>${cl(g.conference)} • ${esc(g.time)}</span><span class="gameStatus ${fin?'final':''}">${statusText}</span></div>
+      <div class="gameTop"><span>${cl(g.conference)} • ${esc(g.time)}${window.PostseasonStatus?.isPlayoff(g)?' · PLAYOFF':''}</span><span class="gameStatus ${fin?'final':''}">${statusText}</span></div>
       <div class="teamRow">${mark(a)}<div><div class="name">${esc(a.short)}</div><div class="city">${esc(a.city)}</div></div><div class="${fin?'score':'at'}">${fin&&hasScore?g.awayScore:'@'}</div></div>
       <div class="teamRow">${mark(h)}<div><div class="name">${esc(h.short)}</div><div class="city">${esc(h.city)}</div></div><div class="score">${fin&&hasScore?g.homeScore:''}</div></div>
       ${g.venue?`<div class="venue">${esc(g.venue)}</div>`:''}
@@ -4349,8 +4349,8 @@ body{background:#08111a}
   // Correct the historical card renderer: null is not a score, and past games can hydrate from Presto.
   gameCard=function(g){
     const a=TEAM[g.away],h=TEAM[g.home],fin=g.status==='final',hasScore=scoreKnown58(g);
-    return `<div class="gameCard" data-game-id="${esc(g.id)}" onclick="${fin?`showGame('${g.id}')`:`showGameCast('${g.id}')`}">
-      <div class="gameTop"><span>${cl(g.conference)} • ${esc(g.time)}</span><span class="gameStatus ${fin?'final':''}">${fin?(hasScore?'FINAL':'RESULT PENDING'):'GAMECAST'}</span></div>
+    return `<div class="gameCard ${window.PostseasonStatus?.isPlayoff(g)?'playoff-game':''}" data-game-id="${esc(g.id)}" onclick="${fin?`showGame('${g.id}')`:`showGameCast('${g.id}')`}">
+      <div class="gameTop"><span>${cl(g.conference)} • ${esc(g.time)}${window.PostseasonStatus?.isPlayoff(g)?' · PLAYOFF':''}</span><span class="gameStatus ${fin?'final':''}">${fin?(hasScore?'FINAL':'RESULT PENDING'):'GAMECAST'}</span></div>
       <div class="teamRow">${mark(a)}<div><div class="name">${esc(a.short)}</div><div class="city">${esc(a.city)}</div></div><div class="${fin?'score':'at'}">${fin?(hasScore?g.awayScore:'—'):'@'}</div></div>
       <div class="teamRow">${mark(h)}<div><div class="name">${esc(h.short)}</div><div class="city">${esc(h.city)}</div></div><div class="score">${fin?(hasScore?g.homeScore:'—'):''}</div></div>
       ${g.venue?`<div class="venue">${esc(g.venue)}</div>`:''}
@@ -5037,4 +5037,4 @@ window.route=function(){if(location.hash.slice(1)==='podcasts'){podcasts83();ret
 </script>
 <link rel="stylesheet" href="at-the-55.css?v=20261016"><script src="at-the-55.js?v=20261016"></script>
 <link rel="stylesheet" href="scoreboard-order.css?v=20261016"><script src="scoreboard-order.js?v=20261016"></script>
-</body></html>
+<style>.eliminated-badge{display:inline-block;color:#ff7889!important;border:1px solid #d8354d;border-radius:4px;padding:1px 5px;font-size:11px;font-weight:900;text-decoration:none;white-space:nowrap}.gameCard.playoff-game{border:2px solid #ed344f!important;background:linear-gradient(160deg,#421520,#160e16)!important}.gameCard.playoff-game:before{background:#ed344f!important;opacity:1}.playoff-legend{color:#ff9aaa;font-size:13px}.playoff-race-note{color:#bacbdc;font-size:13px}</style></body></html>

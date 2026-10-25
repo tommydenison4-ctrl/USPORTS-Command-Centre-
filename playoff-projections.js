@@ -37,7 +37,7 @@
 
   function conferenceGames(conf) {
     if (typeof GAMES === 'undefined' || !Array.isArray(GAMES)) return [];
-    return GAMES.filter(g => g && g.conference === conf && g.exhibition !== true && g.playoff !== true && g.postseason !== true)
+    return GAMES.filter(g => g && g.conference === conf && g.exhibition !== true && g.playoff !== true && g.postseason !== true && !window.PostseasonStatus?.isPlayoff(g))
       .slice().sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.id).localeCompare(String(b.id)));
   }
 
@@ -125,7 +125,7 @@
       const crossesCut = tieAcrossCut && !!r.tieGroup && r.tieGroup === standings[cfg.spots - 1]?.tieGroup;
       const status = crossesCut ? 'TIE' : (i < cfg.spots ? 'IN' : 'OUT');
       const statusClass = status === 'IN' ? 'pp-in' : status === 'OUT' ? 'pp-out' : 'pp-tie';
-      return `<tr><td data-label="Seed"><span class="pp-rank">${position}</span></td><td data-label="Team"><div class="pp-table-team">${logoOf(r.slug)}<b>${esc(nameOf(r.slug))}</b></div></td><td data-label="W-L">${r.w}-${r.l}</td><td data-label="PTS">${r.w * 2}</td><td data-label="GP">${r.gp}</td><td data-label="PF">${r.pf}</td><td data-label="PA">${r.pa}</td><td data-label="Field"><span class="pp-status ${statusClass}">${status}</span></td></tr>`;
+      return `<tr><td data-label="Seed"><span class="pp-rank">${position}</span></td><td data-label="Team"><div class="pp-table-team">${logoOf(r.slug)}<b>${esc(nameOf(r.slug))}${window.PostseasonStatus?.badge(r.slug)||''}</b></div></td><td data-label="W-L">${r.w}-${r.l}</td><td data-label="PTS">${r.w * 2}</td><td data-label="GP">${r.gp}</td><td data-label="PF">${r.pf}</td><td data-label="PA">${r.pa}</td><td data-label="Field"><span class="pp-status ${statusClass}">${status}</span></td></tr>`;
     }).join('');
     const sources = {
       OUA: [OUA_RULES_URL, 'OUA Football Operations, Appendix C'],

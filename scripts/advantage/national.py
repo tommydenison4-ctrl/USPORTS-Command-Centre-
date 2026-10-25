@@ -51,6 +51,7 @@ def parse_composite(html, date):
             time=status if not final else '',status='final' if final else 'cancelled' if re.search('cancel',status,re.I) else 'postponed' if re.search('postpon',status,re.I) else 'scheduled',
             awayScore=scores[0] if final else None,homeScore=scores[1] if final else None,
             neutral=bool(names[1].select_one('.va') and names[1].select_one('.va').get_text(strip=True).lower().startswith('vs')),
+            postseason=any(re.search(r'/\d{4}-\d{2}p/', link) for link in links) or bool(re.search(r'\b(postseason|quarterfinal|semifinal)\b', event.get_text(' ',strip=True),re.I)),
             exhibition='exhibition' in event.get('class',[]) or 'exhibition' in event.get_text(' ',strip=True).lower(),
             venue='',note=note.get_text(' ',strip=True) if note else '',source=COMPOSITE+'?d='+date,boxscore=links[0] if links else None,boxscores=links))
     return games,unresolved

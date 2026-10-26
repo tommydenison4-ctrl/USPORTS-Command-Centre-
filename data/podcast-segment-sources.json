@@ -1,6 +1,42 @@
 {
   "episodes": [
     {
+      "id": "2026-week-9",
+      "episode": "Week 9 Review",
+      "published": "2026-10-26",
+      "durationSeconds": 6501,
+      "url": "https://www.youtube.com/watch?v=N4XiY4DX2qg",
+      "videoId": "N4XiY4DX2qg",
+      "audioUrl": null,
+      "sourceChapters": "https://www.youtube.com/watch?v=N4XiY4DX2qg",
+      "chapters": [
+        {
+          "label": "Players of the Week",
+          "start": 112
+        },
+        {
+          "label": "Waterloo @ York",
+          "start": 318
+        },
+        {
+          "label": "Laurier @ Western",
+          "start": 1630
+        },
+        {
+          "label": "Windsor @ Guelph",
+          "start": 3168
+        },
+        {
+          "label": "Queen's @ McMaster",
+          "start": 4333
+        },
+        {
+          "label": "UofT @ Carleton",
+          "start": 5446
+        }
+      ]
+    },
+    {
       "id": "2026-week-8",
       "episode": "Week 8 Review",
       "published": "2026-10-20",
@@ -313,6 +349,46 @@
     }
   ],
   "segments": [
+    {
+      "episodeId": "2026-week-9",
+      "gameId": "2026-10-24-waterloo-york",
+      "label": "Waterloo @ York",
+      "start": 318,
+      "end": 1630,
+      "endsAtEpisodeEnd": false
+    },
+    {
+      "episodeId": "2026-week-9",
+      "gameId": "2026-10-24-laurier-western",
+      "label": "Laurier @ Western",
+      "start": 1630,
+      "end": 3168,
+      "endsAtEpisodeEnd": false
+    },
+    {
+      "episodeId": "2026-week-9",
+      "gameId": "2026-10-24-windsor-guelph",
+      "label": "Windsor @ Guelph",
+      "start": 3168,
+      "end": 4333,
+      "endsAtEpisodeEnd": false
+    },
+    {
+      "episodeId": "2026-week-9",
+      "gameId": "2026-10-24-queens-mcmaster",
+      "label": "Queen's @ McMaster",
+      "start": 4333,
+      "end": 5446,
+      "endsAtEpisodeEnd": false
+    },
+    {
+      "episodeId": "2026-week-9",
+      "gameId": "2026-10-24-toronto-carleton",
+      "label": "UofT @ Carleton",
+      "start": 5446,
+      "end": 6501,
+      "endsAtEpisodeEnd": true
+    },
     {
       "episodeId": "2026-week-8",
       "gameId": "2026-10-17-york-toronto",

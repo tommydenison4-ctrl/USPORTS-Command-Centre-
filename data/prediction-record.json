@@ -865,11 +865,11 @@
       "probability": 0.809149588634839,
       "publishedAt": "2026-10-24T23:14:19.913Z",
       "source": "data/pregame-predictions-usports.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "western",
+      "awayScore": 41,
+      "homeScore": 58,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27p/boxscores/20261031_2dcz.xml"
     },
     {
       "gameId": "2026-10-31-laval-montreal",

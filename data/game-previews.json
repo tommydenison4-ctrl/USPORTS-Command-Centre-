@@ -73,132 +73,6 @@
       ]
     },
     {
-      "id": "2026-10-31-laurier-western",
-      "away": "laurier",
-      "home": "western",
-      "date": "2026-10-31",
-      "conference": "OUA",
-      "asOf": "2026-10-31",
-      "title": "Laurier at Western",
-      "paragraphs": [
-        "Laurier heads to Western on October 31, with both teams looking to pick up a conference win. Laurier is 4–4; Western is 6–2.",
-        "Laurier (4–4) last played on October 24, beating Western 55–39. Before that, its results were a 40–31 loss to Waterloo and a 68–8 win over Carleton. Through 8 games, Laurier is scoring 36.8 points a game and giving up 26.8.",
-        "Western (6–2) last played on October 24, losing to Laurier 55–39. Before that, it won 49–7 over Carleton and 37–27 over Ottawa. Through 8 games, Western is scoring 46.2 points a game and giving up 25.2.",
-        "Laurier won the last meeting 55–39 on October 24.",
-        "Will Russell of Laurier has thrown for 2,619 yards in 8 games. Emmett Charles of Western has caught passes for 809 yards in 8 games. Both are on CanUFootball’s Hec Crighton Watch."
-      ],
-      "notes": [
-        "Records and team scoring use regular-season results completed before October 31. Exhibitions are excluded.",
-        "Player totals use the available box scores and may be incomplete. The Hec Crighton Watch is CanUFootball’s own list."
-      ],
-      "sources": [
-        {
-          "url": "https://en.usports.ca/sports/fball/composite?d=2026-10-31",
-          "label": "Official national schedule"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260829_zyoz.xml",
-          "label": "August 29 · Guelph at Laurier"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260906_tqi8.xml",
-          "label": "September 6 · Laurier at Windsor"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260912_cm5i.xml",
-          "label": "September 12 · Ottawa at Laurier"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260919_r1pc.xml",
-          "label": "September 19 · Laurier at McMaster"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260926_onmm.xml",
-          "label": "September 26 · York at Laurier"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_3xzq.xml",
-          "label": "October 3 · Laurier at Waterloo"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261017_r2pa.xml",
-          "label": "October 17 · Carleton at Laurier"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261024_xmef.xml",
-          "label": "October 24 · Laurier at Western"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260906_bmmb.xml",
-          "label": "September 6 · York at Western"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260912_nlwf.xml",
-          "label": "September 12 · Western at Windsor"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260919_qrnw.xml",
-          "label": "September 19 · Western at Toronto"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260926_xfxk.xml",
-          "label": "September 26 · McMaster at Western"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_7san.xml",
-          "label": "October 3 · Queen's at Western"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261010_e02s.xml",
-          "label": "October 10 · Western at Carleton"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261017_3s3c.xml",
-          "label": "October 17 · Western at Ottawa"
-        },
-        {
-          "url": "https://golancers.ca/sports/football/stats/2026/laurier-golden-hawks/boxscore/6118",
-          "label": "Will Russell · player statistics"
-        },
-        {
-          "url": "https://gryphons.ca/sports/football/stats/2026-27/laurier-golden-hawks/boxscore/9557",
-          "label": "Will Russell · player statistics"
-        },
-        {
-          "url": "https://laurierathletics.com/sports/football/stats/2026/mcmaster/boxscore/10588",
-          "label": "Will Russell · player statistics"
-        },
-        {
-          "url": "https://laurierathletics.com/sports/football/stats/2026/ottawa/boxscore/10587",
-          "label": "Will Russell · player statistics"
-        },
-        {
-          "url": "https://laurierathletics.com/sports/football/stats/2026/york/boxscore/10589",
-          "label": "Will Russell · player statistics"
-        },
-        {
-          "url": "https://gogaelsgo.com/sports/football/stats/2026-2027/western-mustangs/boxscore/13810",
-          "label": "Emmett Charles · player statistics"
-        },
-        {
-          "url": "https://golancers.ca/sports/football/stats/2026/western-mustangs/boxscore/6119",
-          "label": "Emmett Charles · player statistics"
-        },
-        {
-          "url": "https://marauders.ca/sports/football/stats/2026/western-university/boxscore/14057",
-          "label": "Emmett Charles · player statistics"
-        },
-        {
-          "url": "https://varsityblues.ca/sports/football/stats/2026/western-university/boxscore/12855",
-          "label": "Emmett Charles · player statistics"
-        },
-        {
-          "url": "https://westernmustangs.ca/sports/football/stats/2026-27/york-lions/boxscore/17092",
-          "label": "Emmett Charles · player statistics"
-        }
-      ]
-    },
-    {
       "id": "2026-11-07-acadia-stfx",
       "away": "acadia",
       "home": "stfx",
@@ -564,8 +438,7 @@
         "Windsor heads to Western on November 7, with both teams looking to pick up a conference win. Windsor is 6–2; Western is 6–2.",
         "Windsor (6–2) last played on October 24, beating Guelph 27–23. Before that, it won 51–2 over York and 25–22 over Queen's. Through 8 games, Windsor is scoring 39.0 points a game and giving up 22.1.",
         "Western (6–2) last played on October 24, losing to Laurier 55–39. Before that, it won 49–7 over Carleton and 37–27 over Ottawa. Through 8 games, Western is scoring 46.2 points a game and giving up 25.2.",
-        "Western won the last meeting 44–37 on September 12.",
-        "Emmett Charles of Western has caught passes for 809 yards in 8 games. Emmett Charles is on CanUFootball’s Hec Crighton Watch."
+        "Western won the last meeting 44–37 on September 12."
       ],
       "notes": [
         "Records and team scoring use regular-season results completed before October 31. Exhibitions are excluded.",
@@ -635,26 +508,6 @@
         {
           "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261024_xmef.xml",
           "label": "October 24 · Laurier at Western"
-        },
-        {
-          "url": "https://gogaelsgo.com/sports/football/stats/2026-2027/western-mustangs/boxscore/13810",
-          "label": "Emmett Charles · player statistics"
-        },
-        {
-          "url": "https://golancers.ca/sports/football/stats/2026/western-mustangs/boxscore/6119",
-          "label": "Emmett Charles · player statistics"
-        },
-        {
-          "url": "https://marauders.ca/sports/football/stats/2026/western-university/boxscore/14057",
-          "label": "Emmett Charles · player statistics"
-        },
-        {
-          "url": "https://varsityblues.ca/sports/football/stats/2026/western-university/boxscore/12855",
-          "label": "Emmett Charles · player statistics"
-        },
-        {
-          "url": "https://westernmustangs.ca/sports/football/stats/2026-27/york-lions/boxscore/17092",
-          "label": "Emmett Charles · player statistics"
         }
       ]
     }

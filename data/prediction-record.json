@@ -820,11 +820,11 @@
       "probability": 0.7532788559226749,
       "publishedAt": "2026-10-02T16:14:10.101Z",
       "source": "data/advantage-snapshots/usports-2026-10-02.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "concordia",
+      "awayScore": 17,
+      "homeScore": 31,
+      "resultSource": "https://en.usports.ca/sports/fball/composite?d=2026-10-31"
     },
     {
       "gameId": "2026-10-31-calgary-alberta",
@@ -895,11 +895,11 @@
       "probability": 0.6515304601546441,
       "publishedAt": "2026-10-02T16:14:10.101Z",
       "source": "data/advantage-snapshots/usports-2026-10-02.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "incorrect",
+      "winner": "acadia",
+      "awayScore": 20,
+      "homeScore": 34,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261031_dmz4.xml"
     },
     {
       "gameId": "2026-10-31-ottawa-mcmaster",

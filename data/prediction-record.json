@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-10-30",
+  "asOf": "2026-10-31",
   "games": [
     {
       "gameId": "2026-09-25-alberta-calgary",
@@ -775,11 +775,11 @@
       "probability": 0.5671075412293598,
       "publishedAt": "2026-09-24T13:43:40.145Z",
       "source": "data/advantage-snapshots/usports-2026-09-24.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "ubc",
+      "awayScore": 24,
+      "homeScore": 59,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261030_gll3.xml"
     },
     {
       "gameId": "2026-10-30-sherbrooke-mcgill",

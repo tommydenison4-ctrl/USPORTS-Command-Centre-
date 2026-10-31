@@ -1,100 +1,7 @@
 {
-  "asOf": "2026-10-30",
+  "asOf": "2026-10-31",
   "method": "Based on official results, available player box scores and credited school reporting. Team averages are not adjusted for strength of schedule.",
   "games": [
-    {
-      "id": "2026-10-30-saskatchewan-ubc",
-      "away": "saskatchewan",
-      "home": "ubc",
-      "date": "2026-10-30",
-      "conference": "CW",
-      "asOf": "2026-10-15",
-      "title": "Thunderbirds await return meeting with Huskies",
-      "paragraphs": [
-        "UBC got 137 rushing yards and a touchdown from Marvyn Larozar in its last meeting with Saskatchewan. It still lost by ten, a reminder that a good ground game does not leave much margin against the Huskies.",
-        "Saskatchewan won 34–24, getting two rushing touchdowns from Aulain Penner and 295 passing yards from Anton Amundrud. UBC's Drew Viotto threw two touchdown passes but was also intercepted twice, giving the Thunderbirds a productive afternoon with too many opportunities left behind.",
-        "That is what makes Larozar's role in the return meeting more interesting than his yardage alone. If his running helps UBC keep drives alive and avoid depending on difficult passing situations, it can change more than the balance of the offence.",
-        "The Huskies have been comfortable scoring through both Amundrud and the ground game, averaging 40.6 points through five outings. UBC has shown it can put points up against them too. The rematch gives the Thunderbirds a chance to turn that competitive performance into a different result by letting fewer possessions end in Saskatchewan's favour."
-      ],
-      "notes": [
-        "Records and team scoring use regular-season results completed before October 15. Exhibitions are excluded.",
-        "Player totals use the available box scores and may be incomplete. The Hec Crighton Watch is CanUFootball’s own list."
-      ],
-      "sources": [
-        {
-          "url": "https://en.usports.ca/sports/fball/composite?d=2026-10-30",
-          "label": "Official national schedule"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260905_gdvt.xml",
-          "label": "September 5 · Saskatchewan at Manitoba"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260911_j4p4.xml",
-          "label": "September 11 · Calgary at Saskatchewan"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260918_mge2.xml",
-          "label": "September 18 · Saskatchewan at Alberta"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260926_u9sf.xml",
-          "label": "September 26 · Saskatchewan at Regina"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_8tvd.xml",
-          "label": "October 3 · UBC at Saskatchewan"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260904_bx7n.xml",
-          "label": "September 4 · UBC at Calgary"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260911_19fu.xml",
-          "label": "September 11 · Alberta at UBC"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260918_y81r.xml",
-          "label": "September 18 · Regina at UBC"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260926_ncut.xml",
-          "label": "September 26 · UBC at Manitoba"
-        },
-        {
-          "url": "https://bearsandpandas.ca/sports/football/stats/2026/university-of-british-columbia/boxscore/8947",
-          "label": "Marvyn Larozar · player statistics"
-        },
-        {
-          "url": "https://gobisons.ca/sports/football/stats/2026/ubc-thunderbirds/boxscore/9303",
-          "label": "Marvyn Larozar · player statistics"
-        },
-        {
-          "url": "https://huskies.usask.ca/sports/football/stats/2026-27/ubc-thunderbirds/boxscore/6999",
-          "label": "Marvyn Larozar · player statistics"
-        },
-        {
-          "url": "https://www.reginacougars.com/sports/football/stats/2026/ubc/boxscore/11425",
-          "label": "Marvyn Larozar · player statistics"
-        },
-        {
-          "url": "https://bearsandpandas.ca/sports/football/stats/2026/university-of-saskatchewan/boxscore/8948",
-          "label": "Anton Amundrud · player statistics"
-        },
-        {
-          "url": "https://gobisons.ca/sports/football/stats/2026/saskatchewan-huskies/boxscore/9300",
-          "label": "Anton Amundrud · player statistics"
-        },
-        {
-          "url": "https://godinos.com/sports/football/stats/2026/saskatchewan/boxscore/15527",
-          "label": "Anton Amundrud · player statistics"
-        },
-        {
-          "url": "https://huskies.usask.ca/sports/football/stats/2026-27/regina-rams/boxscore/6998",
-          "label": "Anton Amundrud · player statistics"
-        }
-      ]
-    },
     {
       "id": "2026-10-31-bishops-concordia",
       "away": "bishops",
@@ -237,7 +144,7 @@
       "home": "windsor",
       "date": "2026-10-31",
       "conference": "OUA",
-      "asOf": "2026-10-30",
+      "asOf": "2026-10-31",
       "title": "Guelph at Windsor",
       "paragraphs": [
         "Guelph heads to Windsor on October 31, with both teams looking to pick up a conference win. Guelph is 4–4; Windsor is 6–2.",
@@ -247,7 +154,7 @@
         "Kareame Cotton of Windsor has thrown for 2,308 yards in 8 games. Kareame Cotton is on CanUFootball’s Hec Crighton Watch."
       ],
       "notes": [
-        "Records and team scoring use regular-season results completed before October 30. Exhibitions are excluded.",
+        "Records and team scoring use regular-season results completed before October 31. Exhibitions are excluded.",
         "Player totals use the available box scores and may be incomplete. The Hec Crighton Watch is CanUFootball’s own list."
       ],
       "sources": [
@@ -347,7 +254,7 @@
       "home": "western",
       "date": "2026-10-31",
       "conference": "OUA",
-      "asOf": "2026-10-30",
+      "asOf": "2026-10-31",
       "title": "Laurier at Western",
       "paragraphs": [
         "Laurier heads to Western on October 31, with both teams looking to pick up a conference win. Laurier is 4–4; Western is 6–2.",
@@ -357,7 +264,7 @@
         "Will Russell of Laurier has thrown for 2,619 yards in 8 games. Will Russell is on CanUFootball’s Hec Crighton Watch."
       ],
       "notes": [
-        "Records and team scoring use regular-season results completed before October 30. Exhibitions are excluded.",
+        "Records and team scoring use regular-season results completed before October 31. Exhibitions are excluded.",
         "Player totals use the available box scores and may be incomplete. The Hec Crighton Watch is CanUFootball’s own list."
       ],
       "sources": [
@@ -588,7 +495,7 @@
       "home": "mcmaster",
       "date": "2026-10-31",
       "conference": "OUA",
-      "asOf": "2026-10-30",
+      "asOf": "2026-10-31",
       "title": "Ottawa at McMaster",
       "paragraphs": [
         "Ottawa heads to McMaster on October 31, with both teams looking to pick up a conference win. Ottawa is 4–4; McMaster is 6–2.",
@@ -596,7 +503,7 @@
         "McMaster (6–2) last played on October 24, losing to Queen's 25–17. Before that, it won 26–6 over Toronto and 20–12 over Waterloo. Through 8 games, McMaster is scoring 22.8 points a game and giving up 16.4."
       ],
       "notes": [
-        "Records and team scoring use regular-season results completed before October 30. Exhibitions are excluded.",
+        "Records and team scoring use regular-season results completed before October 31. Exhibitions are excluded.",
         "Player totals use the available box scores and may be incomplete. The Hec Crighton Watch is CanUFootball’s own list."
       ],
       "sources": [

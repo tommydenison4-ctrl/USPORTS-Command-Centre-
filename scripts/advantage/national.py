@@ -96,6 +96,8 @@ def discover(fetch,batch,season):
     for g in previous.get('games',[]):
         # A temporarily empty or stale official date must not erase verified finals.
         fresh=games.get(g['id'])
+        if fresh and not fresh.get('boxscore') and g.get('boxscore'):
+            fresh.update(boxscore=g['boxscore'],boxscores=g.get('boxscores') or [g['boxscore']])
         if g.get('date') in missing or (g.get('status')=='final' and (not fresh or fresh.get('status')!='final')):games[g['id']]=g
         elif g.get('scoreSource') and fresh.get('status')=='final':
             fresh.update({k:g[k] for k in ('awayScore','homeScore','scoreSource')})

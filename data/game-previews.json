@@ -181,68 +181,6 @@
       ]
     },
     {
-      "id": "2026-10-30-stfx-saint-marys",
-      "away": "stfx",
-      "home": "saint-marys",
-      "date": "2026-10-30",
-      "conference": "AUS",
-      "asOf": "2026-10-15",
-      "title": "X-Men, Huskies meet in AUS finale",
-      "paragraphs": [
-        "StFX has been winning with a scoring pace Saint Mary's rarely allows an opponent to reach. Their late-season meeting will test which team's recent experience travels better into a more difficult game.",
-        "The X-Men have scored 124 points during a three-game winning streak. Against Mount Allison, Deion Blackwood threw two touchdown passes and Aiden Rossong ran for two more, giving StFX more than one way to keep the scoreboard moving.",
-        "Saint Mary's has been able to win without needing that sort of total. The Huskies have allowed only 12.2 points a game, letting Malcolm Bussey's running help control contests rather than chase opponents who are already out of reach.",
-        "Bussey rushed for 124 yards and a touchdown against Acadia. His work would become even more useful against StFX if it keeps Blackwood and Rossong waiting for their next possession.",
-        "The X-Men have been good defensively too, allowing 15.8 points a game. That leaves both offences facing a version of the opponent that their recent results have not often required them to outscore. StFX has the larger scoring totals; Saint Mary's has been making smaller ones enough."
-      ],
-      "notes": [
-        "Records and team scoring use regular-season results completed before October 15. Exhibitions are excluded.",
-        "Player totals use the available box scores and may be incomplete. The Hec Crighton Watch is CanUFootball’s own list."
-      ],
-      "sources": [
-        {
-          "url": "https://en.usports.ca/sports/fball/composite?d=2026-10-30",
-          "label": "Official national schedule"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260905_olce.xml",
-          "label": "September 5 · Saint Mary's at StFX"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260912_s8sj.xml",
-          "label": "September 12 · Acadia at StFX"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260919_2r1j.xml",
-          "label": "September 19 · StFX at Mount Allison"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260926_6175.xml",
-          "label": "September 26 · StFX at Acadia"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_n4x7.xml",
-          "label": "October 3 · Mount Allison at StFX"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260911_aecb.xml",
-          "label": "September 11 · Mount Allison at Saint Mary's"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260919_vzdr.xml",
-          "label": "September 19 · Saint Mary's at Acadia"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260926_e8ye.xml",
-          "label": "September 26 · Saint Mary's at Mount Allison"
-        },
-        {
-          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261002_b8gs.xml",
-          "label": "October 2 · Acadia at Saint Mary's"
-        }
-      ]
-    },
-    {
       "id": "2026-10-31-bishops-concordia",
       "away": "bishops",
       "home": "concordia",

@@ -790,11 +790,11 @@
       "probability": 0.9042969877532253,
       "publishedAt": "2026-09-27T00:47:58.456Z",
       "source": "data/advantage-snapshots/usports-2026-09-27.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "mcgill",
+      "awayScore": 19,
+      "homeScore": 49,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261030_bj2d.xml"
     },
     {
       "gameId": "2026-10-30-stfx-saint-marys",

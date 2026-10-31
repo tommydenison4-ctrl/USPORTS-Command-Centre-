@@ -101,6 +101,15 @@ def discover(fetch,batch,season):
             fresh.update({k:g[k] for k in ('awayScore','homeScore','scoreSource')})
     unresolved.extend(g for g in previous.get('unresolved',[]) if g.get('date') in missing)
     if missing:print('Retained verified fallback dates:',', '.join(sorted(missing)),flush=True)
+    # Some official final listings omit a previously published gamebook link.
+    # These sourced links only locate books; they never establish a final score.
+    links_path=ROOT/'data/official-gamebook-links.json'
+    known_links=json.loads(links_path.read_text()) if links_path.exists() else {}
+    for game_id,url in known_links.items():
+        if game_id in games and not games[game_id].get('boxscore'):
+            if not re.fullmatch(r'https://en\.usports\.ca/sports/fball/2026-27p?/boxscores/2026\d{4}_[a-zA-Z0-9_-]+\.xml',url):
+                raise ValueError('Unsupported official gamebook link: '+url)
+            games[game_id].update(boxscore=url,boxscores=[url])
     conferences={g['conference'] for g in games.values()}
     if not {'OUA','RSEQ','AUS','CW'}<=conferences:raise ValueError('National composite is missing a conference')
     return sorted(games.values(),key=lambda g:(g['date'],g['id'])),unresolved

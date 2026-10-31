@@ -850,11 +850,11 @@
       "probability": 0.739824977853925,
       "publishedAt": "2026-10-24T23:14:19.913Z",
       "source": "data/pregame-predictions-usports.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "windsor",
+      "awayScore": 24,
+      "homeScore": 28,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27p/boxscores/20261031_98nb.xml"
     },
     {
       "gameId": "2026-10-31-laurier-western",
@@ -910,11 +910,11 @@
       "probability": 0.6050613771018201,
       "publishedAt": "2026-10-24T23:14:19.913Z",
       "source": "data/pregame-predictions-usports.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "incorrect",
+      "winner": "ottawa",
+      "awayScore": 33,
+      "homeScore": 17,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27p/boxscores/20261031_v1sy.xml"
     },
     {
       "gameId": "2026-10-31-regina-manitoba",

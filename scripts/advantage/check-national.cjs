@@ -16,7 +16,12 @@ for(const g of schedule.filter(g=>g.date>=d.asOf&&g.status==='scheduled')){
  if(d.frozen[id])assert.equal(p.home_win_prob,d.frozen[id].home_win_prob);
  assert.equal(A.project(d,{...g,conference:'ANY'}).home_win_prob,p.home_win_prob);
 }
-assert(['OUA','RSEQ','AUS','CW'].every(c=>counts[c]>0));
+// Conferences can finish their schedules at different times. Validate national
+// coverage across the whole index, and forecasts only for games still scheduled.
+assert(['OUA','RSEQ','AUS','CW'].every(c=>schedule.some(g=>g.conference===c)));
+for(const c of ['OUA','RSEQ','AUS','CW']){
+ assert.equal(counts[c]||0,schedule.filter(g=>g.conference===c&&g.date>=d.asOf&&g.status==='scheduled').length);
+}
 const old={id:'same',status:'final',awayScore:0,homeScore:17,venue:'Original stadium',liveId:'keep'};
 const merged=S.merge([old,{id:'removed'}],{games:[{id:'same',awayScore:null,homeScore:null,status:'scheduled',venue:''}]});
 assert.equal(merged.length,1);assert.equal(merged[0].awayScore,0);assert.equal(merged[0].status,'final');assert.equal(merged[0].liveId,'keep');assert.equal(merged[0].venue,'Original stadium');

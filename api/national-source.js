@@ -4,7 +4,7 @@ module.exports=async function handler(req,res){
   res.setHeader('Cache-Control','no-store');
   if(req.method!=='GET'){res.statusCode=405;return res.end('GET only')}
   const path=String(req.query.path||'');
-  if(!/^\/sports\/fball\/(?:composite(?:\?d=2026-\d{2}-\d{2})?|2026-27\/boxscores\/2026\d{4}_[a-zA-Z0-9_-]+\.xml(?:\?view=plays)?)$/.test(path)){
+  if(!/^\/sports\/fball\/(?:composite(?:\?d=2026-\d{2}-\d{2})?|2026-27p?\/boxscores\/2026\d{4}_[a-zA-Z0-9_-]+\.xml(?:\?view=plays)?)$/.test(path)){
     res.statusCode=400;return res.end('Unsupported official football path');
   }
   try{

@@ -835,11 +835,11 @@
       "probability": 0.8210900587551746,
       "publishedAt": "2026-09-24T13:43:40.145Z",
       "source": "data/advantage-snapshots/usports-2026-09-24.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "calgary",
+      "awayScore": 34,
+      "homeScore": 19,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261031_5fso.xml"
     },
     {
       "gameId": "2026-10-31-guelph-windsor",

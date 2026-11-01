@@ -14,7 +14,7 @@
  }
  function awardPlayers(w,ranked,extraGames=[]){
   const records=JSON.parse(JSON.stringify(w.records||{})),normalize=s=>String(s).replace(/[^a-z0-9]/gi,'').toLowerCase();
-  for(const g of extraGames){if(g.status!=='final'||g.exhibition||g.date<=w.asOf||!Number.isFinite(g.awayScore)||!Number.isFinite(g.homeScore))continue;
+  for(const g of extraGames){if(g.status!=='final'||g.exhibition||root.PostseasonStatus?.isPlayoff(g)||g.postseason||g.playoff||g.date<=w.asOf||!Number.isFinite(g.awayScore)||!Number.isFinite(g.homeScore))continue;
    for(const side of ['away','home']){const r=records[normalize(g[side])];if(r){const own=g[side+'Score'],opp=g[(side==='away'?'home':'away')+'Score'];r[own>opp?'wins':own<opp?'losses':'ties']++}}
   }
   const ranks=new Map(ranked.map((t,i)=>[t.id,i+1])),count=ranked.length;
@@ -47,16 +47,76 @@
   const stats=Object.entries(p.stats).map(([cat,s])=>Math.round(s.yards)+' '+cat+' yards · '+s.touchdowns+' touchdowns'+(cat==='passing'?' · '+s.interceptions+' interceptions':''));
   return '<article class="season-person"><span class="season-rank">'+(i+1)+'</span>'+playerPortrait(p)+'<div><h4>'+esc(p.name)+'</h4><p class="season-player-team">'+teamLogo(p.teamId,p.team)+'<span>'+esc(p.team)+eliminationBadge(p.teamId)+esc(record)+' · '+p.games+' recorded games</span></p>'+scoreLine+'<p>'+stats.map(esc).join('<br>')+'</p><details><summary>Why they’re on the watch</summary><p>Ranks '+(i+1)+' by our watch score among the players covered. '+scoring+' Latest appearance: '+esc(p.lastGame)+'.</p>'+sourceLinks(p.sources)+'</details></div></article>';
  }
+ function awardProbabilities(w,ranked,extraGames=[]){
+  const regularRanked=w.awardTeamRanks?Object.entries(w.awardTeamRanks).sort((a,b)=>a[1]-b[1]).map(([id])=>({id})):ranked;
+  const rows=awardPlayers(w,regularRanked,extraGames),maximum=rows[0]?.score||0;
+  const weights=rows.map(p=>Math.exp((p.score-maximum)/8)),sum=weights.reduce((a,b)=>a+b,0);
+  return rows.map((p,i)=>({...p,winProbability:sum?weights[i]/sum:0}));
+ }
+ function vanierProbabilities(d,ranked,games,teams,status){
+  const norm=s=>String(s).replace(/[^a-z0-9]/gi,'').toLowerCase(),profiles=d.profiles||{};
+  const finals=games.filter(g=>g.status==='final'&&root.PostseasonStatus?.isPlayoff(g));
+  const win=(away,home,neutral=false)=>{
+   const played=finals.find(g=>norm(g.away)===away&&norm(g.home)===home);
+   if(played)return played.awayScore>played.homeScore?0:1;
+   return root.AdvantageModel.matchupProbability(d,profiles[away],profiles[home],neutral).homeWin;
+  };
+  const join=(left,right,host)=>{
+   const out={};
+   for(const [a,pa] of Object.entries(left))for(const [b,pb] of Object.entries(right)){
+    if(a===b)continue;
+    const home=host(a,b),ph=home===a?win(b,a):home===b?win(a,b):win(a,b,true),pA=home===a?ph:1-ph;
+    out[a]=(out[a]||0)+pa*pb*pA;out[b]=(out[b]||0)+pa*pb*(1-pA);
+   }
+   return out;
+  };
+  const conferences={};
+  for(const conf of ['OUA','CW','RSEQ','AUS']){
+   const regular=games.filter(g=>g.conference===conf&&!g.exhibition&&!root.PostseasonStatus?.isPlayoff(g)&&g.status==='final');
+   const rs=Object.fromEntries(teams.filter(t=>t.conference===conf).map(t=>[t.slug,{slug:t.slug,w:0,l:0,gp:0,pf:0,pa:0}]));
+   for(const g of regular)for(const [side,other] of [['away','home'],['home','away']]){const r=rs[g[side]];if(r){r.gp++;r[g[side+'Score']>g[other+'Score']?'w':'l']++;r.pf+=g[side+'Score'];r.pa+=g[other+'Score'];}}
+   const seeds=root.FootballTiebreaks?.rank(conf,rs,regular.map(g=>({...g,result:{away:g.awayScore,home:g.homeScore}}))).rows||Object.values(rs).sort((a,b)=>b.w-a.w||b.pf-b.pa-(a.pf-a.pa));
+   const seed=new Map(seeds.map((t,i)=>[norm(t.slug),i]));
+   const conferenceLosers=new Set(finals.filter(g=>g.conference===conf).map(g=>norm(g.awayScore<g.homeScore?g.away:g.home)));
+   const alive=seeds.slice(0,conf==='OUA'?7:conf==='AUS'?3:4).map(t=>norm(t.slug)).filter(id=>profiles[id]&&!conferenceLosers.has(id));
+   if(!alive.length||alive.length>4)return [];
+   const host=(a,b)=>seed.get(a)<seed.get(b)?a:b,one=id=>({[id]:1});
+   let dist;
+   if(alive.length===1)dist=one(alive[0]);
+   else if(alive.length===2)dist=join(one(alive[0]),one(alive[1]),host);
+   else {
+    const next=games.filter(g=>g.conference===conf&&g.status==='scheduled'&&root.PostseasonStatus?.isPlayoff(g)&&alive.includes(norm(g.away))&&alive.includes(norm(g.home))).sort((a,b)=>a.date.localeCompare(b.date));
+    const pair=next[0]||{away:alive[alive.length-1],home:alive[alive.length===3?1:0]};
+    const first=[norm(pair.away),norm(pair.home)],rest=alive.filter(id=>!first.includes(id));
+    dist=join(join(one(first[0]),one(first[1]),host),rest.length===1?one(rest[0]):join(one(rest[0]),one(rest[1]),host),host);
+   }
+   conferences[conf]=dist;
+  }
+  // Bowl hosting belongs to the conference: pass the actual home participant.
+  const bowl=(away,home)=>{const out={};for(const [a,pa] of Object.entries(away))for(const [h,ph] of Object.entries(home)){const p=win(a,h);out[a]=(out[a]||0)+pa*ph*(1-p);out[h]=(out[h]||0)+pa*ph*p;}return out;};
+  const title=join(bowl(conferences.AUS,conferences.OUA),bowl(conferences.CW,conferences.RSEQ),()=>null);
+  return ranked.map(p=>({...p,winProbability:status[p.id]?.eliminated?0:title[p.id]||0,eliminated:!!status[p.id]?.eliminated})).sort((a,b)=>b.winProbability-a.winProbability||b.rating-a.rating);
+ }
+ function renderUS(w,d,ranked){
+  const games=typeof GAMES!=='undefined'?GAMES:root.GAMES||root.US_NATIONAL_SCHEDULE?.games||[],teams=typeof TEAMS!=='undefined'?TEAMS:root.TEAMS||[],status=root.PostseasonStatus?.current()||{};
+  const players=awardProbabilities(w,ranked,games),title=vanierProbabilities(d,ranked,games,teams,status),active=title.filter(t=>!t.eliminated),out=title.filter(t=>t.eliminated);
+  const pct=n=>n>0&&n<.001?'less than 0.1%':(100*n).toFixed(1)+'%';
+  const person=(p,i)=>'<article class="season-person"><span class="season-rank">'+(i+1)+'</span>'+playerPortrait(p)+'<div><h4>'+esc(p.name)+'</h4><p>'+esc(p.team)+eliminationBadge(p.teamId)+' · '+p.games+' regular-season appearances</p><p class="watch-chance"><strong>'+pct(p.winProbability)+' chance to win</strong>'+(p.winProbability>.6?' <span class="watch-label">Expected Hec Crighton winner</span>':'')+'</p><p>'+Object.entries(p.stats).map(([cat,s])=>esc(Math.round(s.yards)+' '+cat+' yards · '+s.touchdowns+' TD'+(cat==='passing'?' · '+s.interceptions+' INT':''))).join('<br>')+'</p><details><summary>Official gamebooks</summary>'+sourceLinks(p.sources)+'</details></div></article>';
+  return '<section class="season-watch" id="season-watch-USPORTS"><div class="season-heading"><h2>Awards & championship watches</h2><span>Updated '+esc(w.asOf)+'</span></div><div class="season-grid"><section><h3>Hec Crighton Watch</h3><p>Regular-season performance only. Estimated chances to win.</p><p class="season-note">'+w.coveredGames+' regular-season gamebooks · '+w.coveredTeams+' teams</p><p class="playoff-legend">E = team eliminated from playoff / Vanier Cup contention; does not mean award ineligibility.</p>'+players.slice(0,10).map(person).join('')+'<details><summary>More candidates</summary>'+players.slice(10,20).map((p,i)=>person(p,i+10)).join('')+'<p>Other candidates: '+pct(players.slice(20).reduce((sum,p)=>sum+p.winProbability,0))+'</p>'+'</details></section><section><h3>Vanier Cup Watch</h3><p>Estimated chances to win the Vanier Cup.</p>'+(active[0]?'<div class="season-pick"><small>VANIER CUP PICK</small><h2>'+teamLogo(active[0].id,active[0].name)+esc(active[0].name)+'</h2><strong>'+pct(active[0].winProbability)+' chance to win</strong></div>':'<p>Playoff field verification pending.</p>')+'<ol class="season-team-ranking">'+active.map(t=>'<li><div><b class="season-team-name">'+teamLogo(t.id,t.name)+esc(t.name)+'</b><strong>'+pct(t.winProbability)+'</strong></div>'+(t.winProbability>.18?'<span class="watch-label">Real contender</span>':'')+'</li>').join('')+'</ol><h4>Eliminated</h4><p class="playoff-legend">E = no remaining playoff / Vanier Cup berth.</p><ul class="season-eliminated">'+out.map(t=>'<li>'+teamLogo(t.id,t.name)+esc(t.name)+eliminationBadge(t.id)+' <span>0%</span></li>').join('')+'</ul></section></div></section>';
+ }
+
  function render(league){
   const w=root.SEASON_WATCH?.[league],d=root.AWM_DATA?.[league];if(!w||!d)return '';
-  const ranked=contenders(league,d,w),players=league==='USPORTS'?awardPlayers(w,ranked,typeof GAMES!=='undefined'?GAMES:[]).slice(0,10):w.players,pick=ranked.find(p=>league!=='USPORTS'||!root.PostseasonStatus?.eliminated(p.id)),total=league==='USPORTS'?27:league==='NFL'?32:w.eligibleTeamIds?.length;
+  const ranked=contenders(league,d,w);if(league==='USPORTS')return renderUS(w,d,ranked);
+  const players=league==='USPORTS'?awardPlayers(w,ranked,typeof GAMES!=='undefined'?GAMES:[]).slice(0,10):w.players,pick=ranked.find(p=>league!=='USPORTS'||!root.PostseasonStatus?.eliminated(p.id)),total=league==='USPORTS'?27:league==='NFL'?32:w.eligibleTeamIds?.length;
   return '<section class="season-watch" id="season-watch-'+league+'"><div class="season-heading"><div><small>2026 SEASON OUTLOOK</small><h2>Awards & championship picks</h2></div><span>Updated '+esc(w.asOf)+'</span></div><p><b>'+names[league][0]+':</b> '+esc(players[0]?.name||'Awaiting data')+' · <b>'+names[league][1]+' pick:</b> '+esc(pick?.name||'Awaiting data')+'</p><p class="season-note">Early model picks · '+ranked.length+' of '+total+' teams ranked. '+(league==='USPORTS'?'2026 only; play-by-play coverage varies.':'Award watches use 2026 production.')+'</p><details><summary>Open the watch list, contenders and explanations</summary><div class="season-grid"><section><h3>'+names[league][0]+'</h3><p>Who to watch based on this season’s offensive production and team results.</p><p class="playoff-legend">E = team eliminated from playoff / Vanier Cup contention. Players remain on the Hec watch; E does not mean award ineligibility.</p>'+'<p class="season-note">'+w.coveredTeams+' teams · '+w.coveredGames+' box scores covered. '+(w.missingBoxscores?.length?w.missingBoxscores.length+' regular-season box scores unavailable. ':'')+'Watch list, not official finalists or voting odds.</p>'+(players.length?players.slice(0,5).map((p,i)=>player(p,i,w.records)).join(''):'<p>Not enough 2026 player data yet.</p>')+'<details><summary>Full watch list & how it works</summary>'+players.slice(5).map((p,i)=>player(p,i+5,w.records)).join('')+'<p>Rankings reflect verified player performance and team results.</p></details></section><section><h3>'+names[league][1]+' prediction</h3>'+(pick?'<div class="season-pick"><small>OUR EARLY PICK'+(ranked.length<total?' · PARTIAL COVERAGE':'')+'</small><h2>'+teamLogo(pick.id,pick.name)+esc(pick.name)+'</h2><p>This team ranks strongest when the model compares every covered team on a neutral field.</p></div><p class="playoff-legend">E = eliminated from playoff / Vanier Cup contention. Eliminated teams stay in the strength ranking but cannot be the Vanier Cup pick.</p><h4>Why this team?</h4><p>Its regular-season results average '+pick.pf.toFixed(1)+' points scored and '+pick.pa.toFixed(1)+' allowed per game. The pick combines the matchup model, team strength and recent form. All verified regular-season finals contribute to strength and scoring averages; play metrics use only available gamebooks.</p>'+teamRanking(ranked,w,league)+'<p class="season-note">'+ranked.length+' of '+total+' teams covered. '+(league==='USPORTS'?'Uses verified 2026 team data. ':'Team profiles may include prior-season games. ')+'This is a strength-based winner pick, not a playoff-bracket simulation or a championship probability.</p><details><summary>What could change the pick?</summary><p>New results, injuries, qualifying for the playoffs and the route through the bracket. Teams without sufficient profiles are unranked; they are not ruled out.</p><p>'+(d.coverage?.resultGames?'Results: '+d.coverage.resultGames+' regular-season finals; eligible play-by-play: '+d.coverage.completedGames+' games. Exhibitions are shown on the schedule and excluded from competitive ratings. ':'')+'Data through '+esc(d.asOf)+'.</p>'+sourceLinks(pick.sources)+'</details>':'<p>Not enough verified team data for a championship pick.</p>')+'</section></div></details></section>';
  }
- root.SeasonWatch={contenders,render,scheduleStrength,awardPlayers};
+ root.SeasonWatch={contenders,render,scheduleStrength,awardPlayers,awardProbabilities,vanierProbabilities};
  if(!root.document)return;
  const style=document.createElement('style');style.textContent='.season-watch{background:#101925;border:1px solid #293b50;border-radius:16px;padding:22px;margin:16px 0;color:#eaf0f7;font-family:inherit}.season-heading{display:flex;justify-content:space-between;gap:16px;align-items:center}.season-heading small,.season-pick small{color:#f5c542;font-weight:800;letter-spacing:.08em}.season-watch h2{font-size:24px;margin:7px 0}.season-watch h3{font-size:21px;margin:0 0 9px}.season-watch h4{font-size:16px;margin:4px 0}.season-watch p{font-size:14px;line-height:1.55;margin:8px 0}.season-watch a{color:#79c8ff}.season-watch summary{cursor:pointer;color:#9bceee;font-size:13px;margin:12px 0}.season-heading>span,.season-watch .season-note{color:#a3b4c8;font-size:12px}.season-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:24px}.season-person{display:flex;gap:12px;border-top:1px solid #ffffff16;padding:14px 0}.season-rank{font-size:21px;font-weight:900;color:#f5c542;width:26px;flex-shrink:0}.season-pick{padding:20px;background:#162f2c;border-left:4px solid #61ddb0;border-radius:9px;margin:14px 0}.season-watch li{margin:10px 0}.awm-win-team{border-top:1px solid #ffffff22;margin-top:16px;padding-top:10px}.awm-win-guide li{line-height:1.6;margin:10px 0}.awm-win-guide h3{font-size:20px}.awm-win-guide h4{font-size:17px}@media(max-width:760px){.season-grid{grid-template-columns:1fr}.season-heading{align-items:flex-start;flex-direction:column}.season-watch{padding:16px}}';document.head.appendChild(style);
  const isUS=!!root.AWM_DATA?.USPORTS;
  style.textContent+='.season-player-team{display:flex;align-items:center;gap:8px}.season-player-team span{min-width:0;overflow-wrap:anywhere}.season-player-team .season-team-logo{width:28px;height:28px;padding:3px}.season-team-name{display:flex;align-items:center;gap:10px;min-width:0}.season-team-logo{width:38px;height:38px;object-fit:contain;background:#fff;border-radius:8px;padding:4px;box-sizing:border-box;flex-shrink:0}.season-pick h2{display:flex;align-items:center;gap:12px}.season-pick .season-team-logo{width:50px;height:50px}.season-portrait-link{display:block;flex:0 0 64px}.season-portrait{width:64px;height:80px;object-fit:cover;object-position:top;border-radius:10px;background:#182638}.season-person>div{min-width:0;flex:1}.season-person>.season-team-logo{width:64px;height:64px}@media(max-width:480px){.season-person{gap:8px}.season-portrait-link{flex-basis:48px}.season-portrait{width:48px;height:64px}.season-person>.season-team-logo{width:48px;height:48px}}';
+ style.textContent+='.watch-label{display:inline-block;background:#81322c;color:#fff1ec;border:1px solid #da6b5e;border-radius:6px;padding:4px 8px;font-size:12px;font-weight:800;margin:6px 0}.watch-chance strong{font-size:19px;color:#f5c542}.season-eliminated{list-style:none;padding:0}.season-eliminated li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #ffffff16}.season-eliminated li span{margin-left:auto}';
  const tabs=isUS?[['USPORTS','award','Hec Crighton Watch'],['USPORTS','title','Vanier Cup Watch']]:[['NFL','award','NFL MVP Watch'],['NCAA','award','Heisman Watch'],['NFL','title','Super Bowl Watch'],['NCAA','title','NCAA Championship Watch']];
  let selected=null;
  style.textContent+='.watch-navigation{display:contents}.nav{min-width:0;max-width:100%;overflow-x:auto}.nav>button{flex-shrink:0}.topbar{max-width:100%;min-width:0}.topbar .nav{flex:1}.mainnav{min-width:0}body{overflow-x:hidden}.watch-navigation button{white-space:nowrap;background:transparent;color:inherit;border:0;padding:10px;font:inherit;cursor:pointer}.watch-navigation button[aria-current="page"]{color:#f5c542;border-bottom:2px solid #f5c542}#watch-page{position:fixed;left:0;right:0;bottom:0;z-index:29;background:#0b1119;overflow:auto;padding:20px}#watch-page>.season-watch{max-width:1080px;margin:0 auto}body .mainnav{overflow-x:auto;align-items:center;gap:12px}body .topbar-inner{min-width:0}body .mainnav>span{white-space:nowrap}@media(max-width:900px){body .mainnav{display:flex!important;width:100%;overflow-x:auto}.topbar-inner{flex-wrap:wrap}.topbar{height:auto!important;min-height:56px}.mainnav{padding:8px 0}}';

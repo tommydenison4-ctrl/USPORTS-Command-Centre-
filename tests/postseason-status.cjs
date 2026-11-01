@@ -2,8 +2,8 @@ const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('nod
 const core=require('../postseason-status'),engine=require('../playoff-tiebreaks');
 const games=require('../data/national-schedule-usports.json').games,teams=require('../data/standings-usports.json').rows;
 const status=core.calculate(teams,games,engine);
-for(const id of ['waterloo','york','carleton','toronto','alberta','sherbrooke'])assert.equal(status[id].eliminated,true,id);
-for(const id of ['calgary','regina','bishops','acadia','mountallison','concordia'])assert.equal(status[id].eliminated,false,id+' remains alive');
+for(const id of ['waterloo','york','carleton','toronto','alberta','sherbrooke','calgary','bishops','mountallison','guelph','laurier','mcmaster'])assert.equal(status[id].eliminated,true,id);
+for(const id of ['regina','acadia','concordia'])assert.equal(status[id].eliminated,false,id+' remains alive');
 assert.equal(core.isPlayoff(games.find(g=>g.id==='2026-10-31-guelph-windsor')),true);
 assert.equal(core.isPlayoff(games.find(g=>g.id==='2026-10-31-laval-montreal')),false);
 assert.equal(core.calculate(teams,[],engine).toronto.eliminated,false,'Incomplete data cannot eliminate');

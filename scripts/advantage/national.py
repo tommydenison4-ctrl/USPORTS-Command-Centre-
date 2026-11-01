@@ -56,6 +56,21 @@ def parse_composite(html, date):
             venue='',note=note.get_text(' ',strip=True) if note else '',source=COMPOSITE+'?d='+date,boxscore=links[0] if links else None,boxscores=links))
     return games,unresolved
 
+def is_postseason(game):
+    return bool(game.get('postseason') or game.get('playoff') or re.search(r'/\d{4}-\d{2}p/',game.get('boxscore') or '') or re.search(r'\b(playoff|postseason|quarter.?final|semi.?final|yates cup|hardy cup|loney bowl|dussault|vanier cup|uteck|mitchell bowl)\b',game.get('note') or '',re.I))
+
+def supplement_schedule(games):
+    path=ROOT/'data/official-postseason-schedule.json'
+    if not path.exists():return games
+    saved={g['id']:g for g in games}
+    for fixture in json.loads(path.read_text())['games']:
+        if fixture['status']!='scheduled' or not fixture.get('postseason') or not fixture.get('source','').startswith('https://'):
+            raise ValueError('Supplemental fixtures cannot establish finals')
+        old=saved.get(fixture['id'])
+        if not old:saved[fixture['id']]=fixture
+        elif old['status']!='final':saved[fixture['id']]={**fixture,**old,'time':old.get('time') if old.get('time') and old['time'] not in ('TBA','TBD') else fixture['time'],'venue':old.get('venue') or fixture.get('venue','')}
+    return sorted(saved.values(),key=lambda g:(g['date'],g['id']))
+
 def discover(fetch,batch,season):
     previous_path=ROOT/'data/national-schedule-usports.json'
     previous=json.loads(previous_path.read_text()) if previous_path.exists() else {}
@@ -114,7 +129,7 @@ def discover(fetch,batch,season):
             games[game_id].update(boxscore=url,boxscores=[url])
     conferences={g['conference'] for g in games.values()}
     if not {'OUA','RSEQ','AUS','CW'}<=conferences:raise ValueError('National composite is missing a conference')
-    return sorted(games.values(),key=lambda g:(g['date'],g['id'])),unresolved
+    return supplement_schedule(list(games.values())),unresolved
 
 def history_game(g):
     out=copy.deepcopy(g)
@@ -192,6 +207,8 @@ def presto(g, fetch, text_play, metrics):
     return out
 
 def save_schedule(games,unresolved,asof):
+    # Discard superseded OUA semifinal placeholders once both fixtures are assigned.
+    unresolved=[u for u in unresolved if not (u.get('conference')=='OUA' and 'quarterfinal winner' in u.get('away','').lower() and sum(g['date']==u['date'] and g['conference']=='OUA' and is_postseason(g) for g in games)>=2)]
     payload={'source':COMPOSITE,'asOf':asof,'games':games,'unresolved':unresolved,'pendingGames':unresolved}
     (ROOT/'data/national-schedule-usports.json').write_text(json.dumps(payload,ensure_ascii=False))
     (ROOT/'data/advantage-schedule-usports.json').write_text(json.dumps(games,ensure_ascii=False))

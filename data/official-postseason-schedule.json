@@ -1,0 +1,46 @@
+{
+  "season": 2026,
+  "verifiedAt": "2026-11-01",
+  "games": [
+    {
+      "id": "2026-11-07-manitoba-ubc",
+      "league": "USPORTS",
+      "date": "2026-11-07",
+      "away": "manitoba",
+      "home": "ubc",
+      "conference": "CW",
+      "time": "4:00 PM EST",
+      "status": "scheduled",
+      "awayScore": null,
+      "homeScore": null,
+      "neutral": false,
+      "postseason": true,
+      "exhibition": false,
+      "venue": "Thunderbird Stadium",
+      "note": "Hardy Cup semifinal",
+      "source": "https://gothunderbirds.ca/coverage",
+      "boxscore": null,
+      "boxscores": []
+    },
+    {
+      "id": "2026-11-07-regina-saskatchewan",
+      "league": "USPORTS",
+      "date": "2026-11-07",
+      "away": "regina",
+      "home": "saskatchewan",
+      "conference": "CW",
+      "time": "3:00 PM EST",
+      "status": "scheduled",
+      "awayScore": null,
+      "homeScore": null,
+      "neutral": false,
+      "postseason": true,
+      "exhibition": false,
+      "venue": "Griffiths Stadium",
+      "note": "Hardy Cup semifinal",
+      "source": "https://cougarsandrams.com/news/2026/10/31/rams-football-rams-punch-ticket-to-postseason-with-26-15-win-over-manitoba.aspx",
+      "boxscore": null,
+      "boxscores": []
+    }
+  ]
+}

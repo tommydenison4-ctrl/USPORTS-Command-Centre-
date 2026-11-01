@@ -1,5 +1,5 @@
 """2026 offensive award watch from sourced box scores, not award voting odds."""
-import json,os,datetime,hashlib,subprocess
+import json,os,datetime,hashlib,subprocess,math
 from pathlib import Path
 from collections import defaultdict
 import ingest
@@ -94,16 +94,46 @@ def build(only=None):
         (ROOT/('data/player-stats-'+league.lower()+'.json')).write_text(json.dumps(stats,allow_nan=False))
         if league=='USPORTS':(ROOT/'player-stats-usports-data.js').write_text('window.FOOTBALL_STATS=window.FOOTBALL_STATS||{};window.FOOTBALL_STATS.USPORTS='+json.dumps(stats,allow_nan=False).replace('<','\\u003c')+';')
         if league=='USPORTS':
+            # National statistics and results above include postseason. Award voting
+            # uses only regular-season performances, including for eliminated teams.
+            regular=[g for g in finals if not national.is_postseason(g)]
+            regular_ids={g['id'] for g in regular}
+            players={};games=set();teams=set()
+            for g in source['games']:
+                if g['id'] not in regular_ids:continue
+                for team,cats in g['teams'].items():
+                    for cat,entries in cats.items():
+                        for r in entries:
+                            if r.get('touchdowns') is not None and (cat!='passing' or r.get('interceptions') is not None):
+                                add({'id':team,'name':profiles.get(team,{}).get('name',team)},r['name'],r['name'].lower(),g['date'],g['source'],cat,r['yards'],r['touchdowns'],r.get('interceptions') or 0)
+            rows=[]
+            for player in players.values():
+                n=len(player['dates']);score=0
+                for cat,v in player['stats'].items():
+                    score+=v['yards']/(25 if cat=='passing' else 10)+v['touchdowns']*(4 if cat=='passing' else 6)-v['interceptions']*2
+                    v['games']=len(v['games'])
+                player.update(games=n,score=round(score/n,2),sources=sorted(player['sources']),firstGame=min(player['dates']),lastGame=max(player['dates']));del player['dates']
+                if n>=2:rows.append(player)
+            award_results=[g for g in result['games'] if any(r['date']==g['date'] and national.norm(r['away'])==g['away'] and national.norm(r['home'])==g['home'] for r in regular)]
             records={team:dict(wins=0,losses=0,ties=0) for team in profiles}
-            for g in result['games']:
+            for g in award_results:
                 for side,other in [('away','home'),('home','away')]:
                     r=records[g[side]]
                     r['wins' if g[side+'Score']>g[other+'Score'] else 'losses' if g[side+'Score']<g[other+'Score'] else 'ties']+=1
-            rankings=json.loads(subprocess.check_output(['node','-e',"global.AdvantageModel=require('./advantage-model.js');require('./season-watch.js');const fs=require('fs'),d=JSON.parse(fs.readFileSync('data/advantage-usports.json'));console.log(JSON.stringify(Object.fromEntries(SeasonWatch.contenders('USPORTS',d,{}).map((t,i)=>[t.id,i+1]))));"],cwd=ROOT))
+            # Award team context is frozen to regular-season results as well.
+            differential={team:sum((g['awayScore']-g['homeScore'])*(1 if g['away']==team else -1) for g in award_results if team in (g['away'],g['home'])) for team in profiles}
+            order=sorted(records,key=lambda t:(-(records[t]['wins']+.5*records[t]['ties'])/max(1,sum(records[t].values())),-differential[t],t))
+            rankings={team:i+1 for i,team in enumerate(order)}
             production_maximum=weight_team_results(rows,records,rankings)
         rows.sort(key=lambda p:(-p['score'],p['name']))
+        if league=='USPORTS' and rows:
+            weights=[math.exp((p['score']-rows[0]['score'])/8) for p in rows];total=sum(weights)
+            for player,weight in zip(rows,weights):player['winProbability']=weight/total
         bundle[league]={'season':2026,'asOf':ASOF,'players':rows[:10],'coveredGames':len(games),'coveredTeams':len(teams),'eligibleTeamIds':eligible,'eligibilitySource':eligibility_source,'method':'Offensive production per recorded appearance: passing yards / 25 + rushing and receiving yards / 10 + passing TD × 4 + rushing and receiving TD × 6 − interceptions × 2. At least two recorded game appearances. Not an award-voting model; defense and special teams are not scored. Missing box scores may change the order.'}
         if league=='USPORTS':
+            bundle[league]['regularSeasonOnly']=True
+            bundle[league]['awardTeamRanks']=rankings
+            bundle[league]['regularSeasonGameIds']=sorted(regular_ids)
             bundle[league]['productionMaximum']=production_maximum
             bundle[league]['eligiblePlayers']=rows
             bundle[league]['weights']={'production':.75,'teamWinningPercentage':.15,'teamRanking':.10}
@@ -111,14 +141,14 @@ def build(only=None):
             bundle[league]['method']='Watch ratings consider verified player performance, team results and team strength. Regular-season games only; exhibitions are excluded. At least two recorded appearances are required. Missing box scores may change the order.'
             records={team:dict(wins=0,losses=0,ties=0) for team in profiles}
             opponents={team:[] for team in profiles}
-            for g in result['games']:
+            for g in award_results:
                 for side,other in [('away','home'),('home','away')]:
                     row=records[g[side]]
                     opponents[g[side]].append(g[other])
                     row['wins' if g[side+'Score']>g[other+'Score'] else 'losses' if g[side+'Score']<g[other+'Score'] else 'ties']+=1
             bundle[league]['records']=records
             bundle[league]['opponents']=opponents
-            bundle[league]['missingBoxscores']=sorted(eligible_games-{g['id'] for g in source['games']})
+            bundle[league]['missingBoxscores']=sorted(regular_ids-{g['id'] for g in source['games']})
             bundle[league]['method']+=' Regular-season games only; exhibitions are excluded. Completed games on the update date are included.'
     (ROOT/'data/season-watch.json').write_text(json.dumps(bundle,allow_nan=False))
     (ROOT/'season-watch-data.js').write_text('window.SEASON_WATCH='+json.dumps(bundle,allow_nan=False).replace('<','\\u003c')+';')

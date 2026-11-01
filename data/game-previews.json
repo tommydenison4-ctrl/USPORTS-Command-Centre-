@@ -170,6 +170,108 @@
       ]
     },
     {
+      "id": "2026-11-07-manitoba-ubc",
+      "away": "manitoba",
+      "home": "ubc",
+      "date": "2026-11-07",
+      "conference": "CW",
+      "asOf": "2026-11-01",
+      "title": "Manitoba at UBC",
+      "paragraphs": [
+        "Manitoba heads to UBC on November 7, with both teams looking to pick up a conference win. Manitoba is 4–4; UBC is 6–2.",
+        "Manitoba (4–4) last played on October 31, losing to Regina 26–15. Before that, its results were a 39–20 loss to Saskatchewan and a 33–11 win over Calgary. Through 8 games, Manitoba is scoring 22.2 points a game and giving up 23.9.",
+        "UBC (6–2) last played on October 30, beating Saskatchewan 59–24. Before that, it won 34–18 over Calgary and 21–17 over Regina. Through 8 games, UBC is scoring 30.5 points a game and giving up 20.1.",
+        "UBC won the last meeting 31–6 on September 26.",
+        "Marvyn Larozar of UBC has thrown for 90 yards in 1 games. Marvyn Larozar is on CanUFootball’s Hec Crighton Watch."
+      ],
+      "notes": [
+        "Records and team scoring use regular-season results completed before November 1. Exhibitions are excluded.",
+        "Player totals use the available box scores and may be incomplete. The Hec Crighton Watch is CanUFootball’s own list."
+      ],
+      "sources": [
+        {
+          "url": "https://gothunderbirds.ca/coverage",
+          "label": "Official national schedule"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260905_gdvt.xml",
+          "label": "September 5 · Saskatchewan at Manitoba"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260911_hvcf.xml",
+          "label": "September 11 · Manitoba at Regina"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260919_96n6.xml",
+          "label": "September 19 · Calgary at Manitoba"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260926_ncut.xml",
+          "label": "September 26 · UBC at Manitoba"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261002_k48e.xml",
+          "label": "October 2 · Manitoba at Alberta"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261016_dycj.xml",
+          "label": "October 16 · Manitoba at Saskatchewan"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261024_tpmh.xml",
+          "label": "October 24 · Manitoba at Calgary"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261031_l8qg.xml",
+          "label": "October 31 · Regina at Manitoba"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260904_bx7n.xml",
+          "label": "September 4 · UBC at Calgary"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260911_19fu.xml",
+          "label": "September 11 · Alberta at UBC"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260918_y81r.xml",
+          "label": "September 18 · Regina at UBC"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_8tvd.xml",
+          "label": "October 3 · UBC at Saskatchewan"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261016_nuqi.xml",
+          "label": "October 16 · Calgary at UBC"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261023_gjwj.xml",
+          "label": "October 23 · UBC at Regina"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261030_gll3.xml",
+          "label": "October 30 · Saskatchewan at UBC"
+        },
+        {
+          "url": "https://bearsandpandas.ca/sports/football/stats/2026/university-of-british-columbia/boxscore/8947",
+          "label": "Marvyn Larozar · player statistics"
+        },
+        {
+          "url": "https://gobisons.ca/sports/football/stats/2026/ubc-thunderbirds/boxscore/9303",
+          "label": "Marvyn Larozar · player statistics"
+        },
+        {
+          "url": "https://huskies.usask.ca/sports/football/stats/2026-27/ubc-thunderbirds/boxscore/6999",
+          "label": "Marvyn Larozar · player statistics"
+        },
+        {
+          "url": "https://www.reginacougars.com/sports/football/stats/2026/ubc/boxscore/11425",
+          "label": "Marvyn Larozar · player statistics"
+        }
+      ]
+    },
+    {
       "id": "2026-11-07-mcgill-montreal",
       "away": "mcgill",
       "home": "montreal",
@@ -386,6 +488,112 @@
       ]
     },
     {
+      "id": "2026-11-07-regina-saskatchewan",
+      "away": "regina",
+      "home": "saskatchewan",
+      "date": "2026-11-07",
+      "conference": "CW",
+      "asOf": "2026-11-01",
+      "title": "Regina at Saskatchewan",
+      "paragraphs": [
+        "Regina heads to Saskatchewan on November 7, with both teams looking to pick up a conference win. Regina is 4–4; Saskatchewan is 6–2.",
+        "Regina (4–4) last played on October 31, beating Manitoba 26–15. Before that, its results were a 43–17 win over Alberta and a 21–17 loss to UBC. Through 8 games, Regina is scoring 26.5 points a game and giving up 18.2.",
+        "Saskatchewan (6–2) last played on October 30, losing to UBC 59–24. Before that, it won 39–20 over Manitoba and 21–19 over Alberta. Through 8 games, Saskatchewan is scoring 35.9 points a game and giving up 28.6.",
+        "Saskatchewan won the last meeting 38–31 on September 26.",
+        "Anton Amundrud of Saskatchewan has thrown for 2,653 yards in 8 games. Anton Amundrud is on CanUFootball’s Hec Crighton Watch."
+      ],
+      "notes": [
+        "Records and team scoring use regular-season results completed before November 1. Exhibitions are excluded.",
+        "Player totals use the available box scores and may be incomplete. The Hec Crighton Watch is CanUFootball’s own list."
+      ],
+      "sources": [
+        {
+          "url": "https://cougarsandrams.com/news/2026/10/31/rams-football-rams-punch-ticket-to-postseason-with-26-15-win-over-manitoba.aspx",
+          "label": "Official national schedule"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260904_pg8n.xml",
+          "label": "September 4 · Regina at Alberta"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260911_hvcf.xml",
+          "label": "September 11 · Manitoba at Regina"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260918_y81r.xml",
+          "label": "September 18 · Regina at UBC"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260926_u9sf.xml",
+          "label": "September 26 · Saskatchewan at Regina"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_hww9.xml",
+          "label": "October 3 · Regina at Calgary"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261015_v8uv.xml",
+          "label": "October 15 · Alberta at Regina"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261023_gjwj.xml",
+          "label": "October 23 · UBC at Regina"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261031_l8qg.xml",
+          "label": "October 31 · Regina at Manitoba"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260905_gdvt.xml",
+          "label": "September 5 · Saskatchewan at Manitoba"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260911_j4p4.xml",
+          "label": "September 11 · Calgary at Saskatchewan"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260918_mge2.xml",
+          "label": "September 18 · Saskatchewan at Alberta"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261003_8tvd.xml",
+          "label": "October 3 · UBC at Saskatchewan"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261016_dycj.xml",
+          "label": "October 16 · Manitoba at Saskatchewan"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261023_91gc.xml",
+          "label": "October 23 · Alberta at Saskatchewan"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20261030_gll3.xml",
+          "label": "October 30 · Saskatchewan at UBC"
+        },
+        {
+          "url": "https://bearsandpandas.ca/sports/football/stats/2026/university-of-saskatchewan/boxscore/8948",
+          "label": "Anton Amundrud · player statistics"
+        },
+        {
+          "url": "https://gobisons.ca/sports/football/stats/2026/saskatchewan-huskies/boxscore/9300",
+          "label": "Anton Amundrud · player statistics"
+        },
+        {
+          "url": "https://godinos.com/sports/football/stats/2026/saskatchewan/boxscore/15527",
+          "label": "Anton Amundrud · player statistics"
+        },
+        {
+          "url": "https://huskies.usask.ca/sports/football/stats/2026-27/regina-rams/boxscore/6998",
+          "label": "Anton Amundrud · player statistics"
+        },
+        {
+          "url": "https://huskies.usask.ca/sports/football/stats/2026-27/ubc-thunderbirds/boxscore/6999",
+          "label": "Anton Amundrud · player statistics"
+        }
+      ]
+    },
+    {
       "id": "2026-11-07-windsor-western",
       "away": "windsor",
       "home": "western",
@@ -398,7 +606,7 @@
         "Windsor (7–2) last played on October 31, beating Guelph 28–24. Before that, it won 25–22 over Queen's and 27–23 over Guelph. Through 9 games, Windsor is scoring 37.8 points a game and giving up 22.3.",
         "Western (7–2) last played on October 31, beating Laurier 58–41. Before that, its results were a 37–27 win over Ottawa and a 55–39 loss to Laurier. Through 9 games, Western is scoring 47.6 points a game and giving up 27.0.",
         "Western won the last meeting 44–37 on September 12.",
-        "Kareame Cotton of Windsor has thrown for 2,485 yards in 9 games. Ben Casselman of Western has thrown for 1,500 yards in 7 games. Both are on CanUFootball’s Hec Crighton Watch."
+        "Kareame Cotton of Windsor has thrown for 2,308 yards in 8 games. Emmett Charles of Western has caught passes for 809 yards in 8 games. Both are on CanUFootball’s Hec Crighton Watch."
       ],
       "notes": [
         "Records and team scoring use regular-season results completed before November 1. Exhibitions are excluded.",
@@ -502,16 +710,20 @@
           "label": "Kareame Cotton · player statistics"
         },
         {
+          "url": "https://gogaelsgo.com/sports/football/stats/2026-2027/western-mustangs/boxscore/13810",
+          "label": "Emmett Charles · player statistics"
+        },
+        {
           "url": "https://marauders.ca/sports/football/stats/2026/western-university/boxscore/14057",
-          "label": "Ben Casselman · player statistics"
+          "label": "Emmett Charles · player statistics"
         },
         {
           "url": "https://varsityblues.ca/sports/football/stats/2026/western-university/boxscore/12855",
-          "label": "Ben Casselman · player statistics"
+          "label": "Emmett Charles · player statistics"
         },
         {
           "url": "https://westernmustangs.ca/sports/football/stats/2026-27/york-lions/boxscore/17092",
-          "label": "Ben Casselman · player statistics"
+          "label": "Emmett Charles · player statistics"
         }
       ]
     }

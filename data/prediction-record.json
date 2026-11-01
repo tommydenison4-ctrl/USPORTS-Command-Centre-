@@ -962,6 +962,21 @@
       "resultSource": null
     },
     {
+      "gameId": "2026-11-07-manitoba-ubc",
+      "date": "2026-11-07",
+      "away": "manitoba",
+      "home": "ubc",
+      "pick": "ubc",
+      "probability": 0.7743476848683184,
+      "publishedAt": "2026-11-01T19:25:17.458Z",
+      "source": "data/pregame-predictions-usports.json",
+      "status": "pending",
+      "winner": null,
+      "awayScore": null,
+      "homeScore": null,
+      "resultSource": null
+    },
+    {
       "gameId": "2026-11-07-mcgill-montreal",
       "date": "2026-11-07",
       "away": "mcgill",
@@ -984,6 +999,21 @@
       "pick": "queens",
       "probability": 0.8133044521788609,
       "publishedAt": "2026-10-31T21:34:52.463Z",
+      "source": "data/pregame-predictions-usports.json",
+      "status": "pending",
+      "winner": null,
+      "awayScore": null,
+      "homeScore": null,
+      "resultSource": null
+    },
+    {
+      "gameId": "2026-11-07-regina-saskatchewan",
+      "date": "2026-11-07",
+      "away": "regina",
+      "home": "saskatchewan",
+      "pick": "saskatchewan",
+      "probability": 0.7149165166415399,
+      "publishedAt": "2026-11-01T19:25:17.458Z",
       "source": "data/pregame-predictions-usports.json",
       "status": "pending",
       "winner": null,

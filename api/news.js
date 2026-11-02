@@ -28,7 +28,7 @@ const SOURCES = [
   {team:'ubc',source:'UBC Thunderbirds',url:'https://gothunderbirds.ca/sports/football'},
   {team:'manitoba',source:'Manitoba Bisons',url:'https://gobisons.ca/sports/football'},
   {team:'saskatchewan',source:'Saskatchewan Huskies',url:'https://huskies.usask.ca/sports/football'},
-  {team:'regina',source:'Regina Rams',url:'https://www.reginacougars.com/sports/football'},
+  {team:'regina',source:'Regina Rams',url:'https://cougarsandrams.com/sports/football'},
   {team:'alberta',source:'Alberta Golden Bears',url:'https://bearsandpandas.ca/sports/football'}
 ];
 
@@ -68,6 +68,22 @@ function looksFootball(title,context=''){
 }
 function parsePage(html,row,minDate){
   const {team,source,url:base}=row; const out=[]; const seen=new Set();
+  // Some Sidearm pages render story links from JSON rather than anchor tags.
+  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)){
+    const embedded=script[1].match(/\bvar\s+obj\s*=\s*(\{[\s\S]*\});\s*(?:if\b|window\.)/);
+    if(!embedded)continue;
+    let data;try{data=JSON.parse(embedded[1])}catch{continue}
+    const pending=[data];
+    while(pending.length){
+      const item=pending.pop();if(!item||typeof item!=='object')continue;
+      pending.push(...Object.values(item).filter(v=>v&&typeof v==='object'));
+      if(typeof item.content_title!=='string'||typeof item.content_url!=='string')continue;
+      const url=abs(base,item.content_url),title=stripTags(item.content_title),date=dateFromUrl(url);
+      if(!url.startsWith('https://')||new URL(url).hostname!==new URL(base).hostname||seen.has(url))continue;
+      if(title.length<8||title.length>240||!looksFootball(title,url)||!date.startsWith('2026-')||date<minDate||date>new Date().toISOString().slice(0,10))continue;
+      seen.add(url);out.push({teams:[team],date,title,source,url,type:'official'});
+    }
+  }
   const re=/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
   let m;
   while((m=re.exec(html))){

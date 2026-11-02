@@ -346,6 +346,33 @@
           "start": 3175
         }
       ]
+    },
+    {
+      "id": "2026-oua-quarter-finals-review",
+      "episode": "OUA Quarter Finals Review",
+      "published": "2026-11-02",
+      "durationSeconds": 4877,
+      "url": "https://www.youtube.com/watch?v=yKVUZ3vMMKQ",
+      "videoId": "yKVUZ3vMMKQ",
+      "sourceChapters": "https://www.youtube.com/watch?v=yKVUZ3vMMKQ",
+      "chapters": [
+        {
+          "label": "Players of the Week",
+          "start": 61
+        },
+        {
+          "label": "Ottawa @ McMaster",
+          "start": 341
+        },
+        {
+          "label": "Guelph @ Windsor",
+          "start": 1691
+        },
+        {
+          "label": "Laurier @ Western",
+          "start": 3371
+        }
+      ]
     }
   ],
   "segments": [
@@ -788,6 +815,39 @@
       "scope": "conference",
       "conference": "RSEQ",
       "endsAtEpisodeEnd": false
+    },
+    {
+      "episodeId": "2026-oua-quarter-finals-review",
+      "gameId": "2026-10-31-ottawa-mcmaster",
+      "label": "Ottawa at McMaster",
+      "start": 341,
+      "end": 1691,
+      "kind": "reaction",
+      "scope": "game",
+      "conference": "OUA",
+      "endsAtEpisodeEnd": false
+    },
+    {
+      "episodeId": "2026-oua-quarter-finals-review",
+      "gameId": "2026-10-31-guelph-windsor",
+      "label": "Guelph at Windsor",
+      "start": 1691,
+      "end": 3371,
+      "kind": "reaction",
+      "scope": "game",
+      "conference": "OUA",
+      "endsAtEpisodeEnd": false
+    },
+    {
+      "episodeId": "2026-oua-quarter-finals-review",
+      "gameId": "2026-10-31-laurier-western",
+      "label": "Laurier at Western",
+      "start": 3371,
+      "end": 4877,
+      "kind": "reaction",
+      "scope": "game",
+      "conference": "OUA",
+      "endsAtEpisodeEnd": true
     }
   ]
 }

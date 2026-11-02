@@ -14,7 +14,7 @@ const SOURCES = [
   // RSEQ
   {team:'bishops',source:"Bishop's Athletics",url:'https://gaiters.ca/sports/football'},
   {team:'mcgill',source:'McGill Athletics',url:'https://mcgillathletics.ca/sports/football'},
-  {team:'concordia',source:'Concordia Stingers',url:'https://stingers.ca/football/'},
+  {team:'concordia',source:'Concordia Stingers',url:'https://www.concordia.ca/stingers/football.html'},
   {team:'laval',source:'Laval Rouge et Or',url:'https://rougeetor.ulaval.ca/sports/football/'},
   {team:'montreal',source:'Montréal Carabins',url:'https://carabins.umontreal.ca/football/'},
   {team:'sherbrooke',source:'Sherbrooke Vert & Or',url:'https://www.usherbrooke.ca/vertetor/equipes/football/nouvelles'},
@@ -58,7 +58,7 @@ function dateFromText(text=''){
   m=text.match(/\b(\d{1,2})[\/-](\d{1,2})[\/-](20\d{2})\b/); if(m)return isoDate(m[3],m[1],m[2]);
   const mons={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,june:6,jul:7,july:7,aug:8,sep:9,sept:9,september:9,oct:10,nov:11,dec:12};
   m=text.match(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.?\s+(\d{1,2})(?:,)?\s+(20\d{2})\b/i);
-  if(m)return isoDate(m[3],mons[m[1].toLowerCase().replace('.','')],m[2]);
+  if(m)return isoDate(m[3],mons[m[1].toLowerCase().slice(0,3)],m[2]);
   return '';
 }
 function cutoff(days){ const d=new Date(); d.setUTCHours(0,0,0,0); d.setUTCDate(d.getUTCDate()-days); return d.toISOString().slice(0,10); }
@@ -126,7 +126,21 @@ async function fetchHtml(url){
 async function fetchOne(row,minDate){
  const urls=candidateUrls(row),results=await Promise.all(urls.map(fetchHtml));const stories=[];
  results.forEach((got,i)=>{if(!got.text)return;const parsed=/<rss\b/i.test(got.text)?parseRSS(got.text,row,minDate):parsePage(got.text,{...row,url:urls[i]},minDate);for(const x of parsed)if(!stories.some(y=>y.url===x.url))stories.push(x)});
+ // Concordia's article URLs contain a year only; verify each article's printed date.
+ if(row.team==='concordia'){
+   const links=[...new Set(results.flatMap(got=>[...got.text.matchAll(/<a\b[^>]*href=["']([^"']+)["']/gi)].map(m=>abs(row.url,m[1]))))].filter(url=>url.startsWith('https://')&&new URL(url).hostname===new URL(row.url).hostname&&/\/stingers\/news\/2026\/[^/]+\.html$/.test(new URL(url).pathname)).slice(0,6);
+   const verified=await pooled(links,3,async url=>{const got=await fetchHtml(url);return got.status===200?parseConcordiaArticle(got.text,row,url,minDate):null});
+   for(const story of verified)if(story&&!stories.some(s=>s.url===story.url))stories.push(story);
+ }
  return {team:row.team,source:row.source,url:row.url,status:results.some(x=>x.status===200)?200:results[0].status,error:results.every(x=>x.status!==200)?'Source unavailable':null,stories:stories.sort((a,b)=>b.date.localeCompare(a.date)).slice(0,12)};
+}
+function parseConcordiaArticle(html,row,url,minDate){
+ if(!/^https:\/\//.test(url)||new URL(url).hostname!==new URL(row.url).hostname)return null;
+ const title=stripTags(html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)?.[1]||'');
+ const tag=stripTags(html.match(/<p\b[^>]*class=["']tag["'][^>]*>([\s\S]*?)<\/p>/i)?.[1]||'');
+ const date=dateFromText(tag);
+ if(!/\bFootball\b/i.test(tag)||title.length<8||title.length>240||!date.startsWith('2026-')||date<minDate||date>new Date().toISOString().slice(0,10))return null;
+ return {teams:[row.team],date,title,source:row.source,url,type:'official'};
 }
 async function pooled(items,limit,fn){
   const out=new Array(items.length); let next=0;

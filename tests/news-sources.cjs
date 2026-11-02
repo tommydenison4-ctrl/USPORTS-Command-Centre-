@@ -1,0 +1,15 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const context={URL};vm.createContext(context);
+vm.runInContext(fs.readFileSync('api/news.js','utf8').replace('export default async function handler','async function handler')+';this.article=parseConcordiaArticle;this.date=dateFromText;this.row=SOURCES.find(s=>s.team==="concordia");',context);
+const url='https://www.concordia.ca/stingers/news/2026/stingers-football-punch-their-ticket-to-the-rseq-playoffs-with-win-ove.html';
+const html='<article><p class="tag">November 2, 2026 | <strong>Football</strong></p><h1>Stingers football punch their ticket to the RSEQ playoffs with win over Bishop’s</h1></article>';
+assert.equal(context.article(html,context.row,url,'2026-10-19').date,'2026-11-02');
+assert.equal(context.article(html,context.row,'https://example.com/story','2026-10-19'),null);
+assert.equal(context.article(html.replace('2026','2027'),context.row,url,'2026-10-19'),null);
+assert.equal(context.article(html.replace('Football','Basketball'),context.row,url,'2026-10-19'),null);
+assert.equal(context.article(html.replace('November 2','October 2'),context.row,url,'2026-10-19'),null);
+assert.equal(context.article(html.replace('November 2, 2026','No date'),context.row,url,'2026-10-19'),null);
+assert.equal(context.date('September 14, 2026'),'2026-09-14');
+assert.equal(context.date('November 2, 2026'),'2026-11-02');
+assert.equal(context.date('Oct. 30, 2026'),'2026-10-30');
+console.log('PASS: Concordia printed article dates; current season and cutoff; football-only and same-source guards; full month names.');

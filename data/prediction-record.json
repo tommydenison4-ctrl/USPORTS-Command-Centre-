@@ -940,11 +940,11 @@
       "probability": 0.8912337823540921,
       "publishedAt": "2026-10-31T21:34:52.463Z",
       "source": "data/pregame-predictions-usports.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "stfx",
+      "awayScore": 17,
+      "homeScore": 48,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27p/boxscores/20261107_va4z.xml"
     },
     {
       "gameId": "2026-11-07-concordia-laval",
@@ -985,11 +985,11 @@
       "probability": 0.502920830587826,
       "publishedAt": "2026-10-31T21:34:52.463Z",
       "source": "data/pregame-predictions-usports.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "incorrect",
+      "winner": "montreal",
+      "awayScore": 21,
+      "homeScore": 28,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27p/boxscores/20261107_2pah.xml"
     },
     {
       "gameId": "2026-11-07-ottawa-queens",
@@ -1000,11 +1000,11 @@
       "probability": 0.8133044521788609,
       "publishedAt": "2026-10-31T21:34:52.463Z",
       "source": "data/pregame-predictions-usports.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "queens",
+      "awayScore": 27,
+      "homeScore": 45,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27p/boxscores/20261107_wcw0.xml"
     },
     {
       "gameId": "2026-11-07-regina-saskatchewan",
@@ -1029,6 +1029,36 @@
       "pick": "windsor",
       "probability": 0.517711011446031,
       "publishedAt": "2026-10-31T21:34:52.463Z",
+      "source": "data/pregame-predictions-usports.json",
+      "status": "incorrect",
+      "winner": "western",
+      "awayScore": 33,
+      "homeScore": 43,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27p/boxscores/20261107_94of.xml"
+    },
+    {
+      "gameId": "2026-11-14-stfx-saint-marys",
+      "date": "2026-11-14",
+      "away": "stfx",
+      "home": "saint-marys",
+      "pick": "saint-marys",
+      "probability": 0.7152747768146546,
+      "publishedAt": "2026-11-07T22:31:08.835Z",
+      "source": "data/pregame-predictions-usports.json",
+      "status": "pending",
+      "winner": null,
+      "awayScore": null,
+      "homeScore": null,
+      "resultSource": null
+    },
+    {
+      "gameId": "2026-11-14-western-queens",
+      "date": "2026-11-14",
+      "away": "western",
+      "home": "queens",
+      "pick": "queens",
+      "probability": 0.511140793997393,
+      "publishedAt": "2026-11-07T22:31:08.835Z",
       "source": "data/pregame-predictions-usports.json",
       "status": "pending",
       "winner": null,

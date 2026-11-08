@@ -955,11 +955,11 @@
       "probability": 0.856237510054154,
       "publishedAt": "2026-10-31T21:34:52.463Z",
       "source": "data/pregame-predictions-usports.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "laval",
+      "awayScore": 4,
+      "homeScore": 42,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27p/boxscores/20261107_w6gs.xml"
     },
     {
       "gameId": "2026-11-07-manitoba-ubc",
@@ -970,11 +970,11 @@
       "probability": 0.7743476848683184,
       "publishedAt": "2026-11-01T19:25:17.458Z",
       "source": "data/pregame-predictions-usports.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "ubc",
+      "awayScore": 23,
+      "homeScore": 30,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27p/boxscores/20261107_564s.xml"
     },
     {
       "gameId": "2026-11-07-mcgill-montreal",

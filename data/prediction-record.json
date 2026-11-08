@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-11-07",
+  "asOf": "2026-11-08",
   "games": [
     {
       "gameId": "2026-09-25-alberta-calgary",
@@ -1015,11 +1015,11 @@
       "probability": 0.7149165166415399,
       "publishedAt": "2026-11-01T19:25:17.458Z",
       "source": "data/pregame-predictions-usports.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "incorrect",
+      "winner": "regina",
+      "awayScore": 39,
+      "homeScore": 27,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27p/boxscores/20261107_xj3j.xml"
     },
     {
       "gameId": "2026-11-07-windsor-western",
@@ -1035,6 +1035,36 @@
       "awayScore": 33,
       "homeScore": 43,
       "resultSource": "https://en.usports.ca/sports/fball/2026-27p/boxscores/20261107_94of.xml"
+    },
+    {
+      "gameId": "2026-11-14-montreal-laval",
+      "date": "2026-11-14",
+      "away": "montreal",
+      "home": "laval",
+      "pick": "laval",
+      "probability": 0.788383064746051,
+      "publishedAt": "2026-11-08T08:01:41.477Z",
+      "source": "data/pregame-predictions-usports.json",
+      "status": "pending",
+      "winner": null,
+      "awayScore": null,
+      "homeScore": null,
+      "resultSource": null
+    },
+    {
+      "gameId": "2026-11-14-regina-ubc",
+      "date": "2026-11-14",
+      "away": "regina",
+      "home": "ubc",
+      "pick": "ubc",
+      "probability": 0.772775300791885,
+      "publishedAt": "2026-11-08T08:01:41.477Z",
+      "source": "data/pregame-predictions-usports.json",
+      "status": "pending",
+      "winner": null,
+      "awayScore": null,
+      "homeScore": null,
+      "resultSource": null
     },
     {
       "gameId": "2026-11-14-stfx-saint-marys",

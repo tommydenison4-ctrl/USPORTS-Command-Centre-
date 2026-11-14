@@ -3,6 +3,7 @@
  const A=AdvantageModel,e=A.esc;
  // Event links verified on OUA.tv's Upcoming football listing on 2026-10-03.
  const events={
+  '2026-11-14-western-queens':'6662',
   '2026-10-03-laurier-waterloo':'5237','2026-10-03-guelph-toronto':'5236','2026-10-03-queens-western':'5235','2026-10-03-york-windsor':'5238',
   '2026-10-04-carleton-ottawa':'5239','2026-10-09-toronto-mcmaster':'5240','2026-10-10-ottawa-york':'5241','2026-10-10-windsor-queens':'5242','2026-10-10-western-carleton':'5243',
   '2026-10-17-york-toronto':'5246','2026-10-17-western-ottawa':'5245','2026-10-17-guelph-queens':'5244','2026-10-17-carleton-laurier':'5248','2026-10-17-mcmaster-waterloo':'5247',

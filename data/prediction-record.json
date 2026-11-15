@@ -1095,6 +1095,36 @@
       "awayScore": 36,
       "homeScore": 27,
       "resultSource": "https://en.usports.ca/sports/fball/2026-27p/boxscores/20261114_8hu6.xml"
+    },
+    {
+      "gameId": "2026-11-21-saint-marys-western",
+      "date": "2026-11-21",
+      "away": "saint-marys",
+      "home": "western",
+      "pick": "western",
+      "probability": 0.8296146069108936,
+      "publishedAt": "2026-11-15T19:22:07.636Z",
+      "source": "data/pregame-predictions-usports.json",
+      "status": "pending",
+      "winner": null,
+      "awayScore": null,
+      "homeScore": null,
+      "resultSource": null
+    },
+    {
+      "gameId": "2026-11-21-ubc-montreal",
+      "date": "2026-11-21",
+      "away": "ubc",
+      "home": "montreal",
+      "pick": "ubc",
+      "probability": 0.5994649503139509,
+      "publishedAt": "2026-11-15T19:22:07.636Z",
+      "source": "data/pregame-predictions-usports.json",
+      "status": "pending",
+      "winner": null,
+      "awayScore": null,
+      "homeScore": null,
+      "resultSource": null
     }
   ],
   "firstPick": "2026-09-25",

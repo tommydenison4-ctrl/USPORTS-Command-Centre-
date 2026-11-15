@@ -1045,11 +1045,11 @@
       "probability": 0.788383064746051,
       "publishedAt": "2026-11-08T08:01:41.477Z",
       "source": "data/pregame-predictions-usports.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "incorrect",
+      "winner": "montreal",
+      "awayScore": 14,
+      "homeScore": 10,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27p/boxscores/20261114_6ri4.xml"
     },
     {
       "gameId": "2026-11-14-regina-ubc",
@@ -1060,11 +1060,11 @@
       "probability": 0.772775300791885,
       "publishedAt": "2026-11-08T08:01:41.477Z",
       "source": "data/pregame-predictions-usports.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "ubc",
+      "awayScore": 39,
+      "homeScore": 41,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27p/boxscores/20261114_vkq1.xml"
     },
     {
       "gameId": "2026-11-14-stfx-saint-marys",
@@ -1075,11 +1075,11 @@
       "probability": 0.7152747768146546,
       "publishedAt": "2026-11-07T22:31:08.835Z",
       "source": "data/pregame-predictions-usports.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "saint-marys",
+      "awayScore": 15,
+      "homeScore": 28,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27p/boxscores/20261114_gwak.xml"
     },
     {
       "gameId": "2026-11-14-western-queens",
@@ -1090,11 +1090,11 @@
       "probability": 0.511140793997393,
       "publishedAt": "2026-11-07T22:31:08.835Z",
       "source": "data/pregame-predictions-usports.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "incorrect",
+      "winner": "western",
+      "awayScore": 36,
+      "homeScore": 27,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27p/boxscores/20261114_8hu6.xml"
     }
   ],
   "firstPick": "2026-09-25",

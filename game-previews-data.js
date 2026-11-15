@@ -1,1 +1,1 @@
-window.US_GAME_PREVIEWS={"asOf":"2026-11-14","method":"Based on official results, available player box scores and credited school reporting. Team averages are not adjusted for strength of schedule.","games":[]};
+window.US_GAME_PREVIEWS={"asOf":"2026-11-15","method":"Based on official results, available player box scores and credited school reporting. Team averages are not adjusted for strength of schedule.","games":[]};

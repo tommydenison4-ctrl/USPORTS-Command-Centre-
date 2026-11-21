@@ -1105,11 +1105,11 @@
       "probability": 0.8296146069108936,
       "publishedAt": "2026-11-15T19:22:07.636Z",
       "source": "data/pregame-predictions-usports.json",
-      "status": "pending",
-      "winner": null,
-      "awayScore": null,
-      "homeScore": null,
-      "resultSource": null
+      "status": "correct",
+      "winner": "western",
+      "awayScore": 14,
+      "homeScore": 64,
+      "resultSource": "https://en.usports.ca/sports/fball/2026-27c/boxscores/20261121_db1w.xml"
     },
     {
       "gameId": "2026-11-21-ubc-montreal",

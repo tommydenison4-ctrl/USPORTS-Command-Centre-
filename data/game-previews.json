@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-11-21",
+  "asOf": "2026-11-22",
   "method": "Based on official results, available player box scores and credited school reporting. Team averages are not adjusted for strength of schedule.",
   "games": [
     {
@@ -8,16 +8,16 @@
       "home": "montreal",
       "date": "2026-11-28",
       "conference": "USPORTS",
-      "asOf": "2026-11-21",
+      "asOf": "2026-11-22",
       "title": "Western at Montréal",
       "paragraphs": [
-        "Western heads to Montréal on November 28, with both teams looking to pick up a conference win. Western is 9–2; Montréal is 8–2.",
-        "Western (9–2) last played on November 14, beating Queen's 36–27. Before that, it won 58–41 over Laurier and 43–33 over Windsor. Through 11 games, Western is scoring 46.1 points a game and giving up 27.5.",
-        "Montréal (8–2) last played on November 14, beating Laval 14–10. Before that, its results were a 35–3 loss to Laval and a 28–21 win over McGill. Through 10 games, Montréal is scoring 29.5 points a game and giving up 22.7.",
+        "Western heads to Montréal on November 28, with both teams looking to pick up a conference win. Western is 10–2; Montréal is 9–2.",
+        "Western (10–2) last played on November 21, beating Saint Mary's 64–14. Before that, it won 43–33 over Windsor and 36–27 over Queen's. Through 12 games, Western is scoring 47.6 points a game and giving up 26.4.",
+        "Montréal (9–2) last played on November 21, beating UBC 30–13. Before that, it won 28–21 over McGill and 14–10 over Laval. Through 11 games, Montréal is scoring 29.5 points a game and giving up 21.8.",
         "Emmett Charles of Western has caught passes for 809 yards in 8 games. Emmett Charles is on CanUFootball’s Hec Crighton Watch."
       ],
       "notes": [
-        "Records and team scoring use regular-season results completed before November 21. Exhibitions are excluded.",
+        "Records and team scoring use regular-season results completed before November 22. Exhibitions are excluded.",
         "Player totals use the available box scores and may be incomplete. The Hec Crighton Watch is CanUFootball’s own list."
       ],
       "sources": [
@@ -70,6 +70,10 @@
           "label": "November 14 · Western at Queen's"
         },
         {
+          "url": "https://en.usports.ca/sports/fball/2026-27c/boxscores/20261121_db1w.xml",
+          "label": "November 21 · Saint Mary's at Western"
+        },
+        {
           "url": "https://en.usports.ca/sports/fball/2026-27/boxscores/20260904_9j1y.xml",
           "label": "September 4 · Montréal at Sherbrooke"
         },
@@ -108,6 +112,10 @@
         {
           "url": "https://en.usports.ca/sports/fball/2026-27p/boxscores/20261114_6ri4.xml",
           "label": "November 14 · Montréal at Laval"
+        },
+        {
+          "url": "https://en.usports.ca/sports/fball/2026-27c/boxscores/20261121_qcpw.xml",
+          "label": "November 21 · UBC at Montréal"
         },
         {
           "url": "https://gogaelsgo.com/sports/football/stats/2026-2027/western-mustangs/boxscore/13810",
